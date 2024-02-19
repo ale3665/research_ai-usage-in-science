@@ -1,20 +1,23 @@
-from lrac.classes.journals import Journal, Science
+from pprint import pprint as print
+from time import time
+from typing import List
+
 import feedparser
 from feedparser.util import FeedParserDict
-from time import time
 from pandas import DataFrame
-from typing import List
-from pprint import pprint as print
+
+from lrac.classes.journals import Journal, Science
+
 
 class Parser:
-    def __init__(self)  ->  None:
+    def __init__(self) -> None:
         self.currentFeed: FeedParserDict | None = None
         self.currentFeedURL: str | None = None
         self.currentFeedBaseURL: str | None = None
         self.currentFeedName: str | None = None
         self.feedRetrievalTime: float | None = None
-    
-    def clear(self) ->  None:
+
+    def clear(self) -> None:
         """
         Clear the current data captured by the FeedParser.
         """
@@ -23,7 +26,7 @@ class Parser:
         self.currentFeedName = None
         self.currentFeedURL = None
 
-    def getFeed(self, source: Journal)  ->  None:
+    def getFeed(self, source: Journal) -> None:
         """
         Get the latest feed from a source
         """
@@ -34,7 +37,7 @@ class Parser:
             self.currentFeed = feedparser.parse(url_file_stream_or_string=source.rssURL)
             self.feedRetrievalTime = time()
 
-    def parseFeed(self) ->  DataFrame | None:
+    def parseFeed(self) -> DataFrame | None:
         """
         Parse the feed for all research articles and return a DataFrame with
         their DOI, URL, Title, and Source information.
@@ -44,13 +47,13 @@ class Parser:
 
         if self.currentFeed is None:
             return None
-        
+
         data: dict[str, List[str]] = {
-                "doi": [],
-                "url": [],
-                "title": [],
-                "source": [],
-                }
+            "doi": [],
+            "url": [],
+            "title": [],
+            "source": [],
+        }
 
         entries: List[FeedParserDict] = self.currentFeed["entries"]
 
@@ -65,6 +68,7 @@ class Parser:
                 data["doi"].extend([entry["prism_doi"]])
 
         return DataFrame(data=data)
+
 
 s = Science()
 fp = Parser()
