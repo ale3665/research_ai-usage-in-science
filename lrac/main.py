@@ -33,7 +33,6 @@ def main() -> None:
         for jc in journalClasses:
             parser.getFeed(source=jc())
             entries.append(parser.parseFeed())
-            parser.clear()
             bar.next()
 
     df: DataFrame = pandas.concat(objs=entries, ignore_index=True)

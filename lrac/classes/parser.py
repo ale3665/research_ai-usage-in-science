@@ -31,7 +31,7 @@ class Parser:
         """
         Get the latest feed from a source
         """
-        if self.currentFeedName is None:
+        if self.currentFeedName is not source.name:
             self.currentFeedName = source.name
             self.currentFeedBaseURL = source.url
             self.currentFeedURL = source.rssURL
