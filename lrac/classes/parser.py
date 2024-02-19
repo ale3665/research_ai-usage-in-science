@@ -1,4 +1,5 @@
-from time import time
+from datetime import datetime
+from time import mktime, time
 from typing import List
 
 import feedparser
@@ -51,7 +52,7 @@ class Parser:
         if self.currentFeed is None:
             return None
 
-        data: dict[str, List[str]] = {
+        data: dict[str, List[str | datetime]] = {
             "doi": [],
             "url": [],
             "title": [],
@@ -68,6 +69,10 @@ class Parser:
                 data["title"].extend([entry["title"]])
                 data["url"].extend([entry["link"]])
                 data["doi"].extend([entry["prism_doi"]])
-                data["updated"].extend([entry["updated"]])
+
+                parsedTime: float = mktime(entry["updated_parsed"])
+                datetimeObject: datetime = datetime.fromtimestamp(parsedTime)
+
+                data["updated"].extend([datetimeObject])
 
         return DataFrame(data=data)
