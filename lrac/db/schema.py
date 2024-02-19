@@ -20,6 +20,7 @@ def createSchema(engine: Engine) -> str:
         Column("title", String),
         Column("source", String),
         Column("updated", Date),
+        Column("filename", Date),
     )
 
     metadata.create_all(bind=engine)
