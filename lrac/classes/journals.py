@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from string import Template
 from typing import List
 
 
@@ -36,6 +37,9 @@ class Science(Journal):
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=science"
     )
     documentTags: List[str] = ["Research Article"]
+    downloadURLTemplate: Template = Template(
+        template="https://www.science.org/doi/pdf/${doi}?download=true"
+    )
 
     def __init__(self) -> None:
         pass
@@ -48,6 +52,9 @@ class ScienceSignaling(Journal):
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=signaling"
     )
     documentTags: List[str] = ["Research Article"]
+    downloadURLTemplate: Template = Template(
+        template="https://www.science.org/doi/pdf/${doi}?download=true"
+    )
 
     def __init__(self) -> None:
         pass
@@ -58,6 +65,9 @@ class ScienceTranslationalMedicine(Journal):
     url: str = "https://www.science.org/journal/stm"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=stm"
     documentTags: List[str] = ["Research Article"]
+    downloadURLTemplate: Template = Template(
+        template="https://www.science.org/doi/pdf/${doi}?download=true"
+    )
 
     def __init__(self) -> None:
         pass
@@ -68,6 +78,9 @@ class ScienceAdvances(Journal):
     url: str = "https://www.science.org/journal/sciadv"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
     documentTags: List[str] = ["Research Article"]
+    downloadURLTemplate: Template = Template(
+        template="https://www.science.org/doi/pdf/${doi}?download=true"
+    )
 
     def __init__(self) -> None:
         pass
@@ -80,6 +93,9 @@ class ScienceImmunology(Journal):
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciimmunol"
     )
     documentTags: List[str] = ["Research Article"]
+    downloadURLTemplate: Template = Template(
+        template="https://www.science.org/doi/pdf/${doi}?download=true"
+    )
 
     def __init__(self) -> None:
         pass
@@ -92,6 +108,9 @@ class ScienceRobotics(Journal):
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
     )
     documentTags: List[str] = ["Research Article"]
+    downloadURLTemplate: Template = Template(
+        template="https://www.science.org/doi/pdf/${doi}?download=true"
+    )
 
     def __init__(self) -> None:
         pass
