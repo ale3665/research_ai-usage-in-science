@@ -11,6 +11,10 @@ class Journal(metaclass=ABCMeta):
         pass
 
     @property
+    def name(self):
+        pass
+
+    @property
     def url(self):
         pass
 
@@ -19,6 +23,7 @@ class Journal(metaclass=ABCMeta):
         pass
 
 class Science(Journal):
+    name: str = "Science"
     url: str = "https://www.science.org/journal/science"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=science"
     
@@ -26,6 +31,7 @@ class Science(Journal):
         pass
 
 class ScienceSignaling(Journal):
+    name: str = "Science Signaling"
     url: str = "https://www.science.org/journal/signaling"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=signaling"
     
@@ -33,6 +39,7 @@ class ScienceSignaling(Journal):
         pass
 
 class ScienceTranslationalMedicine(Journal):
+    name: str = "Science Translational Medicine"
     url: str = "https://www.science.org/journal/stm"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=stm"
     
@@ -40,6 +47,7 @@ class ScienceTranslationalMedicine(Journal):
         pass
 
 class ScienceAdvances(Journal):
+    name: str = "Science Advances"
     url: str = "https://www.science.org/journal/sciadv"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
     
@@ -47,6 +55,7 @@ class ScienceAdvances(Journal):
         pass
 
 class ScienceImmunology(Journal):
+    name: str = "Science Immunology"
     url: str = "https://www.science.org/journal/sciimmunol"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciimmunol"
     
@@ -54,6 +63,7 @@ class ScienceImmunology(Journal):
         pass
 
 class ScienceRobotics(Journal):
+    name: str = "Science Robotics"
     url: str = "https://www.science.org/journal/scirobotics"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
     
