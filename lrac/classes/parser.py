@@ -1,4 +1,3 @@
-from pprint import pprint as print
 from time import time
 from typing import List
 
@@ -6,7 +5,7 @@ import feedparser
 from feedparser.util import FeedParserDict
 from pandas import DataFrame
 
-from lrac.classes.journals import Journal, Science
+from lrac.classes.journals import Journal
 
 
 class Parser:
@@ -16,6 +15,7 @@ class Parser:
         self.currentFeedBaseURL: str | None = None
         self.currentFeedName: str | None = None
         self.feedRetrievalTime: float | None = None
+        self.currentDocumentTags: List[str] | None = None
 
     def clear(self) -> None:
         """
@@ -25,6 +25,7 @@ class Parser:
         self.currentFeedBaseURL = None
         self.currentFeedName = None
         self.currentFeedURL = None
+        self.currentDocumentTags = None
 
     def getFeed(self, source: Journal) -> None:
         """
@@ -36,13 +37,15 @@ class Parser:
             self.currentFeedURL = source.rssURL
             self.currentFeed = feedparser.parse(url_file_stream_or_string=source.rssURL)
             self.feedRetrievalTime = time()
+            self.currentDocumentTags = source.documentTags
 
     def parseFeed(self) -> DataFrame | None:
         """
         Parse the feed for all research articles and return a DataFrame with
-        their DOI, URL, Title, and Source information.
+        relevant article features.
 
-        Research articles are identified by a journals documentTags attribute.
+        Research articles are identified by a journals documentTags attribute
+        accessible via self.currentDocumentTags .
         """
 
         if self.currentFeed is None:
@@ -53,27 +56,18 @@ class Parser:
             "url": [],
             "title": [],
             "source": [],
+            "updated": [],
         }
 
         entries: List[FeedParserDict] = self.currentFeed["entries"]
 
         entry: FeedParserDict
         for entry in entries:
-            # TODO: Replace this with a search against the classes documentTags
-            # attribute
-            if entry["dc_type"] == "Research Article":
+            if entry["dc_type"] in self.currentDocumentTags:
                 data["source"].extend([self.currentFeedName])
                 data["title"].extend([entry["title"]])
                 data["url"].extend([entry["link"]])
                 data["doi"].extend([entry["prism_doi"]])
+                data["updated"].extend([entry["updated"]])
 
         return DataFrame(data=data)
-
-
-s = Science()
-fp = Parser()
-
-fp.getFeed(source=s)
-df = fp.parseFeed()
-print(df)
-print(df["url"].to_list())

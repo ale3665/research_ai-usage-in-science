@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from typing import List
 
 
 class Journal(metaclass=ABCMeta):
@@ -9,6 +10,10 @@ class Journal(metaclass=ABCMeta):
     """
 
     def __init__(self) -> None:
+        pass
+
+    @property
+    def documentTags(self):
         pass
 
     @property
@@ -30,6 +35,7 @@ class Science(Journal):
     rssURL: str = (
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=science"
     )
+    documentTags: List[str] = ["Research Article"]
 
     def __init__(self) -> None:
         pass
@@ -41,6 +47,7 @@ class ScienceSignaling(Journal):
     rssURL: str = (
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=signaling"
     )
+    documentTags: List[str] = ["Research Article"]
 
     def __init__(self) -> None:
         pass
@@ -50,6 +57,7 @@ class ScienceTranslationalMedicine(Journal):
     name: str = "Science Translational Medicine"
     url: str = "https://www.science.org/journal/stm"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=stm"
+    documentTags: List[str] = ["Research Article"]
 
     def __init__(self) -> None:
         pass
@@ -59,6 +67,7 @@ class ScienceAdvances(Journal):
     name: str = "Science Advances"
     url: str = "https://www.science.org/journal/sciadv"
     rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
+    documentTags: List[str] = ["Research Article"]
 
     def __init__(self) -> None:
         pass
@@ -70,6 +79,7 @@ class ScienceImmunology(Journal):
     rssURL: str = (
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciimmunol"
     )
+    documentTags: List[str] = ["Research Article"]
 
     def __init__(self) -> None:
         pass
@@ -81,6 +91,7 @@ class ScienceRobotics(Journal):
     rssURL: str = (
         "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
     )
+    documentTags: List[str] = ["Research Article"]
 
     def __init__(self) -> None:
         pass
