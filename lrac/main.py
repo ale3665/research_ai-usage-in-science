@@ -91,10 +91,6 @@ def main(outputDB: Path, rssStore: Path, pdfStore: Path) -> None:
     df: DataFrame = pandas.concat(objs=entries, ignore_index=True)
     writeToDB(df=df, dbTableName=dbTableName, dbEngine=dbEngine)
 
-    fileDownloadDF: DataFrame = df[["url", "pdfFilepath"]]
-    print(fileDownloadDF)
-    print(type(fileDownloadDF))
-
 
 if __name__ == "__main__":
     main()

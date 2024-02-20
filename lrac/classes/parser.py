@@ -10,6 +10,7 @@ from feedparser.util import FeedParserDict
 from pandas import DataFrame
 
 from lrac.classes.journals import Journal
+from lrac.utils.fs import createDirectory
 
 
 class Parser:
@@ -50,10 +51,7 @@ class Parser:
 
             self.currentFeed = feedparser.parse(url_file_stream_or_string=source.rssURL)
 
-            try:
-                mkdir(path=rssStore)
-            except FileExistsError:
-                pass
+            createDirectory(directory=rssStore)
 
             with open(file=self.currentRSSFilepath, mode="w") as jsonFeed:
                 dump(
