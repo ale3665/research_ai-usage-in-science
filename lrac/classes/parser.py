@@ -63,7 +63,7 @@ class Parser:
                 )
                 jsonFeed.close()
 
-    def parseFeed(self) -> DataFrame | None:
+    def parseFeed(self, pdfStore: Path) -> DataFrame | None:
         """
         Parse the feed for all research articles and return a DataFrame with
         relevant article features.
@@ -81,7 +81,8 @@ class Parser:
             "title": [],
             "source": [],
             "updated": [],
-            "filename": [],
+            "pdfFilename": [],
+            "rssFilename": [],
         }
 
         entries: List[FeedParserDict] = self.currentFeed["entries"]
@@ -89,11 +90,18 @@ class Parser:
         entry: FeedParserDict
         for entry in entries:
             if entry["dc_type"] in self.currentDocumentTags:
+                data["rssFilename"].extend([self.currentRSSFilepath.__str__()])
                 data["source"].extend([self.currentFeedName])
                 data["title"].extend([entry["title"]])
                 data["url"].extend([entry["link"]])
                 data["doi"].extend([entry["prism_doi"]])
-                data["filename"].extend([entry["prism_doi"].replace("/", "_") + ".pdf"])
+                data["pdfFilename"].extend(
+                    [
+                        Path(
+                            pdfStore, entry["prism_doi"].replace("/", "_") + ".pdf"
+                        ).__str__()
+                    ]
+                )
 
                 parsedTime: float = mktime(entry["updated_parsed"])
                 datetimeObject: datetime = datetime.fromtimestamp(parsedTime)

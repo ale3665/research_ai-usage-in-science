@@ -58,11 +58,19 @@ def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
     "rssStore",
     "-r",
     "--rss",
-    help="Path to directory to write RSS files to for backup",
+    help="Path to directory to write RSS JSON files (.json) to",
     required=True,
     type=Path,
 )
-def main(outputDB: Path, rssStore: Path) -> None:
+@click.option(
+    "pdfStore",
+    "-p",
+    "--pdf",
+    help="Path to directory to write PDF files (.pdf) to",
+    required=True,
+    type=Path,
+)
+def main(outputDB: Path, rssStore: Path, pdfStore: Path) -> None:
     entries: List[DataFrame] = []
     parser: Parser = Parser()
 
@@ -77,7 +85,7 @@ def main(outputDB: Path, rssStore: Path) -> None:
         jc: ABCMeta
         for jc in journalClasses:
             parser.getFeed(source=jc(), rssStore=rssStore)
-            entries.append(parser.parseFeed())
+            entries.append(parser.parseFeed(pdfStore=pdfStore))
             bar.next()
 
     df: DataFrame = pandas.concat(objs=entries, ignore_index=True)
