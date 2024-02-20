@@ -1,9 +1,11 @@
 import inspect
 import warnings
 from abc import ABCMeta
+from pathlib import Path
 from types import ModuleType
 from typing import List
 
+import click
 import pandas
 from pandas import DataFrame
 from progress.bar import Bar
@@ -43,12 +45,20 @@ def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
             bar.next()
 
 
-def main() -> None:
+@click.command()
+@click.option(
+    "outputDB",
+    "-o",
+    "--output",
+    help="Path to SQLite3 database (.db) file to write content to",
+    required=True,
+    type=Path,
+)
+def main(outputDB: Path) -> None:
     entries: List[DataFrame] = []
     parser: Parser = Parser()
 
-    # TODO: Make this URL parametric
-    dbEngine: Engine = create_engine(url="sqlite:///temp.db")
+    dbEngine: Engine = create_engine(url=f"sqlite:///{outputDB}")
     dbTableName: str = createSchema(engine=dbEngine)
 
     journalClasses: List[ABCMeta] = findSubclasses(module=journals, abc=Journal)
