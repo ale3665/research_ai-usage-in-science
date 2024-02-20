@@ -58,6 +58,7 @@ class Parser:
             "title": [],
             "source": [],
             "updated": [],
+            "filename": [],
         }
 
         entries: List[FeedParserDict] = self.currentFeed["entries"]
@@ -69,10 +70,10 @@ class Parser:
                 data["title"].extend([entry["title"]])
                 data["url"].extend([entry["link"]])
                 data["doi"].extend([entry["prism_doi"]])
+                data["filename"].extend([entry["prism_doi"].replace("/", "_") + ".pdf"])
 
                 parsedTime: float = mktime(entry["updated_parsed"])
                 datetimeObject: datetime = datetime.fromtimestamp(parsedTime)
 
                 data["updated"].extend([datetimeObject])
-
         return DataFrame(data=data)
