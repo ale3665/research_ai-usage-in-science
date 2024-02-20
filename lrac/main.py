@@ -54,7 +54,15 @@ def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
     required=True,
     type=Path,
 )
-def main(outputDB: Path) -> None:
+@click.option(
+    "rssStore",
+    "-r",
+    "--rss",
+    help="Path to directory to write RSS files to for backup",
+    required=True,
+    type=Path,
+)
+def main(outputDB: Path, rssStore: Path) -> None:
     entries: List[DataFrame] = []
     parser: Parser = Parser()
 
@@ -68,7 +76,7 @@ def main(outputDB: Path) -> None:
     ) as bar:
         jc: ABCMeta
         for jc in journalClasses:
-            parser.getFeed(source=jc())
+            parser.getFeed(source=jc(), rssStore=rssStore)
             entries.append(parser.parseFeed())
             bar.next()
 

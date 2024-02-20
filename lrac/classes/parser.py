@@ -1,4 +1,7 @@
 from datetime import datetime
+from json import dump, load
+from os import mkdir
+from pathlib import Path
 from time import mktime, time
 from typing import List
 
@@ -17,6 +20,7 @@ class Parser:
         self.currentFeedName: str | None = None
         self.feedRetrievalTime: float | None = None
         self.currentDocumentTags: List[str] | None = None
+        self.currentRSSFilepath: Path | None = None
 
     def clear(self) -> None:
         """
@@ -27,18 +31,37 @@ class Parser:
         self.currentFeedName = None
         self.currentFeedURL = None
         self.currentDocumentTags = None
+        self.currentRSSFilepath = None
 
-    def getFeed(self, source: Journal) -> None:
+    def getFeed(self, source: Journal, rssStore: Path) -> None:
         """
-        Get the latest feed from a source
+        Get the latest feed from a source and save the feed to disk
         """
         if self.currentFeedName is not source.name:
+            self.feedRetrievalTime = time()
+
+            self.currentRSSFilepath = Path(
+                rssStore, source.name + f"_{self.feedRetrievalTime}.json"
+            )
             self.currentFeedName = source.name
             self.currentFeedBaseURL = source.url
             self.currentFeedURL = source.rssURL
-            self.currentFeed = feedparser.parse(url_file_stream_or_string=source.rssURL)
-            self.feedRetrievalTime = time()
             self.currentDocumentTags = source.documentTags
+
+            self.currentFeed = feedparser.parse(url_file_stream_or_string=source.rssURL)
+
+            try:
+                mkdir(path=rssStore)
+            except FileExistsError:
+                pass
+
+            with open(file=self.currentRSSFilepath, mode="w") as jsonFeed:
+                dump(
+                    obj=self.currentFeed,
+                    fp=jsonFeed,
+                    indent=4,
+                )
+                jsonFeed.close()
 
     def parseFeed(self) -> DataFrame | None:
         """
