@@ -81,8 +81,8 @@ class Parser:
             "title": [],
             "source": [],
             "updated": [],
-            "pdfFilename": [],
-            "rssFilename": [],
+            "pdfFilepath": [],
+            "feedFilepath": [],
         }
 
         entries: List[FeedParserDict] = self.currentFeed["entries"]
@@ -90,12 +90,12 @@ class Parser:
         entry: FeedParserDict
         for entry in entries:
             if entry["dc_type"] in self.currentDocumentTags:
-                data["rssFilename"].extend([self.currentRSSFilepath.__str__()])
+                data["feedFilepath"].extend([self.currentRSSFilepath.__str__()])
                 data["source"].extend([self.currentFeedName])
                 data["title"].extend([entry["title"]])
                 data["url"].extend([entry["link"]])
                 data["doi"].extend([entry["prism_doi"]])
-                data["pdfFilename"].extend(
+                data["pdfFilepath"].extend(
                     [
                         Path(
                             pdfStore, entry["prism_doi"].replace("/", "_") + ".pdf"
