@@ -17,16 +17,9 @@ from lrac.classes import journals
 from lrac.classes.journals import Journal
 from lrac.classes.parser import Parser
 from lrac.db.schema import createSchema
+from lrac.utils.metaprogramming import findSubclasses
 
 warnings.filterwarnings(action="ignore")
-
-
-def findSubclasses(module: ModuleType, abc: ABCMeta) -> List[ABCMeta]:
-    subclasses = []
-    for _, obj in inspect.getmembers(module):
-        if inspect.isclass(obj) and issubclass(obj, abc) and obj != abc:
-            subclasses.append(obj)
-    return subclasses
 
 
 def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
