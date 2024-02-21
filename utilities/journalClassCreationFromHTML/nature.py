@@ -49,7 +49,7 @@ def buildClass(name: str, link: str) -> str:
     feedURL: str = f"{url[:-1]}.rss"
 
     return f"""
-class {className}:
+class {className}(Journal):
     def __init__(self)  ->  None:
         self.name = "{name}"
         self.url = "{url}"
