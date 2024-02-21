@@ -1,9 +1,8 @@
 from datetime import datetime
-from json import dump, load
-from os import mkdir
+from json import dump
 from pathlib import Path
 from time import mktime, time
-from typing import List
+from typing import Any, List
 
 import feedparser
 from feedparser.util import FeedParserDict
@@ -15,47 +14,43 @@ from lrac.utils.fs import createDirectory
 
 class Parser:
     def __init__(self) -> None:
-        self.currentFeed: FeedParserDict | None = None
+        self.currentName: str | None = None
+        self.currentURL: str | None = None
+        self.currentFeedType: str | None = None
         self.currentFeedURL: str | None = None
-        self.currentFeedBaseURL: str | None = None
-        self.currentFeedName: str | None = None
-        self.feedRetrievalTime: float | None = None
-        self.currentDocumentTags: List[str] | None = None
-        self.currentRSSFilepath: Path | None = None
+        self.currentEntryTags: List[str] | None = None
+        self.currentEntryTagKeys: List[str] | None = None
 
-    def clear(self) -> None:
-        """
-        Clear the current data captured by the FeedParser.
-        """
-        self.currentFeed = None
-        self.currentFeedBaseURL = None
-        self.currentFeedName = None
-        self.currentFeedURL = None
-        self.currentDocumentTags = None
-        self.currentRSSFilepath = None
+        self.currentFeedRetrievalTime: float | None = None
+        self.currentFeedFilepath: Path | None = None
+        self.currentFeedDict: FeedParserDict | None = None
 
-    def getFeed(self, source: Journal, rssStore: Path) -> None:
+    def getFeed(self, source: Journal, feedStore: Path) -> None:
         """
         Get the latest feed from a source and save the feed to disk
         """
-        if self.currentFeedName is not source.name:
-            self.feedRetrievalTime = time()
+        if self.currentName is not source.name:
+            self.currentName = source.name
+            self.currentURL = source.url
+            self.currentFeedType = source.feedType
+            self.currentFeedURL = source.feedURL
+            self.currentEntryTags = source.entryTags
+            self.currentEntryTagKeys = source.entryTagKeys
 
-            self.currentRSSFilepath = Path(
-                rssStore, source.name + f"_{self.feedRetrievalTime}.json"
+            self.currentFeedRetrievalTime = time()
+            self.currentFeedDict = feedparser.parse(
+                url_file_stream_or_string=self.currentFeedURL,
             )
-            self.currentFeedName = source.name
-            self.currentFeedBaseURL = source.url
-            self.currentFeedURL = source.rssURL
-            self.currentDocumentTags = source.documentTags
+            self.currentFeedFilepath = Path(
+                feedStore,
+                source.name + f"_{self.currentFeedRetrievalTime}.json",
+            )
 
-            self.currentFeed = feedparser.parse(url_file_stream_or_string=source.rssURL)
+            createDirectory(directory=feedStore)
 
-            createDirectory(directory=rssStore)
-
-            with open(file=self.currentRSSFilepath, mode="w") as jsonFeed:
+            with open(file=self.currentFeedFilepath, mode="w") as jsonFeed:
                 dump(
-                    obj=self.currentFeed,
+                    obj=self.currentFeedDict,
                     fp=jsonFeed,
                     indent=4,
                 )
@@ -70,7 +65,7 @@ class Parser:
         accessible via self.currentDocumentTags .
         """
 
-        if self.currentFeed is None:
+        if self.currentFeedDict is None:
             return None
 
         data: dict[str, List[str | datetime]] = {
@@ -83,26 +78,60 @@ class Parser:
             "feedFilepath": [],
         }
 
-        entries: List[FeedParserDict] = self.currentFeed["entries"]
+        def _parseRSSFeed(
+            feedEntries: List[FeedParserDict],
+        ) -> None:
+            entry: FeedParserDict
+            for entry in feedEntries:
+                if self.currentEntryTagKeys is not None:
+                    releventEntryTagKeys: set = set(entry.keys()).intersection(
+                        self.currentEntryTagKeys
+                    )
+                    if len(releventEntryTagKeys) > 0:
+                        # This conditional first creates a set of all keys from
+                        # the current feed (x).
+                        # It then intersects x with the set of all supported
+                        # entry keys for that particular journal (y) resulting
+                        # in a new set (z).
+                        # If z > 0, then there is at least one item in the feed
+                        # that is of interest to parse.
+                        # Else, the loop continues
+                        key: str
+                        for key in releventEntryTagKeys:
+                            if entry[key] in self.currentEntryTags:
+                                parsedTime: float = mktime(entry["updated_parsed"])
+                                parsedDatetimeObject: datetime = datetime.fromtimestamp(
+                                    parsedTime
+                                )
 
-        entry: FeedParserDict
-        for entry in entries:
-            if entry["dc_type"] in self.currentDocumentTags:
-                data["feedFilepath"].extend([self.currentRSSFilepath.__str__()])
-                data["source"].extend([self.currentFeedName])
-                data["title"].extend([entry["title"]])
-                data["url"].extend([entry["link"]])
-                data["doi"].extend([entry["prism_doi"]])
-                data["pdfFilepath"].extend(
-                    [
-                        Path(
-                            pdfStore, entry["prism_doi"].replace("/", "_") + ".pdf"
-                        ).__str__()
-                    ]
-                )
+                                data["doi"].extend(entry["prism_doi"])
+                                data["url"].extend([entry["link"]])
+                                data["title"].extend([entry["title"]])
+                                data["source"].extend([self.currentName])
+                                data["updated"].extend([parsedDatetimeObject])
+                                data["pdfFilepath"].extend(
+                                    [
+                                        Path(
+                                            pdfStore,
+                                            entry["prism_doi"].replace("/", "_")
+                                            + ".pdf",
+                                        ).__str__()
+                                    ]
+                                )
+                                data["feedFilepath"].extend(
+                                    [self.currentRSSFilepath.__str__()]
+                                )
+                    else:
+                        continue
 
-                parsedTime: float = mktime(entry["updated_parsed"])
-                datetimeObject: datetime = datetime.fromtimestamp(parsedTime)
+        entries: List[FeedParserDict] = self.currentFeedDict["entries"]
 
-                data["updated"].extend([datetimeObject])
+        match self.currentFeedType:
+            case "api":
+                pass
+            case "atom":
+                pass
+            case "rss":
+                _parseRSSFeed(feedEntries=entries)
+
         return DataFrame(data=data)

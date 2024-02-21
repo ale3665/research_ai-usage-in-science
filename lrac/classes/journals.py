@@ -12,7 +12,7 @@ SCIENCE_JOURNAL_ENTRY_TAG_KEYS: List[str] = ["dc_type"]
 class Journal(Protocol):
     name: str
     url: str
-    feedType: Literal["atom", "rss", "api"]
+    feedType: Literal["api", "atom", "rss"]
     feedURL: str
     entryTags: List[str]
     entryTagKeys: List[str]

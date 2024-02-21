@@ -1,7 +1,6 @@
 import inspect
-from abc import ABCMeta
 from types import ModuleType
-from typing import Any, List, Protocol
+from typing import Any, List
 
 
 def findSubclasses(module: ModuleType, protocol: Any) -> List[Any]:
@@ -11,7 +10,7 @@ def findSubclasses(module: ModuleType, protocol: Any) -> List[Any]:
 
     It returns a list of instantied classes that do adhear to the Protocol.
     """
-    subclasses = []
+    subclasses: List[Any] = []
     for _, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and obj != protocol:
             try:
