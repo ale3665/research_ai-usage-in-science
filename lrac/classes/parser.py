@@ -14,12 +14,7 @@ from lrac.utils.fs import createDirectory
 
 class Parser:
     def __init__(self) -> None:
-        self.currentName: str | None = None
-        self.currentURL: str | None = None
-        self.currentFeedType: str | None = None
-        self.currentFeedURL: str | None = None
-        self.currentEntryTags: List[str] | None = None
-        self.currentEntryTagKeys: List[str] | None = None
+        self.currentSource: Journal = None
 
         self.currentFeedRetrievalTime: float | None = None
         self.currentFeedFilepath: Path | None = None
@@ -29,17 +24,16 @@ class Parser:
         """
         Get the latest feed from a source and save the feed to disk
         """
-        if self.currentName is not source.name:
-            self.currentName = source.name
-            self.currentURL = source.url
-            self.currentFeedType = source.feedType
-            self.currentFeedURL = source.feedURL
-            self.currentEntryTags = source.entryTags
-            self.currentEntryTagKeys = source.entryTagKeys
+        try:
+            nameTest: bool = self.currentSource.name != source.name
+        except AttributeError:
+            nameTest: bool = True
 
+        if nameTest:
+            self.currentSource = source
             self.currentFeedRetrievalTime = time()
             self.currentFeedDict = feedparser.parse(
-                url_file_stream_or_string=self.currentFeedURL,
+                url_file_stream_or_string=self.currentSource.feedURL,
             )
             self.currentFeedFilepath = Path(
                 feedStore,
@@ -83,9 +77,9 @@ class Parser:
         ) -> None:
             entry: FeedParserDict
             for entry in feedEntries:
-                if self.currentEntryTagKeys is not None:
+                if self.currentSource.entryTagKeys is not None:
                     releventEntryTagKeys: set = set(entry.keys()).intersection(
-                        self.currentEntryTagKeys
+                        self.currentSource.entryTagKeys
                     )
                     if len(releventEntryTagKeys) > 0:
                         # This conditional first creates a set of all keys from
@@ -98,7 +92,7 @@ class Parser:
                         # Else, the loop continues
                         key: str
                         for key in releventEntryTagKeys:
-                            if entry[key] in self.currentEntryTags:
+                            if entry[key] in self.currentSource.entryTags:
                                 parsedTime: float = mktime(entry["updated_parsed"])
                                 parsedDatetimeObject: datetime = datetime.fromtimestamp(
                                     parsedTime
@@ -107,7 +101,7 @@ class Parser:
                                 data["doi"].extend([entry["prism_doi"]])
                                 data["url"].extend([entry["link"]])
                                 data["title"].extend([entry["title"]])
-                                data["source"].extend([self.currentName])
+                                data["source"].extend([self.currentSource.name])
                                 data["updated"].extend([parsedDatetimeObject])
                                 data["pdfFilepath"].extend(
                                     [
@@ -126,7 +120,7 @@ class Parser:
 
         entries: List[FeedParserDict] = self.currentFeedDict["entries"]
 
-        match self.currentFeedType:
+        match self.currentSource.feedType:
             case "api":
                 pass
             case "atom":
@@ -134,9 +128,4 @@ class Parser:
             case "rss":
                 _parseRSSFeed(feedEntries=entries)
 
-        try:
-            return DataFrame(data=data)
-        except:
-            from pprint import pprint
-
-            pprint(data)
+        return DataFrame(data=data)
