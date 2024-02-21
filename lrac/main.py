@@ -1,9 +1,6 @@
-import inspect
 import warnings
-from abc import ABCMeta
 from pathlib import Path
-from types import ModuleType
-from typing import List
+from typing import Any, List
 
 import click
 import pandas
@@ -70,14 +67,17 @@ def main(outputDB: Path, rssStore: Path, pdfStore: Path) -> None:
     dbEngine: Engine = create_engine(url=f"sqlite:///{outputDB}")
     dbTableName: str = createSchema(engine=dbEngine)
 
-    journalClasses: List[ABCMeta] = findSubclasses(module=journals, abc=Journal)
+    journalClasses: List[Any] = findSubclasses(
+        module=journals,
+        protocol=Journal,
+    )
 
     with Bar(
         "Getting latest RSS feeds from known journals...", max=len(journalClasses)
     ) as bar:
-        jc: ABCMeta
+        jc: Any
         for jc in journalClasses:
-            parser.getFeed(source=jc(), rssStore=rssStore)
+            parser.getFeed(source=jc, rssStore=rssStore)
             entries.append(parser.parseFeed(pdfStore=pdfStore))
             bar.next()
 
