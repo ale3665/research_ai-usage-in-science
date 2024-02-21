@@ -1,109 +1,130 @@
-from abc import ABCMeta
 from string import Template
-from typing import List
+from typing import List, Literal, Protocol, runtime_checkable
 
-SCIENCE_JOURNAL_TAGS: List[str] = ["Research Article"]
-SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE: Template = Template(
-    template="https://www.science.org/doi/pdf/${doi}?download=true",
+SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE: Template = Template(
+    template="https://www.science.org/doi/pdf/${entryDOI}?download=true",
 )
+SCIENCE_JOURNAL_ENTRY_TAGS: List[str] = ["Research Article"]
+SCIENCE_JOURNAL_ENTRY_TAG_KEYS: List[str] = ["dc_type"]
 
 
-class Journal(metaclass=ABCMeta):
-    """
-    Abstract base class (ABC) to define journal properties.
+@runtime_checkable
+class Journal(Protocol):
+    name: str
+    url: str
+    feedType: Literal["atom", "rss", "api"]
+    feedURL: str
+    entryTags: List[str]
+    entryTagKeys: List[str]
+    entryDownloadURLTemplate: Template
 
-    This ABC and its respected subclasses are to essentially be non-functional.
-    """
-
-    def __init__(self) -> None:
-        pass
-
-    @property
-    def documentTags(self):
-        pass
-
-    @property
-    def name(self):
-        pass
-
-    @property
-    def url(self):
-        pass
-
-    @property
-    def rssURL(self):
-        pass
+    def entryDownloadURL(self, **kwargs) -> str:
+        ...
 
 
 class Science(Journal):
-    name: str = "Science"
-    url: str = "https://www.science.org/journal/science"
-    rssURL: str = (
-        "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=science"
-    )
-    documentTags: List[str] = SCIENCE_JOURNAL_TAGS
-    downloadURLTemplate: Template = SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE
-
     def __init__(self) -> None:
-        pass
+        self.name = "Science"
+        self.url = "https://www.science.org/journal/science"
+        self.feedType = "rss"
+        self.feedURL = (
+            "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=science"
+        )
+        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryDownloadURLTemplate: Template = (
+            SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+        )
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        return self.entryDownloadURLTemplate.substitute(**kwargs)
 
 
 class ScienceSignaling(Journal):
-    name: str = "Science Signaling"
-    url: str = "https://www.science.org/journal/signaling"
-    rssURL: str = (
-        "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=signaling"
-    )
-    documentTags: List[str] = SCIENCE_JOURNAL_TAGS
-    downloadURLTemplate: Template = SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE
-
     def __init__(self) -> None:
-        pass
+        self.name: str = "Science Signaling"
+        self.url: str = "https://www.science.org/journal/signaling"
+        self.feedType = "rss"
+        self.feedURL: str = (
+            "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=signaling"
+        )
+        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryDownloadURLTemplate: Template = (
+            SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+        )
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        return self.entryDownloadURLTemplate.substitute(**kwargs)
 
 
 class ScienceTranslationalMedicine(Journal):
-    name: str = "Science Translational Medicine"
-    url: str = "https://www.science.org/journal/stm"
-    rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=stm"
-    documentTags: List[str] = SCIENCE_JOURNAL_TAGS
-    downloadURLTemplate: Template = SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE
-
     def __init__(self) -> None:
-        pass
+        self.name: str = "Science Translational Medicine"
+        self.url: str = "https://www.science.org/journal/stm"
+        self.feedType = "rss"
+        self.feedURL: str = (
+            "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=stm"
+        )
+        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryDownloadURLTemplate: Template = (
+            SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+        )
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        return self.entryDownloadURLTemplate.substitute(**kwargs)
 
 
 class ScienceAdvances(Journal):
-    name: str = "Science Advances"
-    url: str = "https://www.science.org/journal/sciadv"
-    rssURL: str = "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
-    documentTags: List[str] = SCIENCE_JOURNAL_TAGS
-    downloadURLTemplate: Template = SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE
-
     def __init__(self) -> None:
-        pass
+        self.name: str = "Science Advances"
+        self.url: str = "https://www.science.org/journal/sciadv"
+        self.feedType = "rss"
+        self.feedURL: str = (
+            "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
+        )
+        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryDownloadURLTemplate: Template = (
+            SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+        )
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        return self.entryDownloadURLTemplate.substitute(**kwargs)
 
 
 class ScienceImmunology(Journal):
-    name: str = "Science Immunology"
-    url: str = "https://www.science.org/journal/sciimmunol"
-    rssURL: str = (
-        "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciimmunol"
-    )
-    documentTags: List[str] = SCIENCE_JOURNAL_TAGS
-    downloadURLTemplate: Template = SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE
-
     def __init__(self) -> None:
-        pass
+        self.name: str = "Science Immunology"
+        self.url: str = "https://www.science.org/journal/sciimmunol"
+        self.feedType = "rss"
+        self.feedURL: str = (
+            "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciimmunol"
+        )
+        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryDownloadURLTemplate: Template = (
+            SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+        )
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        return self.entryDownloadURLTemplate.substitute(**kwargs)
 
 
 class ScienceRobotics(Journal):
-    name: str = "Science Robotics"
-    url: str = "https://www.science.org/journal/scirobotics"
-    rssURL: str = (
-        "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
-    )
-    documentTags: List[str] = SCIENCE_JOURNAL_TAGS
-    downloadURLTemplate: Template = SCIENCE_JOURNAL_DOWNLOAD_TEMPLATE
-
     def __init__(self) -> None:
-        pass
+        self.name: str = "Science Robotics"
+        self.url: str = "https://www.science.org/journal/scirobotics"
+        self.feedType = "rss"
+        self.feedURL: str = (
+            "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
+        )
+        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryDownloadURLTemplate: Template = (
+            SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+        )
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        return self.entryDownloadURLTemplate.substitute(**kwargs)
