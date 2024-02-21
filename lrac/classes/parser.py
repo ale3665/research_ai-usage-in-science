@@ -104,7 +104,7 @@ class Parser:
                                     parsedTime
                                 )
 
-                                data["doi"].extend(entry["prism_doi"])
+                                data["doi"].extend([entry["prism_doi"]])
                                 data["url"].extend([entry["link"]])
                                 data["title"].extend([entry["title"]])
                                 data["source"].extend([self.currentName])
@@ -119,7 +119,7 @@ class Parser:
                                     ]
                                 )
                                 data["feedFilepath"].extend(
-                                    [self.currentRSSFilepath.__str__()]
+                                    [self.currentFeedFilepath.__str__()]
                                 )
                     else:
                         continue
@@ -134,4 +134,9 @@ class Parser:
             case "rss":
                 _parseRSSFeed(feedEntries=entries)
 
-        return DataFrame(data=data)
+        try:
+            return DataFrame(data=data)
+        except:
+            from pprint import pprint
+
+            pprint(data)

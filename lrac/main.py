@@ -77,7 +77,7 @@ def main(outputDB: Path, rssStore: Path, pdfStore: Path) -> None:
     ) as bar:
         jc: Any
         for jc in journalClasses:
-            parser.getFeed(source=jc, rssStore=rssStore)
+            parser.getFeed(source=jc, feedStore=rssStore)
             entries.append(parser.parseFeed(pdfStore=pdfStore))
             bar.next()
 

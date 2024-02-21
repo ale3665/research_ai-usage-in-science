@@ -4,7 +4,10 @@ from typing import List, Literal, Protocol, runtime_checkable
 SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE: Template = Template(
     template="https://www.science.org/doi/pdf/${entryDOI}?download=true",
 )
-SCIENCE_JOURNAL_ENTRY_TAGS: List[str] = ["Research Article"]
+SCIENCE_JOURNAL_ENTRY_TAGS: List[str] = [
+    "Special Issue Research Article",
+    "Research Article",
+]
 SCIENCE_JOURNAL_ENTRY_TAG_KEYS: List[str] = ["dc_type"]
 
 
