@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from string import Template
 from typing import List, Literal, Protocol, runtime_checkable
 
@@ -19,7 +18,6 @@ class Journal(Protocol):
     entryTagKeys: List[str]
     entryDownloadURLTemplate: Template
 
-    @abstractmethod
     def entryDownloadURL(self, **kwargs) -> str:
         ...
 
