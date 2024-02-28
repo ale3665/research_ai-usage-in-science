@@ -51,16 +51,19 @@ def buildClass(name: str, link: str) -> str:
     return f"""
 class {className}(Journal):
     def __init__(self)  ->  None:
-        self.name: str = "{name}"
-        self.url: str = "{url}"
-        self.feedType: str = "{feedType}"
-        self.feedURL: str = "{feedURL}"
-        self.entryTags: List[str] = []
-        self.entryTagKeys: List[str] = []
-        self.endtryDownloadURLTemplate: Template = Template(template="")
+        self.name= "{name}"
+        self.url= "{url}"
+        self.feedType= "{feedType}"
+        self.feedURL= "{feedURL}"
+        self.entryTags = NATURE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = NATURE_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = NATURE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
 
     def entryDownloadURL(self, **kwargs)    ->  str:
-        ...
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
 """
 
 
