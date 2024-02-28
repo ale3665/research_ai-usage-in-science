@@ -51,13 +51,13 @@ def buildClass(name: str, link: str) -> str:
     return f"""
 class {className}(Journal):
     def __init__(self)  ->  None:
-        self.name = "{name}"
-        self.url = "{url}"
-        self.feedType = "{feedType}"
-        self.feedURL = "{feedURL}"
-        self.entryTags = []
-        self.entryTagKeys = []
-        self.endtryDownloadURLTemplate = ""
+        self.name: str = "{name}"
+        self.url: str = "{url}"
+        self.feedType: str = "{feedType}"
+        self.feedURL: str = "{feedURL}"
+        self.entryTags: List[str] = []
+        self.entryTagKeys: List[str] = []
+        self.endtryDownloadURLTemplate: Template = Template(template="")
 
     def entryDownloadURL(self, **kwargs)    ->  str:
         ...
