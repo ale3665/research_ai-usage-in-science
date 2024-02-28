@@ -81,12 +81,12 @@ class Parser:
                     releventEntryTagKeys: set = set(entry.keys()).intersection(
                         self.currentSource.entryTagKeys
                     )
+                    # This conditional first creates a set of all keys from
+                    # the current feed (x).
+                    # It then intersects x with the set of all supported
+                    # entry keys for that particular journal (y) resulting
+                    # in a new set (z).
                     if len(releventEntryTagKeys) > 0:
-                        # This conditional first creates a set of all keys from
-                        # the current feed (x).
-                        # It then intersects x with the set of all supported
-                        # entry keys for that particular journal (y) resulting
-                        # in a new set (z).
                         # If z > 0, then there is at least one item in the feed
                         # that is of interest to parse.
                         # Else, the loop continues
