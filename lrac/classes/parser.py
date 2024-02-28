@@ -92,8 +92,8 @@ class Parser:
                         # Else, the loop continues
                         key: str
                         for key in releventEntryTagKeys:
-                            if (entry[key] in self.currentSource.entryTags) or (
-                                self.currentSource.entryTags is None
+                            if (self.currentSource.entryTags is None) or (
+                                entry[key] in self.currentSource.entryTags
                             ):
                                 parsedTime: float = mktime(entry["updated_parsed"])
                                 parsedDatetimeObject: datetime = datetime.fromtimestamp(
