@@ -4,11 +4,11 @@ from typing import List, Literal, Protocol, runtime_checkable
 SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE: Template = Template(
     template="https://www.science.org/doi/pdf/${entryDOI}?download=true",
 )
-SCIENCE_JOURNAL_ENTRY_TAGS: List[str] = [
+SCIENCE_JOURNAL_ENTRY_TAGS = [
     "Special Issue Research Article",
     "Research Article",
 ]
-SCIENCE_JOURNAL_ENTRY_TAG_KEYS: List[str] = ["dc_type"]
+SCIENCE_JOURNAL_ENTRY_TAG_KEYS = ["dc_type"]
 
 
 @runtime_checkable
@@ -17,8 +17,8 @@ class Journal(Protocol):
     url: str
     feedType: Literal["api", "atom", "rss"]
     feedURL: str
-    entryTags: List[str]
-    entryTagKeys: List[str]
+    entryTags: List[str] | None
+    entryTagKeys: List[str] | None
     entryDownloadURLTemplate: Template
 
     def entryDownloadURL(self, **kwargs) -> str:
@@ -33,8 +33,8 @@ class Science(Journal):
         self.feedURL = (
             "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=science"
         )
-        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
-        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryTags = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
         self.entryDownloadURLTemplate: Template = (
             SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
         )
@@ -51,8 +51,8 @@ class ScienceSignaling(Journal):
         self.feedURL: str = (
             "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=signaling"
         )
-        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
-        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryTags = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
         self.entryDownloadURLTemplate: Template = (
             SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
         )
@@ -69,8 +69,8 @@ class ScienceTranslationalMedicine(Journal):
         self.feedURL: str = (
             "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=stm"
         )
-        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
-        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryTags = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
         self.entryDownloadURLTemplate: Template = (
             SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
         )
@@ -87,8 +87,8 @@ class ScienceAdvances(Journal):
         self.feedURL: str = (
             "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
         )
-        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
-        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryTags = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
         self.entryDownloadURLTemplate: Template = (
             SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
         )
@@ -105,8 +105,8 @@ class ScienceImmunology(Journal):
         self.feedURL: str = (
             "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciimmunol"
         )
-        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
-        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryTags = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
         self.entryDownloadURLTemplate: Template = (
             SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
         )
@@ -123,8 +123,8 @@ class ScienceRobotics(Journal):
         self.feedURL: str = (
             "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
         )
-        self.entryTags: List[str] = SCIENCE_JOURNAL_ENTRY_TAGS
-        self.entryTagKeys: List[str] = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
+        self.entryTags = SCIENCE_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = SCIENCE_JOURNAL_ENTRY_TAG_KEYS
         self.entryDownloadURLTemplate: Template = (
             SCIENCE_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
         )
