@@ -12,7 +12,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 
 from lrac.db.schema import createSchema
-from lrac.nature import RSS_FEEDS, parser
+from lrac.frontiersin import RSS_FEEDS, parser
 
 warnings.filterwarnings(action="ignore")
 

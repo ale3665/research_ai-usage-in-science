@@ -1,6 +1,6 @@
 import warnings
 from pathlib import Path
-from typing import Any, List
+from typing import List
 
 import click
 import pandas
