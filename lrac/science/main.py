@@ -4,17 +4,15 @@ from typing import Any, List
 
 import click
 import pandas
+from feedparser import FeedParserDict
 from pandas import DataFrame
 from progress.bar import Bar
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 
-from lrac.classes import journals
-from lrac.classes.journals import Journal
-from lrac.classes.parser import Parser
 from lrac.db.schema import createSchema
-from lrac.utils.metaprogramming import findSubclasses
+from lrac.science import RSS_FEEDS, parser
 
 warnings.filterwarnings(action="ignore")
 
@@ -44,51 +42,23 @@ def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
     required=True,
     type=Path,
 )
-@click.option(
-    "rssStore",
-    "-r",
-    "--rss",
-    help="Path to directory to write RSS JSON files (.json) to",
-    required=True,
-    type=Path,
-)
-@click.option(
-    "pdfStore",
-    "-p",
-    "--pdf",
-    help="Path to directory to write PDF files (.pdf) to",
-    required=True,
-    type=Path,
-)
-def main(outputDB: Path, rssStore: Path, pdfStore: Path) -> None:
-    entries: List[DataFrame] = []
-    parser: Parser = Parser()
+def main(outputDB: Path) -> None:
+    data: List[DataFrame] = []
 
     dbEngine: Engine = create_engine(url=f"sqlite:///{outputDB}")
     dbTableName: str = createSchema(engine=dbEngine)
 
-    # TODO: Change this
-    journalClasses: List[Any] = findSubclasses(
-        module=journals,
-        protocol=Journal,
-    )
-
     with Bar(
-        "Getting latest RSS feeds from known journals...", max=len(journalClasses)
+        "Getting latest RSS feeds from known journals...",
+        max=len(RSS_FEEDS),
     ) as bar:
-        jc: Any
-        for jc in journalClasses:
-            # TODO: Change this
-            try:
-                parser.getFeed(source=jc, feedStore=rssStore)
-            except TypeError as te:
-                print(te)
-                print(jc.name)
-                quit()
-            entries.append(parser.parseFeed(pdfStore=pdfStore))
+        journal: str
+        for journal in RSS_FEEDS.keys():
+            feed: FeedParserDict = parser.getRSSFeed(feedURL=RSS_FEEDS[journal])
+            data.append(parser.parseFeed(feed=feed))
             bar.next()
 
-    df: DataFrame = pandas.concat(objs=entries, ignore_index=True)
+    df: DataFrame = pandas.concat(objs=data, ignore_index=True)
     writeToDB(df=df, dbTableName=dbTableName, dbEngine=dbEngine)
 
 

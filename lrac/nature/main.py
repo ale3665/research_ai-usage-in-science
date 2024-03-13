@@ -12,7 +12,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 
 from lrac.db.schema import createSchema
-from lrac.nature import parser
+from lrac.nature import RSS_FEEDS, parser
 
 warnings.filterwarnings(action="ignore")
 
@@ -50,11 +50,11 @@ def main(outputDB: Path) -> None:
 
     with Bar(
         "Getting latest RSS feeds from known journals...",
-        max=len(parser.RSS_FEEDS),
+        max=len(RSS_FEEDS),
     ) as bar:
         journal: str
-        for journal in parser.RSS_FEEDS.keys():
-            feed: FeedParserDict = parser.getRSSFeed(feedURL=parser.RSS_FEEDS[journal])
+        for journal in RSS_FEEDS.keys():
+            feed: FeedParserDict = parser.getRSSFeed(feedURL=RSS_FEEDS[journal])
             data.append(parser.parseFeed(feed=feed))
             bar.next()
 
