@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 
 from lrac.db.schema import createSchema
 from lrac.science import RSS_FEEDS, parser
+from lrac.utils.fs import resolvePath
 
 warnings.filterwarnings(action="ignore")
 
@@ -45,7 +46,7 @@ def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
 def main(outputDB: Path) -> None:
     data: List[DataFrame] = []
 
-    dbEngine: Engine = create_engine(url=f"sqlite:///{outputDB}")
+    dbEngine: Engine = create_engine(url=f"sqlite:///{resolvePath(path=outputDB)}")
     dbTableName: str = createSchema(engine=dbEngine)
 
     with Bar(
