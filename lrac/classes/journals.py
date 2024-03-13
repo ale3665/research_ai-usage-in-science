@@ -3197,3 +3197,241 @@ class NatureTranslationalPsychiatry(Journal):
         return self.entryDownloadURLTemplate.substitute(
             _partialDOI_Nature(doi=kwargs.get("entryDOI"))
         )
+
+
+class PLOSPLOSBiology(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Biology"
+        self.url = "https://journals.plos.org/plosbiology/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/plosbiology.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSClimate(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Climate"
+        self.url = "https://journals.plos.org/climate/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/climate.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSComplexSystems(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Complex Systems"
+        self.url = "https://journals.plos.org/complexsystems/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/complexsystems.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSComputationalBiology(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Computational Biology"
+        self.url = "https://journals.plos.org/ploscompbiol/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/ploscompbiol.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSDigitalHealth(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Digital Health"
+        self.url = "https://journals.plos.org/digitalhealth/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/digitalhealth.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSGenetics(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Genetics"
+        self.url = "https://journals.plos.org/plosgenetics/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/plosgenetics.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSGlobalPublicHealth(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Global Public Health"
+        self.url = "https://journals.plos.org/globalpublichealth/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/globalpublichealth.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSMedicine(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Medicine"
+        self.url = "https://journals.plos.org/plosmedicine/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/plosmedicine.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSMentalHealth(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Mental Health"
+        self.url = "https://journals.plos.org/mentalhealth/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/mentalhealth.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSNeglectedTropicalDiseases(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Neglected Tropical Diseases"
+        self.url = "https://journals.plos.org/plosntds/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/plosntds.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSONE(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS ONE"
+        self.url = "https://journals.plos.org/plosone/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/plosone.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSPathogens(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Pathogens"
+        self.url = "https://journals.plos.org/plospathogens/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/plospathogens.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSSustainabilityandTransformation(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Sustainability and Transformation"
+        self.url = "https://journals.plos.org/sustainabilitytransformation/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/sustainabilitytransformation.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""
+
+
+class PLOSPLOSWater(Journal):
+    def __init__(self) -> None:
+        self.name = "PLOS PLOS Water"
+        self.url = "https://journals.plos.org/water/"
+        self.feedType = "atom"
+        self.feedURL = "https://journals.plos.org/water.rss"
+        self.entryTags = PLOS_JOURNAL_ENTRY_TAGS
+        self.entryTagKeys = PLOS_JOURNAL_ENTRY_TAGS_KEYS
+        self.entryDownloadURLTemplate = PLOS_JOURNAL_ENTRY_DOWNLOAD_URL_TEMPLATE
+
+    def entryDownloadURL(self, **kwargs) -> str:
+        if "entryDOI" in kwargs:
+            partialDOI: str = kwargs.get("entryDOI").split("/")[1]
+            return self.entryDownloadURLTemplate.substitute(partialDOI)
+        return ""

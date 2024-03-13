@@ -47,14 +47,15 @@ def buildClass(name: str, link: str) -> str:
         .replace("'", "")
         .replace(r"\xe2\x80\x94", "")
     )
+    nameFormatted: str = name.strip().replace("  ", "").replace(r"\n", "")
     url: str = link
-    feedType: str = "rss"
+    feedType: str = "atom"
     feedURL: str = f"{url[:-1]}.rss"
 
     return f"""
 class {className}(Journal):
     def __init__(self)  ->  None:
-        self.name= "{name}"
+        self.name= "{nameFormatted}"
         self.url= "{url}"
         self.feedType= "{feedType}"
         self.feedURL= "{feedURL}"
