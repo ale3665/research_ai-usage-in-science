@@ -55,7 +55,7 @@ def main(outputDB: Path) -> None:
         journal: str
         for journal in RSS_FEEDS.keys():
             feed: FeedParserDict = parser.getRSSFeed(feedURL=RSS_FEEDS[journal])
-            data.append(parser.parseFeed(feed=feed))
+            data.append(parser.parseFeed(feed=feed, journal=journal))
             bar.next()
 
     df: DataFrame = pandas.concat(objs=data, ignore_index=True)

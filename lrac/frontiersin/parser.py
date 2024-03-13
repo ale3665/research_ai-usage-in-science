@@ -11,7 +11,7 @@ def getRSSFeed(feedURL: str) -> FeedParserDict:
     return feedparser.parse(url_file_stream_or_string=feedURL)
 
 
-def parseFeed(feed: FeedParserDict) -> DataFrame:
+def parseFeed(feed: FeedParserDict, journal: str) -> DataFrame:
     data: dict[str, List[str | datetime]] = {
         "doi": [],
         "url": [],
@@ -25,10 +25,10 @@ def parseFeed(feed: FeedParserDict) -> DataFrame:
 
     entry: dict
     for entry in entries:
-        data["doi"].append(entry["prism_doi"])
-        data["url"].append(entry["prism_url"])
+        data["doi"].append("/".join(entry["links"][0]["href"].split("/")[-2:]))
+        data["url"].append(entry["links"][0]["href"])
         data["title"].append(entry["title"])
-        data["journal"].append(entry["prism_publicationname"])
+        data["journal"].append(journal)
         data["updated"].append(datetime.fromtimestamp(mktime(entry["updated_parsed"])))
         data["added"].append(datetime.now())
 
