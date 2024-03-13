@@ -17,7 +17,7 @@ def getRawNaturePortfolio() -> BeautifulSoup:
     else:
         resp: Response = get(url=f"{NATURE_BASE_URL}/siteindex")
 
-        with open("natureSiteIndex.html", "w") as htmlFile:
+        with open(natureHTMLFile, "w") as htmlFile:
             htmlFile.write(resp.content.__str__())
         return BeautifulSoup(markup=resp.content, features="lxml")
 
