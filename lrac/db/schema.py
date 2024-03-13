@@ -18,10 +18,9 @@ def createSchema(engine: Engine) -> str:
         Column("doi", String, primary_key=True),
         Column("url", String),
         Column("title", String),
-        Column("source", String),
+        Column("journal", String),
         Column("updated", Date),
-        Column("pdfFilepath", String),
-        Column("feedFilepath", String),
+        Column("added", Date),
     )
 
     metadata.create_all(bind=engine)

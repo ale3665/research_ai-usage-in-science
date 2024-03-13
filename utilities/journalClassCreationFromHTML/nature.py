@@ -75,9 +75,10 @@ def main() -> None:
 
     key: str
     for key in nameHREFPairs.keys():
+        print(f'"{key}":"{NATURE_BASE_URL}{nameHREFPairs[key][:-1]}.rss",')
         data += buildClass(name=key, link=nameHREFPairs[key])
 
-    print(data)
+    # print(data)
 
 
 if __name__ == "__main__":
