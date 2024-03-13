@@ -1,4 +1,5 @@
 from os import mkdir
+from os.path import abspath, expanduser, isdir, isfile
 from pathlib import Path
 
 
@@ -7,6 +8,7 @@ def createDirectory(directory: Path) -> None:
         mkdir(path=directory)
     except FileExistsError:
         pass
+
 
 def resolvePath(path: Path) -> Path:
     """
