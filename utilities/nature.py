@@ -9,7 +9,7 @@ NATURE_BASE_TITLE: str = "Nature"
 
 
 def getRawNaturePortfolio() -> BeautifulSoup:
-    natureHTMLFile: Path = Path("natureSiteIndex.html")
+    natureHTMLFile: Path = Path("_natureSiteIndex.html")
 
     if isfile(natureHTMLFile):
         return BeautifulSoup(markup=open(natureHTMLFile), features="lxml")

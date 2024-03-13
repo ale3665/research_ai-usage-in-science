@@ -8,7 +8,7 @@ PLOS_BASE_TITLE: str = "PLOS"
 
 
 def getRawPlosPortfolio() -> BeautifulSoup:
-    plosHTMLFile: Path = Path("plosJournalOptions.html")
+    plosHTMLFile: Path = Path("_plosJournalOptions.html")
 
     if isfile(plosHTMLFile):
         return BeautifulSoup(markup=open(plosHTMLFile), features="lxml")
