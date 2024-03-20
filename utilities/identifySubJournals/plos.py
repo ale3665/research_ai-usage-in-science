@@ -82,7 +82,7 @@ def main() -> None:
         print(f'"{key.strip().replace("  ", "")}":"{nameHREFPairs[key]}",')
         data += buildClass(name=key, link=nameHREFPairs[key])
 
-    # print(data)
+    print(data)
 
 
 if __name__ == "__main__":
