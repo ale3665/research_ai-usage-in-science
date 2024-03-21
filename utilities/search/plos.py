@@ -15,7 +15,7 @@ def main() -> None:
         r'"HuggingFace"',
         r'"Pre-Trained Model"',
     ]
-    years: List[int] = list(range(2015, datetime.now().year))
+    years: List[int] = list(range(2015, datetime.now().year + 1))
 
     query: str
     year: int
