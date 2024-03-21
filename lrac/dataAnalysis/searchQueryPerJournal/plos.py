@@ -1,3 +1,4 @@
+from json import load
 from os import listdir
 from pathlib import Path
 from typing import List, Set
@@ -9,7 +10,6 @@ from progress.bar import Bar
 from lrac.utils.fs import resolvePath
 
 
-# https://journals.plos.org/plosone/dynamicSearch?filterJournals=PLoSONE&filterStartDate=2024-01-01&filterEndDate=2024-12-31&resultsPerPage=60&q=Test&sortOrder=DATE_NEWEST_FIRST&page=1
 def createBuckets(filepaths: List[Path]) -> dict[str, List[Path]]:
     keys: List[str] = []
     uniqueKeys: Set[str] = set([])
@@ -61,21 +61,27 @@ def evaluateData(filepaths: List[Path]) -> int:
 
     file: Path
     for file in filepaths:
-        soup: BeautifulSoup = BeautifulSoup(markup=open(file), features="lxml")
-        documentCount += len(soup.find_all(name="h3", attrs={"class": "c-card__title"}))
+        json: dict = load(fp=open(file=file, mode="r"))
+
+        try:
+            documentCount += json["searchFilters"]["article_type"][
+                "inactiveFilterItems"
+            ][0]["numberOfHits"]
+        except KeyError:
+            documentCount += 0
 
     return documentCount
 
 
 def main() -> None:
-    dataDirectory: Path = resolvePath(path=Path("../../../data/html/plos"))
+    dataDirectory: Path = resolvePath(path=Path("../../../data/json/plos"))
     filesUnformatted: List[str] = listdir(path=dataDirectory)
     filesFormatted: List[Path] = [
         resolvePath(path=Path(dataDirectory, file)) for file in filesUnformatted
     ]
-    htmlFiles: List[Path] = [file for file in filesFormatted if file.suffix == ".html"]
+    jsonFiles: List[Path] = [file for file in filesFormatted if file.suffix == ".json"]
 
-    buckets: dict[str, List[Path]] = createBuckets(filepaths=htmlFiles)
+    buckets: dict[str, List[Path]] = createBuckets(filepaths=jsonFiles)
     bucketKeys: List[str] = list(buckets.keys())
 
     data: dict[str, List[int]] = createDataStructure(bucketKeys=bucketKeys)
