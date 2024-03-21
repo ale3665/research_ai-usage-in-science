@@ -9,6 +9,7 @@ from progress.bar import Bar
 from lrac.utils.fs import resolvePath
 
 
+# https://journals.plos.org/plosone/dynamicSearch?filterJournals=PLoSONE&filterStartDate=2024-01-01&filterEndDate=2024-12-31&resultsPerPage=60&q=Test&sortOrder=DATE_NEWEST_FIRST&page=1
 def createBuckets(filepaths: List[Path]) -> dict[str, List[Path]]:
     keys: List[str] = []
     uniqueKeys: Set[str] = set([])
