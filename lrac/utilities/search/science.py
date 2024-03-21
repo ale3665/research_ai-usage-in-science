@@ -6,7 +6,7 @@ from webbrowser import open
 
 def main() -> None:
     urlTemplate: Template = Template(
-        template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}"
+        template="https://www.science.org/action/doSearch?AllField=${query}&ConceptID=505154&Earliest=[${year}0101+TO+${year}1231]&startPage=0&sortBy=Earliest&pageSize=100",
     )
     queries: List[str] = [
         r'"Deep Learning"',
@@ -15,7 +15,7 @@ def main() -> None:
         r'"HuggingFace"',
         r'"Pre-Trained Model"',
     ]
-    years: List[int] = list(range(2015, datetime.now().year + 1))
+    years: List[int] = list(range(2015, datetime.now().year))
 
     query: str
     year: int

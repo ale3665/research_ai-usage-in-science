@@ -6,7 +6,7 @@ from webbrowser import open
 
 def main() -> None:
     urlTemplate: Template = Template(
-        template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}"
+        template="https://www.science.org/action/doSearch?AllField=${query}&AfterYear=${year}&BeforeYear=${year}&startPage=0&pageSize=100"
     )
     queries: List[str] = [
         r'"Deep Learning"',
