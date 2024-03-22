@@ -20,7 +20,7 @@ def main() -> None:
     dataDirectory: Path = resolvePath(path=Path("../../data/json/plos"))
 
     urlTemplate: Template = Template(
-        template="https://journals.plos.org/plosone/dynamicSearch?filterJournals=PLoSONE&filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=60&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&ilterArticleTypes=Research Article"
+        template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=60&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&ilterArticleTypes=Research Article"
     )
     queries: List[str] = [
         r'"Deep Learning"',
