@@ -6,9 +6,8 @@ from string import Template
 from typing import List
 
 from progress.spinner import Spinner
+from pyfs import resolvePath
 from requests import Response, get
-
-from lrac.utils.fs import resolvePath
 
 
 def getJSON(url: str) -> dict:

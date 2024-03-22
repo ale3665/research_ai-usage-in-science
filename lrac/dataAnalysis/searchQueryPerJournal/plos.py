@@ -6,8 +6,7 @@ from typing import List, Set
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from progress.bar import Bar
-
-from lrac.utils.fs import resolvePath
+from pyfs import resolvePath
 
 
 def createBuckets(filepaths: List[Path]) -> dict[str, List[Path]]:

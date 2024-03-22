@@ -7,13 +7,13 @@ import pandas
 from feedparser import FeedParserDict
 from pandas import DataFrame
 from progress.bar import Bar
+from pyfs import resolvePath
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 
-from lrac.db.schema import createSchema
-from lrac.frontiersin import RSS_FEEDS, parser
-from lrac.utils.fs import resolvePath
+from lrac.captureRSSFeeds.db.schema import createSchema
+from lrac.captureRSSFeeds.frontiersin import RSS_FEEDS, parser
 
 warnings.filterwarnings(action="ignore")
 
