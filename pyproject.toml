@@ -17,6 +17,7 @@ click = "^8.1.7"
 bs4 = "^0.0.2"
 lxml = "^5.1.0"
 selenium = "^4.18.1"
+pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
 
 
 [build-system]

@@ -669,6 +669,21 @@ files = [
 ]
 
 [[package]]
+name = "pyfs"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.10"
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/NicholasSynovic/python-fs-utils"
+reference = "HEAD"
+resolved_reference = "ac98e1bfa0d632a30d48e8deeeadfe132a33e238"
+
+[[package]]
 name = "pysocks"
 version = "1.7.1"
 description = "A Python SOCKS client module. See https://github.com/Anorov/PySocks for more information."
@@ -980,4 +995,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f12d4f17447a325f68c29badb85e48636f7eaa856115e396dcf072821dc6a8e3"
+content-hash = "82d52a483e4ba278b6e10b6978ac775dbfc630a2ac66fb7a8ed0c8f2db8e1c04"
