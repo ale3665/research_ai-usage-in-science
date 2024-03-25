@@ -5,6 +5,8 @@
 ## Sub-Directory Descriptions
 
 - `captureFeeds`: Scripts to capture the RSS/Atom feeds
+- `countDocumentsPerTopic`: Scripts to count the number of documents per topic
+  per year
 - `downloadDocuments`: Scripts to download academic documents
 - `identifyFeeds`: Scripts to identify RSS/Atom feeds of megajournals
 - `searchSources`: Scripts to search different for academic documents that match
