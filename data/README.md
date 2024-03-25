@@ -1,6 +1,7 @@
 # Data Directory
 
-> This directory is where academic content is saved to and accessed from by default
+> This directory is where academic content is saved to and accessed from by
+> default
 
 ## Directory Structure
 
@@ -10,9 +11,5 @@ All sub-directories of the source directory follow the same directory structure.
 
 ### Example Structure
 
-📦nature
- ┣ 📂html
- ┃ ┣ 📂papers
- ┃ ┗ 📂searchResults
- ┗ 📂json
- ┃ ┗ 📂searchResults
+📦nature ┣ 📂db ┗ 📂feedStorage ┣ 📂html ┃ ┣ 📂papers ┃ ┗ 📂searchResults ┗ 📂json ┃ ┗
+📂searchResults
