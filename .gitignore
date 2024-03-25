@@ -168,4 +168,6 @@ temp/
 *.csv
 *.txt
 *.zip
-data/html/*
+data/*
+!data/README.md
+!data/.gitkeep
