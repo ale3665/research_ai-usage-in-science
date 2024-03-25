@@ -6,5 +6,6 @@
 
 - `captureFeeds`: Scripts to capture the RSS/Atom feeds
 - `downloadDocuments`: Scripts to download academic documents
+- `identifyFeeds`: Scripts to identify RSS/Atom feeds of megajournals
 - `searchSources`: Scripts to search different for academic documents that match
   a search query
