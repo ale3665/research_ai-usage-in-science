@@ -6,3 +6,5 @@
 
 - `captureFeeds`: Scripts to capture the RSS/Atom feeds of different academic
   sources
+- `searchSources`: Scripts to search different academic sources for documents
+  that match a search query
