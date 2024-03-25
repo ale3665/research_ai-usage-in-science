@@ -165,5 +165,7 @@ cython_debug/
 *.bk
 *.html
 temp/
-*data/
 *.csv
+*.txt
+*.zip
+data/html/*
