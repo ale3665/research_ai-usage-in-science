@@ -4,7 +4,7 @@
 
 ## Sub-Directory Descriptions
 
-- `captureFeeds`: Scripts to capture the RSS/Atom feeds of different academic
-  sources
-- `searchSources`: Scripts to search different academic sources for documents
-  that match a search query
+- `captureFeeds`: Scripts to capture the RSS/Atom feeds
+- `downloadDocuments`: Scripts to download academic documents
+- `searchSources`: Scripts to search different for academic documents that match
+  a search query
