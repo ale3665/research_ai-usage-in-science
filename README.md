@@ -1,23 +1,37 @@
-# Project Name
+# Lazy Research Artifact Collector
 
-> Project description one-liner
+> A project to download and extract content from academic sources
 
 ## About
 
-High-level overview of the project
+This repository contains scripts to download and extract content from a variety
+of academic sources.
+
+Scripts are organized by directory and are not dependent upon each other for
+execution. Rather, each script relies upon the *academic content* (i.e data)
+itself to operate
 
 ## How to Install
 
-Describe what platform this code is meant to run on
+This code was tested and ran on Linux x86-64 operating systems with Python 3.10
 
 ### Dependencies
 
-List of dependencies
+- `Python 3.10 `
+- `poetry`
 
 ### Installation steps
 
-Steps describing how to install the software
+1. Download the repository
+1. `make`
 
 ## How to Run
 
-Instructions on how to run the software
+Each directory contains a README.md file that describes the process for
+executing scripts
+
+## Supported Academic Sources
+
+- Nature
+- Science
+- PLOS
