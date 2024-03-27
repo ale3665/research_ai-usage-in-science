@@ -8,7 +8,7 @@ import pandas
 from bs4 import BeautifulSoup
 from pandas import DataFrame
 from progress.bar import Bar
-from pyfs import isDirectory, resolvePath
+from pyfs import isDirectory, listDirectory, resolvePath
 
 DEFAULT_INPUT_DIRECTORY: Path = resolvePath(path=Path("../../data/nature/html/papers"))
 DEFAULT_OUTPUT: Path = resolvePath(path=Path("../../data/nature/csv/paperFeatures.csv"))
@@ -75,9 +75,7 @@ def main(input_: Path, output: Path) -> None:
     checkDirectoryExistence(directory=userInput)
     checkDirectoryExistence(directory=Path(dirname(p=userOutput)), mkdir=True)
 
-    fileList: List[Path] = [
-        resolvePath(path=Path(userInput, f)) for f in listdir(path=userInput)
-    ]
+    fileList: List[Path] = listDirectory(path=userInput)
 
     dfs: List[DataFrame] = []
     with Bar("Extracting features...", max=len(fileList)) as bar:
