@@ -11,8 +11,9 @@ All sub-directories of the source directory follow the same directory structure.
 ### Example Structure
 
 📦nature
+ ┣ 📂csv
  ┣ 📂db
-   ┗ 📂feedStorage
+ ┃ ┗ 📂feedStorage
  ┣ 📂html
  ┃ ┣ 📂papers
  ┃ ┗ 📂searchResults
