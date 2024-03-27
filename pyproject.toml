@@ -18,6 +18,8 @@ bs4 = "^0.0.2"
 lxml = "^5.1.0"
 selenium = "^4.18.1"
 pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
+tiktoken = "^0.6.0"
+openai = "^1.14.3"
 
 
 [build-system]
