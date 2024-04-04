@@ -1277,6 +1277,26 @@ requests = ">=2.26.0"
 blobfile = ["blobfile (>=2)"]
 
 [[package]]
+name = "toi"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.10"
+files = []
+develop = false
+
+[package.dependencies]
+openai = "^1.14.3"
+pandas = "^2.2.1"
+tiktoken = "^0.6.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/NicholasSynovic/tiny-openai-interface"
+reference = "HEAD"
+resolved_reference = "b749ffddd1d933bd3b3e58388343762540df4630"
+
+[[package]]
 name = "tqdm"
 version = "4.66.2"
 description = "Fast, Extensible Progress Meter"
@@ -1391,4 +1411,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "829a37287c11b77db9a5519561630e0e78ffee3e4b9dac54429870149f0aec57"
+content-hash = "a86bd6cffa1f9afb1b0f43912a19c082ff2f27cf0a2d55210b6141f724ebbbaa"

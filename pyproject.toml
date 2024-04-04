@@ -20,6 +20,7 @@ selenium = "^4.18.1"
 pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
 tiktoken = "^0.6.0"
 openai = "^1.14.3"
+toi = {git = "https://github.com/NicholasSynovic/tiny-openai-interface"}
 
 
 [build-system]
