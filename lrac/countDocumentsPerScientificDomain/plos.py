@@ -23,11 +23,11 @@ def extractSubjects(fileList: List[Path]) -> defaultdict:
             results: ResultSet = soup.find_all(
                 name="a",
                 attrs={
-                    "data-track-action": "view subject",
+                    "class": "taxo-term",
                 },
             )
             bar.next()
-            return [result.text.replace("  ", "").strip() for result in results]
+            return [result.text.replace("  ", "").strip().title() for result in results]
 
         with ThreadPoolExecutor() as executor:
             results: Generator = executor.map(_getSubject, fileList)
@@ -42,7 +42,7 @@ def extractSubjects(fileList: List[Path]) -> defaultdict:
 
 
 def main() -> None:
-    directory: Path = resolvePath(path=Path("../../data/nature/html/papers"))
+    directory: Path = resolvePath(path=Path("../../data/plos/html/papers"))
     fileList: List[Path] = [
         resolvePath(path=Path(directory, file)) for file in listdir(path=directory)
     ]
@@ -50,7 +50,7 @@ def main() -> None:
 
     with open(
         resolvePath(
-            path=Path("../../data/nature/json/articlesPerScienctificDomain.json")
+            path=Path("../../data/plos/json/articlesPerScienctificDomain.json")
         ),
         "w",
     ) as jsonFile:

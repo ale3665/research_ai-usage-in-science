@@ -21,9 +21,9 @@ def extractSubjects(fileList: List[Path]) -> defaultdict:
                 features="lxml",
             )
             results: ResultSet = soup.find_all(
-                name="a",
+                name="div",
                 attrs={
-                    "data-track-action": "view subject",
+                    "class": "meta-panel__overline",
                 },
             )
             bar.next()
@@ -42,7 +42,7 @@ def extractSubjects(fileList: List[Path]) -> defaultdict:
 
 
 def main() -> None:
-    directory: Path = resolvePath(path=Path("../../data/nature/html/papers"))
+    directory: Path = resolvePath(path=Path("../../data/science/html/papers"))
     fileList: List[Path] = [
         resolvePath(path=Path(directory, file)) for file in listdir(path=directory)
     ]
@@ -50,7 +50,7 @@ def main() -> None:
 
     with open(
         resolvePath(
-            path=Path("../../data/nature/json/articlesPerScienctificDomain.json")
+            path=Path("../../data/science/json/articlesPerScienctificDomain.json")
         ),
         "w",
     ) as jsonFile:
