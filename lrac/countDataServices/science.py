@@ -1,5 +1,6 @@
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from itertools import chain
 from json import dump
 from os import listdir
 from pathlib import Path
@@ -37,6 +38,14 @@ def extractText(files: List[Path]) -> List[str]:
 def extractDataService(contentList: List[str], token: str) -> defaultdict:
     data: defaultdict = defaultdict(int)
 
+    def _stor(foo: list) -> None:
+        for bar in foo:
+            if type(bar) is str:
+                data[bar] += 1
+
+            if type(bar) is list:
+                _stor(foo=list(chain.from_iterable(bar)))
+
     with Bar(
         "Using GPT4 to analyze how data is shared...", max=len(contentList)
     ) as bar:
@@ -44,15 +53,22 @@ def extractDataService(contentList: List[str], token: str) -> defaultdict:
         for content in contentList:
             response: dict = chat(
                 text=content,
-                systemPrompt="Identify how data is shared in this research article. Return only the method or service used in JSON format",
+                # Ask to return the URL of the dataset/ code
+                # Is there a dataset linked to this paper
+                # Are there any linked artifacts to this paper
+                systemPrompt="""Identify how data is shared in this research article.
+                Return only the method or service used in JSON format""",
                 apiKey=token,
                 model="gpt-4-0125-preview",
             )
 
-            value: str
-            for value in response.values():
-                data[value] += 1
+            responseValues: List = list(response.values())
+            _stor(foo=responseValues)
 
+            from pprint import pprint as print
+
+            print("\n")
+            print(data)
             bar.next()
 
     return data
