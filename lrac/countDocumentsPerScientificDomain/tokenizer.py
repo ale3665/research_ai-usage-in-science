@@ -13,7 +13,14 @@ def readFile(path: Path) -> str:
 
     with open(file=path, mode="r") as htmlDoc:
         soup: BeautifulSoup = BeautifulSoup(markup=htmlDoc, features="lxml")
-        data = soup.get_text()
+        data = (
+            soup.find(
+                name="div",
+                attrs={"class": "c-article-body"},
+            )
+            .text.replace("\n", "")
+            .replace("  ", " ")
+        )
         htmlDoc.close()
 
     return data
@@ -31,6 +38,8 @@ def main() -> None:
     for file in files:
         data: str = readFile(path=file)
         tokens: List[str] = tokenizer.tokenize(text=data)[0:4000]
+        print(repr(tokenizer.convert_tokens_to_string(tokens=tokens)))
+        quit()
 
 
 if __name__ == "__main__":
