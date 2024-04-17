@@ -21,6 +21,7 @@ pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
 tiktoken = "^0.6.0"
 openai = "^1.14.3"
 toi = {git = "https://github.com/NicholasSynovic/tiny-openai-interface"}
+transformers = "^4.39.3"
 
 
 [build-system]
