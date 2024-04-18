@@ -63,5 +63,22 @@ def main(htmlFile: Path) -> None:
     print(tokenizer.convert_tokens_to_string(tokens=tokens))
 
 
+def returnStr(html: Path) -> str:
+    # nltk.download(info_or_id="punkt")
+    # nltk.download(info_or_id="stopwords")
+
+    htmlFile: Path = resolvePath(path=html)
+
+    tokenizer: LlamaTokenizerFast = AutoTokenizer.from_pretrained(
+        pretrained_model_name_or_path="meta-llama/Llama-2-7b-hf",
+    )
+
+    data: str = readFile(path=htmlFile)
+    data = removeStopWords(doc=data)
+
+    tokens: List[str] = tokenizer.tokenize(text=data)[0:4000]
+    return tokenizer.convert_tokens_to_string(tokens=tokens)
+
+
 if __name__ == "__main__":
     main()
