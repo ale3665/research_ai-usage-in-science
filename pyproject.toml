@@ -22,6 +22,7 @@ tiktoken = "^0.6.0"
 openai = "^1.14.3"
 toi = {git = "https://github.com/NicholasSynovic/tiny-openai-interface"}
 transformers = "^4.39.3"
+nltk = "^3.8.1"
 
 
 [build-system]
