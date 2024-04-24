@@ -24,6 +24,7 @@ toi = {git = "https://github.com/NicholasSynovic/tiny-openai-interface"}
 transformers = "^4.39.3"
 nltk = "^3.8.1"
 langchain = "^0.1.16"
+zettelgeist = "^1.1.5"
 
 
 [build-system]

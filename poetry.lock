@@ -1593,7 +1593,7 @@ develop = false
 type = "git"
 url = "https://github.com/NicholasSynovic/python-fs-utils"
 reference = "HEAD"
-resolved_reference = "a6f562c6ba8cc696335fd3b9068320dc1ed21192"
+resolved_reference = "2d030dcdd7d75d40eb603699454020116ae7be81"
 
 [[package]]
 name = "pysocks"
@@ -1620,6 +1620,24 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-frontmatter"
+version = "1.1.0"
+description = "Parse and manage posts with YAML (or other) frontmatter"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-frontmatter-1.1.0.tar.gz", hash = "sha256:7118d2bd56af9149625745c58c9b51fb67e8d1294a0c76796dafdc72c36e5f6d"},
+    {file = "python_frontmatter-1.1.0-py3-none-any.whl", hash = "sha256:335465556358d9d0e6c98bbeb69b1c969f2a4a21360587b9873bfc3b213407c1"},
+]
+
+[package.dependencies]
+PyYAML = "*"
+
+[package.extras]
+docs = ["sphinx"]
+test = ["mypy", "pyaml", "pytest", "toml", "types-PyYAML", "types-toml"]
 
 [[package]]
 name = "pytz"
@@ -2095,6 +2113,20 @@ postgresql-psycopg2cffi = ["psycopg2cffi"]
 postgresql-psycopgbinary = ["psycopg[binary] (>=3.0.7)"]
 pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
+
+[[package]]
+name = "tatsu"
+version = "5.8.3"
+description = "TatSu takes a grammar in a variation of EBNF as input, and outputs a memoizing PEG/Packrat parser in Python."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "TatSu-5.8.3-py2.py3-none-any.whl", hash = "sha256:0a836692e67247cad9f251e083b045b13345cc715e69a7fbc16522beaa0f2163"},
+    {file = "TatSu-5.8.3.zip", hash = "sha256:571ecbcdf33b7828c05e5cd95a8e8ad06af111c2c83a6a245be4d8f7c43de7bb"},
+]
+
+[package.extras]
+future-regex = ["regex"]
 
 [[package]]
 name = "tenacity"
@@ -2607,7 +2639,22 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[[package]]
+name = "zettelgeist"
+version = "1.1.5"
+description = "ZettelGeist - a historiographically focused notetaking system"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "zettelgeist-1.1.5-py3-none-any.whl", hash = "sha256:fa78928af54df70f27d75df36c1e631dee8a958253f01a77be657441b50f9a04"},
+    {file = "zettelgeist-1.1.5.tar.gz", hash = "sha256:86f19b53827b85c53f5ab759ecdb20d44803956f61b680a34a9a5dfa50ad36da"},
+]
+
+[package.dependencies]
+python-frontmatter = "*"
+tatsu = "*"
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3bfe8bc53e798e478b390f97835d2cc6fa2c3cfd60db704746df8b59f5b7b2f0"
+content-hash = "f36269c551a70b34b7c5ee4da1b6fc9d3907f3be923725bfce4cf6eb12325bc0"
