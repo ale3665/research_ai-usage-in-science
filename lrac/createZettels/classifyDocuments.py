@@ -30,7 +30,7 @@ def readDB(dbPath: Path) -> DataFrame:
     return zettels
 
 
-def inference(model: str, prompt: str) -> str:
+def inference(llm: Ollama, prompt: str) -> str:
     outputParser: JsonOutputParser = JsonOutputParser()
     chatPrompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
         [
@@ -38,8 +38,6 @@ def inference(model: str, prompt: str) -> str:
             ("user", "{input}"),
         ]
     )
-
-    llm: Ollama = Ollama(model=model)
 
     chain: RunnableSequence = chatPrompt | llm | outputParser
 
@@ -73,10 +71,12 @@ def main(inputDB: Path, model: str) -> None:
 
     data: List[str] = [" ".join(i) for i in zip(df["c0title"], df["c8note"])]
 
+    llm: Ollama = Ollama(model=model)
+
     with Bar("Classifying data based on title and abstract...", max=len(data)) as bar:
         datum: str
         for datum in data:
-            inference(model=model, prompt=datum)
+            inference(llm=llm, prompt=datum)
             quit()
             bar.next()
 
