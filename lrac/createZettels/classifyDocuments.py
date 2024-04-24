@@ -1,21 +1,21 @@
-from pyfs import resolvePath
 from pathlib import Path
-from pandas import DataFrame
-import pandas
-import click
-import sqlalchemy
-from sqlalchemy import Engine, Connection
 from typing import List
-from progress.bar import Bar
+
+import click
+import pandas
+import sqlalchemy
 from langchain_community.llms.ollama import Ollama
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.base import RunnableSequence
+from pandas import DataFrame
+from progress.bar import Bar
+from pyfs import resolvePath
+from sqlalchemy import Connection, Engine
+
 from lrac.createZettels import NATURE_BUCKETS
 
-SYSTEM_PROMPT: str = (
-    f'Classify the text as one of the following: {", ".join(NATURE_BUCKETS)}. Format the classification as lowercase. Return in the following JSON schema where xxx is your classification: "category": xxx.'
-)
+SYSTEM_PROMPT: str = f'Classify the text as one of the following: {", ".join(NATURE_BUCKETS)}. Format the classification as lowercase. Return in the following JSON schema where xxx is your classification: "category": xxx.'
 
 
 def readDB(dbPath: Path) -> DataFrame:

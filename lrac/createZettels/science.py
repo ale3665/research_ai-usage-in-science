@@ -5,9 +5,10 @@ from subprocess import PIPE, Popen
 from typing import List
 
 from bs4 import BeautifulSoup
-from lrac.createZettels import SEARCH_QUERIES
 from progress.bar import Bar
 from pyfs import resolvePath
+
+from lrac.createZettels import SEARCH_QUERIES
 
 ZETTEL = namedtuple(
     typename="zettel", field_names=["doi", "title", "abstract", "tags", "path"]
@@ -15,12 +16,10 @@ ZETTEL = namedtuple(
 
 
 def runZettel(zettel: ZETTEL) -> bool:
-    cmd: str = (
-        f'zettel --set-title "{zettel.title}" --set-url "https://doi.org/{zettel.doi.replace("_", "/")}" \
+    cmd: str = f'zettel --set-title "{zettel.title}" --set-url "https://doi.org/{zettel.doi.replace("_", "/")}" \
                 --set-note "{zettel.abstract}" \
                 --append-tags {" ".join(zettel.tags).strip()} \
                 --save "{zettel.path}"'
-    )
     process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)
 
     if process.returncode == 0:
