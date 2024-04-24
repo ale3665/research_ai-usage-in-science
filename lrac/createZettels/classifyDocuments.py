@@ -11,23 +11,60 @@ from langchain_community.llms.ollama import Ollama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables.base import RunnableSequence
+from lrac.createZettels import NATURE_BUCKETS
 
-def readDB(dbPath: Path)    ->  DataFrame:
+SYSTEM_PROMPT: str = (
+    f'Classify the text as one of the following: {", ".join(NATURE_BUCKETS)}. Format the classification as lowercase. Return in the following JSON schema where xxx is your classification: "category": xxx.'
+)
+
+
+def readDB(dbPath: Path) -> DataFrame:
     dbEngine: Engine = sqlalchemy.create_engine(url=f"sqlite:///{dbPath.__str__()}")
     con: Connection = dbEngine.connect()
-    zettels: DataFrame = pandas.read_sql_table(table_name="zettels_content", con=con,index_col="docid",)
+    zettels: DataFrame = pandas.read_sql_table(
+        table_name="zettels_content",
+        con=con,
+        index_col="docid",
+    )
     con.close()
     return zettels
 
-def inference(model: str, prompt: str)  ->  str:
+
+def inference(model: str, prompt: str) -> str:
     outputParser: JsonOutputParser = JsonOutputParser()
-    chatPrompt: ChatPromptTemplate.from_messages([("system", f"Classify the text as one of the following: {
+    chatPrompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
+        [
+            ("system", SYSTEM_PROMPT),
+            ("user", "{input}"),
+        ]
+    )
+
+    llm: Ollama = Ollama(model=model)
+
+    chain: RunnableSequence = chatPrompt | llm | outputParser
+
+    print(chain.invoke(input={"input": prompt}))
 
 
 @click.command()
-@click.option("-i", "--input", "inputDB", type=Path, required=True, help="Path to ZettelGiest DB",)
-@click.option("-m", "--model", "model", type=str, required=False, default="gemma", help="Model to perform inference with. NOTE: Must be accessible via Ollama",)
-def main(inputDB: Path, model: str)  ->  None:
+@click.option(
+    "-i",
+    "--input",
+    "inputDB",
+    type=Path,
+    required=True,
+    help="Path to ZettelGiest DB",
+)
+@click.option(
+    "-m",
+    "--model",
+    "model",
+    type=str,
+    required=False,
+    default="gemma",
+    help="Model to perform inference with. NOTE: Must be accessible via Ollama",
+)
+def main(inputDB: Path, model: str) -> None:
     dbPath: Path = resolvePath(path=inputDB)
     dbPathDir: Path = dbPath.parent
 
@@ -40,8 +77,8 @@ def main(inputDB: Path, model: str)  ->  None:
         datum: str
         for datum in data:
             inference(model=model, prompt=datum)
+            quit()
             bar.next()
-
 
 
 if __name__ == "__main__":
