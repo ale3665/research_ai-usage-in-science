@@ -15,7 +15,7 @@ from sqlalchemy import Connection, Engine
 
 from lrac.createZettels import NATURE_BUCKETS
 
-SYSTEM_PROMPT: str = f'Classify the text as one of the following: {", ".join(NATURE_BUCKETS)}. Format the classification as lowercase. Return in the following JSON schema where xxx is your classification: "category": xxx.'
+SYSTEM_PROMPT: str = f'Classify the text as one of the following: {", ".join(NATURE_BUCKETS)}. Return as JSON.'
 
 
 def readDB(dbPath: Path) -> DataFrame:
@@ -30,7 +30,7 @@ def readDB(dbPath: Path) -> DataFrame:
     return zettels
 
 
-def inference(llm: Ollama, prompt: str) -> str:
+def inference(llm: Ollama, prompt: str) -> dict:
     outputParser: JsonOutputParser = JsonOutputParser()
     chatPrompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
         [
@@ -41,7 +41,7 @@ def inference(llm: Ollama, prompt: str) -> str:
 
     chain: RunnableSequence = chatPrompt | llm | outputParser
 
-    print(chain.invoke(input={"input": prompt}))
+    return chain.invoke(input={"input": prompt})
 
 
 @click.command()
@@ -77,7 +77,6 @@ def main(inputDB: Path, model: str) -> None:
         datum: str
         for datum in data:
             inference(llm=llm, prompt=datum)
-            quit()
             bar.next()
 
 
