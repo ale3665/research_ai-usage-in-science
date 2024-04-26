@@ -1,4 +1,5 @@
 from pathlib import Path
+from subprocess import PIPE, Popen
 from typing import List, Tuple
 
 import click
@@ -47,16 +48,28 @@ def inference(llm: Ollama, pairing: Tuple[str, Path]) -> Tuple[Path, str]:
     try:
         response: dict = chain.invoke({"input": prompt})
         classification = (
-            llm.model.lower()
+            llm.model.lower().replace(":", "_")
             + ":"
             + list(response.values())[0].replace(" ", "_").lower()
         )
     except OutputParserException:
-        classification = "llm_erorr"
+        classification = llm.model.replace(":", "_") + ":" + "llm_erorr_ope"
     except AttributeError:
-        classification = "llm_erorr"
+        classification = llm.model.replace(":", "_") + ":" + "llm_erorr_ae"
 
     return (pairing[1], classification)
+
+
+def appendTag(path: Path, tag: str) -> bool:
+    cmd: str = f"zettel --file {path.__str__()} \
+            --append-tags {tag} \
+            --in-place"
+    process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)
+
+    if process.returncode == 0:
+        return True
+    else:
+        return False
 
 
 @click.command()
@@ -78,6 +91,8 @@ def inference(llm: Ollama, pairing: Tuple[str, Path]) -> Tuple[Path, str]:
     help="Model to perform inference with. NOTE: Must be accessible via Ollama",
 )
 def main(inputDB: Path, model: str) -> None:
+    fileClassifications: List[Tuple[Path, str]] = []
+
     dbPath: Path = resolvePath(path=inputDB)
     dbPathDir: Path = dbPath.parent
 
@@ -96,7 +111,19 @@ def main(inputDB: Path, model: str) -> None:
     with Bar("Classifying data based on title and abstract...", max=len(data)) as bar:
         pair: Tuple[str, Path]
         for pair in dataPathPairings:
-            print(inference(llm=llm, pairing=pair))
+            result: Tuple[Path, str] = inference(llm=llm, pairing=pair)
+            fileClassifications.append(result)
+            bar.next()
+
+    with Bar("Writing data to files...", max=len(fileClassifications)) as bar:
+        datum: Tuple[Path, str]
+        for datum in fileClassifications:
+            updatedFile: bool = appendTag(path=datum[0], tag=datum[1])
+
+            # if updatedFile:
+            #     pass
+            # else:
+            #     print("error:", datum[0].__str__())
             bar.next()
 
 
