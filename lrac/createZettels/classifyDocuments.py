@@ -32,8 +32,7 @@ def readDB(dbPath: Path) -> DataFrame:
     return zettels
 
 
-def inference(llm: Ollama, pairing: Tuple[str, Path]) -> Tuple[Path, str]:
-    prompt: str = pairing[0]
+def inference(llm: Ollama, prompt: str) -> str:
     outputParser: JsonOutputParser = JsonOutputParser()
     chatPrompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
         [
@@ -44,20 +43,18 @@ def inference(llm: Ollama, pairing: Tuple[str, Path]) -> Tuple[Path, str]:
 
     chain: RunnableSequence = chatPrompt | llm | outputParser
 
+    suffix: str = llm.model.lower().replace(":", "") + "-"
+
     classification: str
     try:
         response: dict = chain.invoke({"input": prompt})
-        classification = (
-            llm.model.lower().replace(":", "_")
-            + ":"
-            + list(response.values())[0].replace(" ", "_").lower()
-        )
+        classification = suffix + list(response.values())[0].replace(" ", "_").lower()
     except OutputParserException:
-        classification = llm.model.replace(":", "_") + ":" + "llm_erorr_ope"
+        classification = suffix + "llm_erorr_ope"
     except AttributeError:
-        classification = llm.model.replace(":", "_") + ":" + "llm_erorr_ae"
+        classification = suffix + "llm_erorr_ae"
 
-    return (pairing[1], classification)
+    return classification
 
 
 def appendTag(path: Path, tag: str) -> bool:
@@ -94,16 +91,15 @@ def main(inputDB: Path, model: str) -> None:
     fileClassifications: List[Tuple[Path, str]] = []
 
     dbPath: Path = resolvePath(path=inputDB)
-    dbPathDir: Path = dbPath.parent
 
     df: DataFrame = readDB(dbPath=dbPath)
-    relevantDF: DataFrame = df[["c0title", "c8note", "c13filename"]]
+    relevantDF: DataFrame = df[["c0title", "c6summary", "c13filename"]]
 
     data: List[str] = [
-        " ".join(i) for i in zip(relevantDF["c0title"], relevantDF["c8note"])
+        " ".join(i) for i in zip(relevantDF["c0title"], relevantDF["c6summary"])
     ]
     dataPathPairings: List[Tuple[str, Path]] = [
-        (i[0], Path(dbPathDir, i[1])) for i in zip(data, relevantDF["c13filename"])
+        (i[0], Path(i[1])) for i in zip(data, relevantDF["c13filename"])
     ]
 
     llm: Ollama = Ollama(model=model)
@@ -111,8 +107,8 @@ def main(inputDB: Path, model: str) -> None:
     with Bar("Classifying data based on title and abstract...", max=len(data)) as bar:
         pair: Tuple[str, Path]
         for pair in dataPathPairings:
-            result: Tuple[Path, str] = inference(llm=llm, pairing=pair)
-            fileClassifications.append(result)
+            result: str = inference(llm=llm, prompt=pair[0])
+            fileClassifications.append((pair[1], result))
             bar.next()
 
     with Bar("Writing data to files...", max=len(fileClassifications)) as bar:

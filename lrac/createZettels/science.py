@@ -1,23 +1,40 @@
+import re
 from collections import namedtuple
 from os import listdir
 from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import List
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from progress.bar import Bar
 from pyfs import resolvePath
 
 from lrac.createZettels import SEARCH_QUERIES
 
 ZETTEL = namedtuple(
-    typename="zettel", field_names=["doi", "title", "abstract", "tags", "path"]
+    typename="zettel",
+    field_names=[
+        "doi",
+        "title",
+        "abstract",
+        "document",
+        "tags",
+        "path",
+    ],
 )
 
 
+def formatText(string: str) -> str:
+    string = re.sub(pattern=r"-\n", repl="", string=string)
+    string = string.replace("\n", "")
+    string = " ".join(string.split())
+    return string
+
+
 def runZettel(zettel: ZETTEL) -> bool:
-    cmd: str = f'zettel --set-title "{zettel.title}" --set-url "https://doi.org/{zettel.doi.replace("_", "/")}" \
-                --set-note "{zettel.abstract}" \
+    cmd: str = f'zettel --set-title "{zettel.title}" \
+                --set-url "https://doi.org/{zettel.doi.replace("_", "/")}" \
+                --set-summary "{zettel.abstract}" \
                 --append-tags {" ".join(zettel.tags).strip()} \
                 --save "{zettel.path}"'
     process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)
@@ -34,59 +51,69 @@ def extractTitle(soup: BeautifulSoup) -> str:
 
 
 def extractAbstract(soup: BeautifulSoup) -> str:
-    abstract: str = soup.find(name="section", attrs={"id": "abstract"}).getText(
-        separator=" ",
-        strip=True,
+    abstractContainer: Tag = soup.find(
+        name="section",
+        attrs={"id": "abstract"},
     )
-    return abstract
+    abstractParagraph: Tag = abstractContainer.find(
+        name="div",
+        attrs={"role": "paragraph"},
+    )
+    abstractText: str = abstractParagraph.text
+    return formatText(string=abstractText)
 
 
 def extractDocumentTags(soup: BeautifulSoup) -> List[str]:
+    tagSuffix: str = "doc-"
     tags: List[str] = []
     try:
         tags = [
-            "doc:"
-            + soup.find(name="div", attrs={"class": "meta-panel__overline"})
-            .getText(strip=True)
-            .lower()
-            .replace(" ", "_")
+            tagSuffix
+            + soup.find(name="div", attrs={"class": "meta-panel__overline"}).getText(
+                strip=True
+            )
         ]
     except AttributeError:
         tags = [
-            "doc:"
-            + soup.find(name="div", attrs={"class": "meta-panel__type"})
-            .getText(strip=True)
-            .lower()
-            .replace(" ", "_")
+            tagSuffix
+            + soup.find(name="div", attrs={"class": "meta-panel__type"}).getText(
+                strip=True
+            )
         ]
-    return tags
+
+    formattedTags: List[str] = [f'"{tag.lower().strip()}"' for tag in tags]
+    return formattedTags
+
+
+def extractDocument(soup: BeautifulSoup) -> str:
+    documentTag: Tag = soup.find(name="section", attrs={"id": "bodymatter"})
+    documentText: str = documentTag.text
+    documentText = formatText(string=documentText)
+    return documentText
 
 
 def extractSearchQueryTags(
-    soup: BeautifulSoup,
+    documentText: str,
     searchQueries: List[str] = SEARCH_QUERIES,
 ) -> List[str]:
     tags: List[str] = []
-    documentText: str = " ".join(
-        soup.find(name="article")
-        .get_text(separator=" ", strip=True)
-        .replace("\n", " ")
-        .lower()
-        .split(sep=" ")
-    )
+    documentText = documentText.lower()
 
     query: str
     for query in searchQueries:
         query = query.lower()
         if query in documentText:
-            tags.append("search:" + query.replace(" ", "_"))
+            tags.append("search-" + query)
 
-    return tags
+    formattedTags: List[str] = [f'"{tag.lower().strip()}"' for tag in tags]
+    return formattedTags
 
 
 def main() -> None:
     data: List[ZETTEL] = []
-    zettelDir: Path = resolvePath(path=Path("../../data/science/zettlegeist/zettels"))
+    zettelDir: Path = resolvePath(
+        path=Path("../../data/science/zettlegeist/zettels"),
+    )
     htmlDir: Path = resolvePath(path=Path("../../data/science/html/papers"))
     htmlFiles: List[Path] = [
         resolvePath(path=Path(htmlDir, file)) for file in listdir(path=htmlDir)
@@ -106,8 +133,11 @@ def main() -> None:
 
             title: str = extractTitle(soup=soup)
             abstract: str = extractAbstract(soup=soup)
+            documentText: str = extractDocument(soup=soup)
             docTags: List[str] = extractDocumentTags(soup=soup)
-            searchTags: List[str] = extractSearchQueryTags(soup=soup)
+            searchTags: List[str] = extractSearchQueryTags(
+                documentText=f"{title} {abstract} {documentText}",
+            )
 
             tags: List[str] = docTags + searchTags
 
@@ -115,6 +145,7 @@ def main() -> None:
                 doi=doi,
                 title=title,
                 abstract=abstract,
+                document=documentText,
                 tags=tags,
                 path=zettelFile.__str__(),
             )
