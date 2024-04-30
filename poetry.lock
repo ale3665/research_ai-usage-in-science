@@ -2466,6 +2466,21 @@ trio = ">=0.11"
 wsproto = ">=0.14"
 
 [[package]]
+name = "typedframe"
+version = "0.11.0"
+description = "Typed Wrappers over Pandas and Polars DataFrames with schema validation"
+optional = false
+python-versions = "*"
+files = [
+    {file = "typedframe-0.11.0-py3-none-any.whl", hash = "sha256:d38ed1206072c5953e846be6e29fce0f657a82de3937023292bd2a9ffd8d4832"},
+    {file = "typedframe-0.11.0.tar.gz", hash = "sha256:d77c12369a0954a305f2e912c433367235d36c61d2f3b37090a8ad6ec4285443"},
+]
+
+[package.extras]
+pandas = ["numpy", "pandas"]
+polars = ["polars", "pyarrow"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.10.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -2657,4 +2672,4 @@ tatsu = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f36269c551a70b34b7c5ee4da1b6fc9d3907f3be923725bfce4cf6eb12325bc0"
+content-hash = "5520343e26b822551adbe25afb1fa7679dcce9b23ae29f0ddc6f0b32731831d4"

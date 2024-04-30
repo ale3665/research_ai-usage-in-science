@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from requests import Response, get
+from typedframe import TypedDataFrame
 
 SEARCH_QUERIES: List[str] = [
     r'"Deep Learning"',
@@ -14,6 +15,26 @@ SEARCH_QUERIES: List[str] = [
 ]
 
 RELEVANT_YEARS: List[int] = list(range(2015, datetime.now().year + 1))
+
+DATA_STOR: dict[str, List[str | int | bytes]] = {
+    "year": [],
+    "query": [],
+    "page": [],
+    "url": [],
+    "status_code": [],
+    "html": [],
+}
+
+
+class dfSchema(TypedDataFrame):
+    schema: dict = {
+        "year": int,
+        "query": str,
+        "page": int,
+        "url": str,
+        "status_code": int,
+        "html": str,
+    }
 
 
 class Search:

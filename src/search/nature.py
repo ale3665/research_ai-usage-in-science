@@ -1,13 +1,15 @@
-from datetime import datetime
+import pickle
+from itertools import product
 from string import Template
 from typing import List, Literal
-from webbrowser import open
 
+import pandas
 from bs4 import BeautifulSoup, ResultSet, Tag
+from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from src.search import RELEVANT_YEARS, SEARCH_QUERIES, Search
+from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Search, dfSchema
 
 
 class Nature(Search):
@@ -29,7 +31,7 @@ class Nature(Search):
         )
         super().__init__()
 
-    def conductSearch(self, query: str, year: int) -> List[Response]:
+    def conductSearch(self, query: str, year: int) -> DataFrame:
         """
         search Given a search query, year, and page, search for documents
 
@@ -37,15 +39,18 @@ class Nature(Search):
         :type query: str
         :param year: Limits the query to a given year
         :type year: int
-        :return: A list of responses containing the search responses for a given year
-        :rtype: List[Response]
+        :return: A Pandas DataFrame of responses for a given search query in a specific year
+        :rtype: DataFrame[Response]
         """
-        data: List[Response] = []
+        data: dict[str, List[str | int | bytes]] = DATA_STOR.copy()
         page: int = 1
         maxPage: int = 1
 
         with Bar(f"Conducting search for {query} in {year}...", max=1) as bar:
             while True:
+                if page > maxPage:
+                    break
+
                 url: str = self.url.substitute(
                     query=query,
                     year=year,
@@ -53,7 +58,13 @@ class Nature(Search):
                 )
 
                 resp: Response = self.search(url=url)
-                data.append(resp)
+
+                data["year"].append(year)
+                data["query"].append(query)
+                data["page"].append(page)
+                data["url"].append(url)
+                data["status_code"].append(resp.status_code)
+                data["html"].append(resp.content.decode(errors="ignore"))
 
                 if page == 1:
                     # Check to ensure that there exists pagination
@@ -61,21 +72,15 @@ class Nature(Search):
                         resp=resp
                     )
 
-                    if paginationCheck is False:
-                        # Do nothing
-                        pass
-                    else:
+                    if paginationCheck is not False:
                         maxPage = paginationCheck
                         bar.max = maxPage
                         bar.update()
 
                 bar.next()
-                if page == maxPage:
-                    break
-                else:
-                    page += 1
+                page += 1
 
-        return data
+        return dfSchema(df=DataFrame(data=data)).df
 
     def identifyPagination(self, resp: Response) -> Literal[False] | int:
         """
@@ -119,25 +124,21 @@ class Nature(Search):
 
 
 def main() -> None:
-    urlTemplate: Template = Template(
-        template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}"
-    )
-    queries: List[str] = [
-        r'"Deep Learning"',
-        r'"Deep Neural Network"',
-        r'"Hugging Face"',
-        r'"HuggingFace"',
-        r'"Pre-Trained Model"',
-    ]
-    years: List[int] = list(range(2015, datetime.now().year + 1))
+    data: List[DataFrame] = []
 
-    query: str
-    year: int
-    for query in queries:
-        for year in years:
-            open(url=urlTemplate.substitute(query=query, year=year))
+    nature: Nature = Nature()
+
+    for pair in product(SEARCH_QUERIES, RELEVANT_YEARS):
+        df: DataFrame = nature.conductSearch(query=pair[0], year=pair[1])
+        data.append(df)
+
+    df: DataFrame = pandas.concat(objs=data, ignore_index=True)
+    df.drop_duplicates(subset=["url"], keep="first", inplace=True)
+
+    with open(file="df.pickle", mode="wb") as pickleFile:
+        pickle.dump(obj=df, file=pickleFile)
+        pickleFile.close()
 
 
 if __name__ == "__main__":
-    n = Nature()
-    n.conductSearch(query=r'"Deep Neural Network"', year=2024)
+    main()
