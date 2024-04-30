@@ -12,8 +12,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 
-from lrac.captureFeeds.db.schema import createSchema
-from lrac.captureFeeds.plos import RSS_FEEDS, parser
+from src.captureFeeds.db.schema import createSchema
+from src.captureFeeds.frontiersin import RSS_FEEDS, parser
 
 warnings.filterwarnings(action="ignore")
 

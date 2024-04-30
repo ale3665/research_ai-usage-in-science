@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "lrac"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["Nicholas M. Synovic <nicholas.synovic@gmail.com>"]

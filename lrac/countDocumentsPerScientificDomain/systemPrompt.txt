@@ -1,1 +1,0 @@
-Catagorize the document as one of the following: Biological Sciences, Earth And Environmental Sciences, Health Sciences, Physical Sciences, or Scientific Community And Society. Return in JSON format.

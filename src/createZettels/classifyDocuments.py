@@ -15,7 +15,7 @@ from progress.bar import Bar
 from pyfs import resolvePath
 from sqlalchemy import Connection, Engine
 
-from lrac.createZettels import NATURE_BUCKETS
+from src.createZettels import NATURE_BUCKETS
 
 SYSTEM_PROMPT: str = f'Classify the text as one of the following: {", ".join(NATURE_BUCKETS)}. Return as JSON.'
 
