@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from requests import Response, get
@@ -11,6 +12,8 @@ SEARCH_QUERIES: List[str] = [
     r'"Model Weights"',
     r'"Pre-Trained Model"',
 ]
+
+RELEVANT_YEARS: List[int] = list(range(2015, datetime.now().year + 1))
 
 
 class Search:
@@ -30,5 +33,15 @@ class Search:
         self.headers: dict[str, str] = {}
 
     def search(self, url: str) -> Response:
+        """
+        search Return the response of a search query to a website
+
+        Given a URL, get that page's URL.
+
+        :param url: The URL of the relevant page to get
+        :type url: str
+        :return: The Response object of that URL containing the HTML, status code, and header information
+        :rtype: Response
+        """
         resp: Response = get(url=url, headers=self.headers)
         return resp
