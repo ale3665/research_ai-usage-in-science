@@ -78,6 +78,16 @@ class Nature(Search):
         return data
 
     def identifyPagination(self, resp: Response) -> Literal[False] | int:
+        """
+        identifyPagination Identify if a web page has pagination enabled
+
+        Given a response object of an HTTP GET request, identify if that page has pagination enabled.
+
+        :param resp: Response object of an HTTP GET request
+        :type resp: Response
+        :return: False if disabled, or an integer representing the number of pages availible for pagination
+        :rtype: Literal[False] | int
+        """
         maxPage: int = 1
 
         soup: BeautifulSoup = BeautifulSoup(
