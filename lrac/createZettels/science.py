@@ -3,6 +3,7 @@ from collections import namedtuple
 from os import listdir
 from pathlib import Path
 from subprocess import PIPE, Popen
+from tempfile import NamedTemporaryFile
 from typing import List
 
 from bs4 import BeautifulSoup, Tag
@@ -32,11 +33,23 @@ def formatText(string: str) -> str:
 
 
 def runZettel(zettel: ZETTEL) -> bool:
+    summaryTemp: NamedTemporaryFile = NamedTemporaryFile(mode="w+t", delete=False)
+    noteTemp: NamedTemporaryFile = NamedTemporaryFile(mode="w+t", delete=False)
+
+    summaryTemp.write(zettel.abstract)
+    noteTemp.write(zettel.document)
+
+    summaryTemp.close()
+    noteTemp.close()
+
+    url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
     cmd: str = f'zettel --set-title "{zettel.title}" \
-                --set-url "https://doi.org/{zettel.doi.replace("_", "/")}" \
-                --set-summary "{zettel.abstract}" \
+                --set-url {url} \
+                --load-summary {summaryTemp.name} \
+                --load-note {noteTemp.name} \
                 --append-tags {" ".join(zettel.tags).strip()} \
                 --save "{zettel.path}"'
+
     process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)
 
     if process.returncode == 0:
@@ -112,7 +125,7 @@ def extractSearchQueryTags(
 def main() -> None:
     data: List[ZETTEL] = []
     zettelDir: Path = resolvePath(
-        path=Path("../../data/science/zettlegeist/zettels"),
+        path=Path("../../data/science/zettelgeist/zettels"),
     )
     htmlDir: Path = resolvePath(path=Path("../../data/science/html/papers"))
     htmlFiles: List[Path] = [
