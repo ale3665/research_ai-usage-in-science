@@ -3,6 +3,11 @@ from string import Template
 from typing import List
 from webbrowser import open
 
+from src.search import SEARCH_QUERIES, Search
+
+
+class Nature()
+
 
 def main() -> None:
     urlTemplate: Template = Template(

@@ -11,6 +11,10 @@
   - [Dependencies](#dependencies)
   - [How to Install](#how-to-install)
   - [How to Contribute](#how-to-contribute)
+  - [Project Tutorial](#project-tutorial)
+    - [Reimplementing From Existing Dataset](#reimplementing-from-existing-dataset)
+    - [Reimplementing From Scratch](#reimplementing-from-scratch)
+      - [1. Search Mega Journals For Documents With Relevant Key Words](#1-search-mega-journals-for-documents-with-relevant-key-words)
 
 ## About
 
@@ -54,3 +58,22 @@ maximum compatibility
 1. `make create-dev`
 1. `make install`
 1. `pre-commit install`
+
+## Project Tutorial
+
+If you are new to the project or you are trying to recreate our work from
+scratch, the following tutorial outlines in detail what we did to collect,
+parse, and present our findings from this data.
+
+### Reimplementing From Existing Dataset
+
+> TODO: Add this section TODO: Upload data to Zenodo
+
+### Reimplementing From Scratch
+
+We will assume that you have properly installed this project on your machine to
+reduce repetition. If not, see [*How to Install*](#how-to-install)
+
+#### 1. Search Mega Journals For Documents With Relevant Key Words
+
+1.
