@@ -15,7 +15,9 @@ class Search:
 
         Initalizes the Search class with standard headers
         """
-        self.headers: dict[str, str] = {}
+        self.headers: dict[str, str] = {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
+        }
 
     def search(self, url: str) -> Response:
         """
