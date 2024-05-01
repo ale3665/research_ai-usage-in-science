@@ -1,7 +1,9 @@
+from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import List
+from typing import List, Literal
 
-from requests import Response, get
+from pandas import DataFrame
+from requests import Response
 from typedframe import TypedDataFrame
 
 SEARCH_QUERIES: List[str] = [
@@ -37,32 +39,31 @@ class dfSchema(TypedDataFrame):
     }
 
 
-class Search:
-    """
-    Generic class for searching through mega journals
-
-    This class is meant to be inherited by other related classes in order to
-    facilitate searching through mega journals
-    """
-
-    def __init__(self) -> None:
+class Journal_ABC(metaclass=ABCMeta):
+    @abstractmethod()
+    def conductSearch(self, query: str, year: int) -> DataFrame:
         """
-        __init__ Initalize the Search class
+        conductSearch Given a search query, year, and page, search for documents
 
-        Initalizes the Search class with standard headers
+        :param query: The search query to search for
+        :type query: str
+        :param year: Limits the query to a given year
+        :type year: int
+        :return: A Pandas DataFrame of responses for a given search query in a specific year
+        :rtype: DataFrame[Response]
         """
-        self.headers: dict[str, str] = {}
+        ...
 
-    def search(self, url: str) -> Response:
+    @abstractmethod()
+    def identifyPagination(self, resp: Response) -> Literal[False] | int:
         """
-        search Return the response of a search query to a website
+        identifyPagination Identify if a web page has pagination enabled
 
-        Given a URL, get that page's URL.
+        Given a response object of an HTTP GET request, identify if that page has pagination enabled.
 
-        :param url: The URL of the relevant page to get
-        :type url: str
-        :return: The Response object of that URL containing the HTML, status code, and header information
-        :rtype: Response
+        :param resp: Response object of an HTTP GET request
+        :type resp: Response
+        :return: False if disabled, or an integer representing the number of pages availible for pagination
+        :rtype: Literal[False] | int
         """
-        resp: Response = get(url=url, headers=self.headers)
-        return resp
+        ...

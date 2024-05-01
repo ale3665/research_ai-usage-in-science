@@ -9,10 +9,11 @@ from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Search, dfSchema
+from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC, dfSchema
+from src.search.search import Search
 
 
-class Nature(Search):
+class Nature(Journal_ABC):
     """
     Class to search through the Nature mega journal
 
@@ -29,19 +30,9 @@ class Nature(Search):
         self.url: Template = Template(
             template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"
         )
-        super().__init__()
+        self.search: Search = Search()
 
     def conductSearch(self, query: str, year: int) -> DataFrame:
-        """
-        search Given a search query, year, and page, search for documents
-
-        :param query: The search query to search for
-        :type query: str
-        :param year: Limits the query to a given year
-        :type year: int
-        :return: A Pandas DataFrame of responses for a given search query in a specific year
-        :rtype: DataFrame[Response]
-        """
         data: dict[str, List[str | int | bytes]] = DATA_STOR.copy()
         page: int = 1
         maxPage: int = 1
@@ -57,7 +48,7 @@ class Nature(Search):
                     page=page,
                 )
 
-                resp: Response = self.search(url=url)
+                resp: Response = self.search.search(url=url)
 
                 data["year"].append(year)
                 data["query"].append(query)
@@ -83,16 +74,6 @@ class Nature(Search):
         return dfSchema(df=DataFrame(data=data)).df
 
     def identifyPagination(self, resp: Response) -> Literal[False] | int:
-        """
-        identifyPagination Identify if a web page has pagination enabled
-
-        Given a response object of an HTTP GET request, identify if that page has pagination enabled.
-
-        :param resp: Response object of an HTTP GET request
-        :type resp: Response
-        :return: False if disabled, or an integer representing the number of pages availible for pagination
-        :rtype: Literal[False] | int
-        """
         maxPage: int = 1
 
         soup: BeautifulSoup = BeautifulSoup(
