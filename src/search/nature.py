@@ -133,9 +133,14 @@ def main() -> None:
         data.append(df)
 
     df: DataFrame = pandas.concat(objs=data, ignore_index=True)
-    df.drop_duplicates(subset=["url"], keep="first", inplace=True)
+    df.drop_duplicates(
+        subset=["url"],
+        keep="first",
+        inplace=True,
+        ignore_index=True,
+    )
 
-    with open(file="df.pickle", mode="wb") as pickleFile:
+    with open(file="nature.pickle", mode="wb") as pickleFile:
         pickle.dump(obj=df, file=pickleFile)
         pickleFile.close()
 
