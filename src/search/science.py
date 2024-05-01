@@ -109,12 +109,6 @@ def main() -> None:
 
     science: Science = Science()
 
-    with open("science.pickle", "rb") as pf:
-        df: DataFrame = pickle.load(pf)
-        print(df)
-
-    quit()
-
     for pair in product(SEARCH_QUERIES, RELEVANT_YEARS):
         df: DataFrame = science.conductSearch(query=pair[0], year=pair[1])
         data.append(df)
