@@ -1,19 +1,13 @@
 import pickle
-from datetime import datetime
 from itertools import product
-from json import dump
 from math import ceil
-from pathlib import Path
 from string import Template
 from typing import List, Literal
 
 import pandas
-from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from progress.bar import Bar
-from progress.spinner import Spinner
-from pyfs import resolvePath
-from requests import Response, get
+from requests import Response
 
 from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC, dfSchema
 from src.search.search import Search
