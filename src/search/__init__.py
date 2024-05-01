@@ -40,7 +40,7 @@ class dfSchema(TypedDataFrame):
 
 
 class Journal_ABC(metaclass=ABCMeta):
-    @abstractmethod()
+    @abstractmethod
     def conductSearch(self, query: str, year: int) -> DataFrame:
         """
         conductSearch Given a search query, year, and page, search for documents
@@ -54,7 +54,7 @@ class Journal_ABC(metaclass=ABCMeta):
         """
         ...
 
-    @abstractmethod()
+    @abstractmethod
     def identifyPagination(self, resp: Response) -> Literal[False] | int:
         """
         identifyPagination Identify if a web page has pagination enabled
