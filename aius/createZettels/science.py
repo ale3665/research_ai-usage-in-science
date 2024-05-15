@@ -9,7 +9,6 @@ from typing import List
 from bs4 import BeautifulSoup, Tag
 from progress.bar import Bar
 from pyfs import resolvePath
-
 from src.createZettels import SEARCH_QUERIES
 
 ZETTEL = namedtuple(

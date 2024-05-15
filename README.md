@@ -1,11 +1,11 @@
-# Depp Neural Network (DNN) Reusage in Science
+# Deep Neural Network (DNN) Reusage in Science
 
 > A research project to understand how researchers studying who leverage
 > scientific computing reuse DNNs within their work
 
 ## Table of Contents
 
-- [Depp Neural Network (DNN) Reusage in Science](#depp-neural-network-dnn-reusage-in-science)
+- [Deep Neural Network (DNN) Reusage in Science](#deep-neural-network-dnn-reusage-in-science)
   - [Table of Contents](#table-of-contents)
   - [About](#about)
   - [Dependencies](#dependencies)

@@ -4,7 +4,6 @@ from typing import List
 
 import click
 from pyfs import resolvePath
-
 from src.search.nature import Nature
 from src.search.plos import PLOS
 from src.search.science import Science
