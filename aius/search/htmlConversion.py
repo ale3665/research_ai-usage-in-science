@@ -54,8 +54,6 @@ def main(inputPath: Path, outputPath: Path) -> None:
 
             bar.next()
 
-    # print(df)
-
 
 if __name__ == "__main__":
     main()
