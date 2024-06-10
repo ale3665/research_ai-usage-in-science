@@ -34,3 +34,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 aius-search = "aius.search.main:main"
+aius-search-html-conversion = "aius.search.htmlConversion:main"
