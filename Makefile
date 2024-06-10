@@ -11,3 +11,8 @@ create-dev:
 		poetry install; \
 		deactivate; \
 	)
+
+pipeline:
+	aius-search -o nature_search.pickle --nature
+	aius-search -o plos_search.pickle --plos
+	aius-search -o science_search.pickle --science
