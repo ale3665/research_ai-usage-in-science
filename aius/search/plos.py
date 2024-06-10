@@ -1,33 +1,34 @@
 import pickle
 from itertools import product
+from math import ceil
 from string import Template
 from typing import List, Literal
 
 import pandas
-from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
-from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC, dfSchema
-from src.search.search import Search
+
+from aius.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC, dfSchema
+from aius.search.search import Search
 
 
-class Nature(Journal_ABC):
+class PLOS(Journal_ABC):
     """
-    Class to search through the Nature mega journal
+    Class to search through the PLOS mega journal
 
     This class implements the necessary methods to search through and paginate
-    responses from the Nature mega journal.
+    responses from the PLOS mega journal.
     """
 
     def __init__(self) -> None:
         """
-        __init__ Initalize the Nature class
+        __init__ Initalize the PLOS class
 
-        Initalizes the Nature class with a set URL template
+        Initalizes the PLOS class with a set URL template
         """
         self.url: Template = Template(
-            template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"
+            template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"
         )
         self.search: Search = Search()
 
@@ -75,55 +76,11 @@ class Nature(Journal_ABC):
     def identifyPagination(self, resp: Response) -> Literal[False] | int:
         maxPage: int = 1
 
-        soup: BeautifulSoup = BeautifulSoup(
-            markup=resp.content,
-            features="lxml",
-        )
+        json: dict = resp.json()
 
-        paginationBlock: ResultSet = soup.find_all(
-            name="li",
-            attrs={"class": "c-pagination__item"},
-        )
+        documentsFound: int = json["searchResults"]["numFound"]
 
-        block: Tag
-        for block in paginationBlock:
-            try:
-                page: int = int(block.get(key="data-page"))
-            except ValueError:
-                continue
-            except TypeError:
-                continue
+        if documentsFound >= 100:
+            maxPage = ceil(documentsFound / 100)
 
-            if page > maxPage:
-                maxPage = page
-
-        if maxPage <= 1:
-            return False
-        else:
-            return maxPage
-
-
-def main() -> None:
-    data: List[DataFrame] = []
-
-    nature: Nature = Nature()
-
-    for pair in product(SEARCH_QUERIES, RELEVANT_YEARS):
-        df: DataFrame = nature.conductSearch(query=pair[0], year=pair[1])
-        data.append(df)
-
-    df: DataFrame = pandas.concat(objs=data, ignore_index=True)
-    df.drop_duplicates(
-        subset=["url"],
-        keep="first",
-        inplace=True,
-        ignore_index=True,
-    )
-
-    with open(file="nature.pickle", mode="wb") as pickleFile:
-        pickle.dump(obj=df, file=pickleFile)
-        pickleFile.close()
-
-
-if __name__ == "__main__":
-    main()
+        return maxPage

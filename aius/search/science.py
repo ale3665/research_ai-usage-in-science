@@ -8,8 +8,9 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
-from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC, dfSchema
-from src.search.search import Search
+
+from aius.search import DATA_STOR, Journal_ABC, dfSchema
+from aius.search.search import Search
 
 
 class Science(Journal_ABC):
@@ -101,29 +102,3 @@ class Science(Journal_ABC):
             return False
         else:
             return maxPage
-
-
-def main() -> None:
-    data: List[DataFrame] = []
-
-    science: Science = Science()
-
-    for pair in product(SEARCH_QUERIES, RELEVANT_YEARS):
-        df: DataFrame = science.conductSearch(query=pair[0], year=pair[1])
-        data.append(df)
-
-    df: DataFrame = pandas.concat(objs=data, ignore_index=True)
-    df.drop_duplicates(
-        subset=["url"],
-        keep="first",
-        inplace=True,
-        ignore_index=True,
-    )
-
-    with open(file="science.pickle", mode="wb") as pickleFile:
-        pickle.dump(obj=df, file=pickleFile)
-        pickleFile.close()
-
-
-if __name__ == "__main__":
-    main()
