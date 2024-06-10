@@ -13,6 +13,6 @@ create-dev:
 	)
 
 pipeline:
-	aius-search -o nature_search.pickle --nature
-	aius-search -o plos_search.pickle --plos
-	aius-search -o science_search.pickle --science
+	aius-search -j nature -o nature_search.pickle
+	aius-search -j plos -o plos_search.pickle
+	aius-search -j science -o science_search.pickle

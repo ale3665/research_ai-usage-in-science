@@ -46,50 +46,28 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     help="Output pickle file to save Pandas DataFrame to",
 )
 @click.option(
-    "--nature",
-    required=False,
-    is_flag=True,
-    help=MEGA_JOURNAL_HELP_TEMPLATE.substitute(journal="Nature"),
+    "-j",
+    "--journal",
+    "journal",
+    required=True,
+    type=click.Choice(choices=["nature", "plos", "science"]),
+    help="Search for documents in a supported mega-journal",
 )
-@click.option(
-    "--plos",
-    required=False,
-    is_flag=True,
-    help=MEGA_JOURNAL_HELP_TEMPLATE.substitute(journal="PLOS"),
-)
-@click.option(
-    "--science",
-    required=False,
-    is_flag=True,
-    help=MEGA_JOURNAL_HELP_TEMPLATE.substitute(journal="Science"),
-)
-def main(
-    output: Path,
-    nature: bool = False,
-    plos: bool = False,
-    science: bool = False,
-) -> None:
-    flags: List[bool] = [nature, plos, science]
-    flagCount: int = sum(flags)
-
-    if flagCount > 1:
-        raise click.UsageError("Only one journal can be used at a time.")
-    elif flagCount < 1:
-        raise click.UsageError("At least one journal must be selected")
-    else:
-        pass
-
+def main(output: Path, journal: str) -> None:
     outputPath: Path = resolvePath(path=output)
 
-    journal: Journal_ABC
-    if nature:
-        journal = Nature()
-    if plos:
-        journal = PLOS()
-    if science:
-        journal = Science()
+    journalClass: Journal_ABC
+    match journal:
+        case "nature":
+            journalClass = Nature()
+        case "plos":
+            journalClass = PLOS()
+        case "science":
+            journalClass = Science()
+        case _:
+            exit(1)
 
-    df: DataFrame = runCollector(journal=journal)
+    df: DataFrame = runCollector(journal=journalClass)
 
     df.to_pickle(path=outputPath)
 
