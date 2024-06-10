@@ -12,7 +12,17 @@ create-dev:
 		deactivate; \
 	)
 
+create-output-dir:
+	mkdir -p data/nature/html/search
+	mkdir -p data/nature/pickle/search
+
+	mkdir -p data/plos/html/search
+	mkdir -p data/plos/pickle/search
+
+	mkdir -p data/science/html/search
+	mkdir -p data/science/pickle/search
+
 pipeline:
-	aius-search -j nature -o nature_search.pickle
-	aius-search -j plos -o plos_search.pickle
-	aius-search -j science -o science_search.pickle
+	aius-search -j nature -o data/nature/pickle/search/nature_search.pickle
+	aius-search -j plos -o data/plos/pickle/search/plos_search.pickle
+	aius-search -j science -o data/science/pickle/search/science_search.pickle
