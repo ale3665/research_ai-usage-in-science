@@ -5,9 +5,9 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 from aius.downloadPapers import Journal_ABC
 
 
-class Nature(Journal_ABC):
+class Science(Journal_ABC):
     def __init__(self) -> None:
-        self.baseURL: str = "https://www.nature.com"
+        self.baseURL: str = "https://www.science.org"
 
     def getPaperURLs(self, html: str) -> List[str]:
         data: List[str] = []
@@ -16,7 +16,7 @@ class Nature(Journal_ABC):
             markup=html,
             features="lxml",
         )
-        urls: ResultSet = soup.find_all(name="a", attrs={"class": "c-card__link"})
+        urls: ResultSet = soup.find_all(name="a", attrs={"class": "text-reset"})
 
         url: Tag
         for url in urls:
