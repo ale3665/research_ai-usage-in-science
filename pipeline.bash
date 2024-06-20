@@ -1,7 +1,20 @@
 #!/bin/bash
 source optparse.bash
 
-optparse.define short=a long=author-input desc="A directory of OpenAlex Authors files to read" variable=authorInput
+# Search through journals flags
+optparse.define short=a long=nature-search-result-output desc="Path to save Nature search results to" variable=natureSearchResultOutput
+optparse.define short=b long=plos-search-result-output desc="Path to save PLOS search results to" variable=plosSearchResultOutput
+optparse.define short=b long=plos-search-result-output desc="Path to save PLOS search results to" variable=plosSearchResultOutput
+optparse.define short=c long=science-search-result-output desc="Path to save Science search results to" variable=scienceSearchResultOutput
 
-optparse.define short=b long=work-input desc="A directory of OpenAlex Works files to read" variable=workInput
 source $( optparse.build )
+
+# Convert relative paths to absolute paths
+nsro=$(realpath $natureSearchResultOutput)
+psro=$(realpath $plosSearchResultOutput)
+ssro=$(realpath $scienceSearchResultOutput)
+
+# Search through journals
+aius-search -j nature -o $nsro
+aius-search -j plos -o $psro
+aius-search -j science -o $ssro

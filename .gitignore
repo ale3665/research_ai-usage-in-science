@@ -168,7 +168,4 @@ temp/
 *.csv
 *.txt
 *.zip
-data/*
-!data/README.md
-!data/.gitkeep
 *.pickle
