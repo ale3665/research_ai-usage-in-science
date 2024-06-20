@@ -31,6 +31,7 @@ class Science(Journal_ABC):
             template="https://www.science.org/action/doSearch?AllField=${query}&ConceptID=505154&Earliest=[${year}0101+TO+${year}1231]&startPage=${page}&sortBy=Earliest&pageSize=100",
         )
         self.search: Search = Search()
+        self.journal: str = "Science"
 
     def conductSearch(self, query: str, year: int) -> DataFrame:
         data: dict[str, List[str | int | bytes]] = DATA_STOR.copy()
@@ -56,6 +57,7 @@ class Science(Journal_ABC):
                 data["url"].append(url)
                 data["status_code"].append(resp.status_code)
                 data["html"].append(resp.content.decode(errors="ignore"))
+                data["journal"].append(self.journal)
 
                 if page == 0:
                     # Check to ensure that there exists pagination

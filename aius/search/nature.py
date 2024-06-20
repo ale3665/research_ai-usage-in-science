@@ -31,6 +31,7 @@ class Nature(Journal_ABC):
             template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"
         )
         self.search: Search = Search()
+        self.journal: str = "Nature"
 
     def conductSearch(self, query: str, year: int) -> DataFrame:
         data: dict[str, List[str | int | bytes]] = DATA_STOR.copy()
@@ -56,6 +57,7 @@ class Nature(Journal_ABC):
                 data["url"].append(url)
                 data["status_code"].append(resp.status_code)
                 data["html"].append(resp.content.decode(errors="ignore"))
+                data["journal"].append(self.journal)
 
                 if page == 1:
                     # Check to ensure that there exists pagination

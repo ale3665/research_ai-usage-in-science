@@ -31,6 +31,7 @@ class PLOS(Journal_ABC):
             template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"
         )
         self.search: Search = Search()
+        self.journal: str = "PLOS"
 
     def conductSearch(self, query: str, year: int) -> DataFrame:
         data: dict[str, List[str | int | bytes]] = DATA_STOR.copy()
@@ -56,6 +57,7 @@ class PLOS(Journal_ABC):
                 data["url"].append(url)
                 data["status_code"].append(resp.status_code)
                 data["html"].append(resp.content.decode(errors="ignore"))
+                data["journal"].append(self.journal)
 
                 if page == 1:
                     # Check to ensure that there exists pagination

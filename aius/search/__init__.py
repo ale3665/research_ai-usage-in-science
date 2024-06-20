@@ -25,6 +25,7 @@ DATA_STOR: dict[str, List[str | int | bytes]] = {
     "url": [],
     "status_code": [],
     "html": [],
+    "journal": [],
 }
 
 
@@ -36,6 +37,7 @@ class dfSchema(TypedDataFrame):
         "url": str,
         "status_code": int,
         "html": str,
+        "journal": str,
     }
 
 
