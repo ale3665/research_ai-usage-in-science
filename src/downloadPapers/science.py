@@ -16,7 +16,10 @@ class Science(Journal_ABC):
             markup=html,
             features="lxml",
         )
-        urls: ResultSet = soup.find_all(name="a", attrs={"class": "text-reset"})
+        urls: ResultSet = soup.find_all(
+            name="a",
+            attrs={"class": "text-reset"},
+        )
 
         url: Tag
         for url in urls:
