@@ -7,23 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-feedparser = "^6.0.11"
 pandas = "^2.2.0"
-pyarrow = "^15.0.0"
 progress = "^1.6"
-sqlalchemy = "^2.0.27"
 requests = "^2.31.0"
 click = "^8.1.7"
 bs4 = "^0.0.2"
 lxml = "^5.1.0"
-selenium = "^4.18.1"
 pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
-tiktoken = "^0.6.0"
-openai = "^1.14.3"
-toi = {git = "https://github.com/NicholasSynovic/tiny-openai-interface"}
-transformers = "^4.39.3"
-nltk = "^3.8.1"
-langchain = "^0.1.16"
 zettelgeist = "^1.1.5"
 typedframe = "^0.11.0"
 

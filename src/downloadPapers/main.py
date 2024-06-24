@@ -8,10 +8,10 @@ from progress.bar import Bar
 from pyfs import isFile, resolvePath
 from requests import Response, get
 
-from aius.downloadPapers import Journal_ABC
-from aius.downloadPapers.nature import Nature
-from aius.downloadPapers.plos import PLOS
-from aius.downloadPapers.science import Science
+from src.downloadPapers import Journal_ABC
+from src.downloadPapers.nature import Nature
+from src.downloadPapers.plos import PLOS
+from src.downloadPapers.science import Science
 
 
 @click.command()

@@ -8,10 +8,10 @@ import pandas
 from pandas import DataFrame
 from pyfs import resolvePath
 
-from aius.search import RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC
-from aius.search.nature import Nature
-from aius.search.plos import PLOS
-from aius.search.science import Science
+from src.search import RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC
+from src.search.nature import Nature
+from src.search.plos import PLOS
+from src.search.science import Science
 
 MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
     template="Search for documents in ${journal} mega journal",
