@@ -5,6 +5,7 @@ from langchain_community.llms.ollama import Ollama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.base import RunnableSequence
+
 from src.countDocumentsPerScientificDomain.tokenizer import returnStr
 
 

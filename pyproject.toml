@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "aius"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["Nicholas M. Synovic <nicholas.synovic@gmail.com>"]
@@ -33,5 +33,5 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-aius-search = "aius.search.main:main"
-aius-search-html-conversion = "aius.search.htmlConversion:main"
+aius-search = "src.search.main:main"
+aius-search-html-conversion = "src.search.htmlConversion:main"

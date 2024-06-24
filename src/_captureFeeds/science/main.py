@@ -11,8 +11,9 @@ from pyfs import resolvePath
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
+
 from src.captureFeeds.db.schema import createSchema
-from src.captureFeeds.frontiersin import RSS_FEEDS, parser
+from src.captureFeeds.science import RSS_FEEDS, parser
 
 warnings.filterwarnings(action="ignore")
 
@@ -55,7 +56,7 @@ def main(outputDB: Path) -> None:
         journal: str
         for journal in RSS_FEEDS.keys():
             feed: FeedParserDict = parser.getRSSFeed(feedURL=RSS_FEEDS[journal])
-            data.append(parser.parseFeed(feed=feed, journal=journal))
+            data.append(parser.parseFeed(feed=feed))
             bar.next()
 
     df: DataFrame = pandas.concat(objs=data, ignore_index=True)
