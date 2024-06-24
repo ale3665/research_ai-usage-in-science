@@ -30,10 +30,10 @@ def main(inputPath: Path, outputPath: Path) -> None:
     assert isFile(path=absInputPath)
     assert isFile(path=absOutputPath) == False
 
-    print(f"Reading {absInputPath}...")
+    print(f"Reading {absInputPath} ...")
     df: DataFrame = pandas.read_pickle(filepath_or_buffer=absInputPath)
 
-    print(f"Writing {absOutputPath}...")
+    print(f"Writing {absOutputPath} ...")
     df.to_parquet(path=absOutputPath, engine="pyarrow")
 
 
