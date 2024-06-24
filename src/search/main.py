@@ -38,14 +38,6 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
 
 @click.command()
 @click.option(
-    "-o",
-    "--output",
-    "output",
-    required=True,
-    type=Path,
-    help="Output pickle file to save Pandas DataFrame to",
-)
-@click.option(
     "-j",
     "--journal",
     "journal",
@@ -53,8 +45,16 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     type=click.Choice(choices=["nature", "plos", "science"]),
     help="Search for documents in a supported mega-journal",
 )
-def main(output: Path, journal: str) -> None:
-    outputPath: Path = resolvePath(path=output)
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    required=True,
+    type=Path,
+    help="Output parquet file to save Pandas DataFrame to",
+)
+def main(outputPath: Path, journal: str) -> None:
+    absOutputPath: Path = resolvePath(path=outputPath)
 
     journalClass: Journal_ABC
     match journal:
@@ -69,7 +69,7 @@ def main(output: Path, journal: str) -> None:
 
     df: DataFrame = runCollector(journal=journalClass)
 
-    df.to_pickle(path=outputPath)
+    df.to_parquet(path=absOutputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":

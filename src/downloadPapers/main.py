@@ -21,7 +21,7 @@ from src.downloadPapers.science import Science
     "inputPath",
     type=Path,
     required=True,
-    help="Path to a journal's search result pickled object",
+    help="Path to a journal's search result parquet file",
 )
 @click.option(
     "-o",
@@ -29,7 +29,7 @@ from src.downloadPapers.science import Science
     "outputPath",
     type=Path,
     required=True,
-    help="Path to save journal paper pickled object",
+    help="Path to save journal paper parquet file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
@@ -44,7 +44,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
         "html": [],
     }
 
-    df: DataFrame = pandas.read_pickle(filepath_or_buffer=absInputPath)
+    df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
     journalName: str = df["journal"].value_counts().idxmax()
     resultCount: int = df.shape[0]
 
@@ -81,7 +81,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
             bar.next()
 
     outputDF: DataFrame = DataFrame(data=data)
-    outputDF.to_pickle(path=absOutputPath)
+    outputDF.to_parquet(path=absOutputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":

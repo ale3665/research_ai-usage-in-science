@@ -15,7 +15,7 @@ from pyfs import isDirectory, isFile, resolvePath
     "inputPath",
     required=True,
     type=Path,
-    help="Path to pickle file to create HTML documents from",
+    help="Path to parquet file to create HTML documents from",
 )
 @click.option(
     "-o",
@@ -32,7 +32,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
     assert isFile(path=absInputPath)
     assert isDirectory(path=absOutputPath)
 
-    df: DataFrame = pandas.read_pickle(filepath_or_buffer=absInputPath)
+    df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
 
     with Bar("Creating HTML files...", max=df.shape[0]) as bar:
         row: Series
