@@ -18,6 +18,7 @@ zettelgeist = "^1.1.5"
 typedframe = "^0.11.0"
 
 
+pyarrow = "^16.1.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -25,3 +26,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 aius-search = "src.search.main:main"
 aius-search-html-conversion = "src.search.htmlConversion:main"
+aius-download-papers = "src.downloadPapers.main:main"

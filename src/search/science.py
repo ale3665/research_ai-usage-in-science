@@ -9,8 +9,8 @@ from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from aius.search import DATA_STOR, Journal_ABC, dfSchema
-from aius.search.search import Search
+from src.search import DATA_STOR, Journal_ABC, dfSchema
+from src.search.search import Search
 
 
 class Science(Journal_ABC):

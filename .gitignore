@@ -169,3 +169,4 @@ temp/
 *.txt
 *.zip
 *.pickle
+*.parquet

@@ -1,7 +1,7 @@
 from json import loads
 from typing import List
 
-from aius.downloadPapers import Journal_ABC
+from src.downloadPapers import Journal_ABC
 
 
 class PLOS(Journal_ABC):

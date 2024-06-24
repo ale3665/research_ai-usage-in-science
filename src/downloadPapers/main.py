@@ -23,8 +23,17 @@ from src.downloadPapers.science import Science
     required=True,
     help="Path to a journal's search result pickled object",
 )
-def main(inputPath: Path) -> None:
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    type=Path,
+    required=True,
+    help="Path to save journal paper pickled object",
+)
+def main(inputPath: Path, outputPath: Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
+    absOutputPath: Path = resolvePath(path=outputPath)
 
     assert isFile(path=absInputPath)
 
@@ -72,7 +81,7 @@ def main(inputPath: Path) -> None:
             bar.next()
 
     outputDF: DataFrame = DataFrame(data=data)
-    outputDF.to_pickle(path="output.pickle")
+    outputDF.to_pickle(path=absOutputPath)
 
 
 if __name__ == "__main__":

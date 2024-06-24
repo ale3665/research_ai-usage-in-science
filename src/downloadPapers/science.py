@@ -2,7 +2,7 @@ from typing import List
 
 from bs4 import BeautifulSoup, ResultSet, Tag
 
-from aius.downloadPapers import Journal_ABC
+from src.downloadPapers import Journal_ABC
 
 
 class Science(Journal_ABC):
