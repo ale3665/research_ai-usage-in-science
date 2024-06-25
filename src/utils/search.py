@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List
 from webbrowser import open_new_tab
 
-from pandas import DataFrame
 from requests import Response, get
 from typedframe import TypedDataFrame
 

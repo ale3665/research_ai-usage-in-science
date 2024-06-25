@@ -46,18 +46,3 @@ class Journal_ABC(metaclass=ABCMeta):
         :rtype: List[str]
         """
         ...
-
-        # data: List[str] = []
-
-        # soup: BeautifulSoup = BeautifulSoup(
-        #     markup=html,
-        #     features="lxml",
-        # )
-        # urls: ResultSet = soup.find_all(name="a", attrs={"class": "c-card__link"})
-
-        # url: Tag
-        # for url in urls:
-        #     completeURL: str = self.baseURL + url.get(key="href")
-        #     data.append(completeURL)
-
-        # return data

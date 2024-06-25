@@ -8,10 +8,10 @@ import pandas
 from pandas import DataFrame
 from pyfs import resolvePath
 
+from src.journals import Journal_ABC
 from src.journals.nature import Nature
 from src.journals.plos import PLOS
-from src.journals.science import Science
-from src.utils.search import RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC
+from src.utils.search import RELEVANT_YEARS, SEARCH_QUERIES
 
 MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
     template="Search for documents in ${journal} mega journal",
@@ -42,7 +42,7 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     "--journal",
     "journal",
     required=True,
-    type=click.Choice(choices=["nature", "plos", "science"]),
+    type=click.Choice(choices=["nature", "plos"]),
     help="Search for documents in a supported mega-journal",
 )
 @click.option(
@@ -62,8 +62,6 @@ def main(outputPath: Path, journal: str) -> None:
             journalClass = Nature()
         case "plos":
             journalClass = PLOS()
-        case "science":
-            journalClass = Science()
         case _:
             exit(1)
 
