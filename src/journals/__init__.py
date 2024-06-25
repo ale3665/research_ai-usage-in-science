@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Literal
 
-from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from requests import Response
 
