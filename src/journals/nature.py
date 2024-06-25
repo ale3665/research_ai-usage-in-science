@@ -1,44 +1,42 @@
 from string import Template
 from typing import List, Literal
 
-import pandas
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from src.search import DATA_STOR, Journal_ABC, dfSchema
-from src.search.search import Search
+from src.utils.search import DATA_STOR, Journal_ABC, Search, dfSchema
 
 
-class Science(Journal_ABC):
+class Nature(Journal_ABC):
     """
-    Class to search through the Science mega journal
+    Class to search through the Nature mega journal
 
     This class implements the necessary methods to search through and paginate
-    responses from the Science mega journal.
+    responses from the Nature mega journal.
     """
 
     def __init__(self) -> None:
         """
-        __init__ Initalize the Science class
+        __init__ Initalize the Nature class
 
-        Initalizes the Science class with a set URL template
+        Initalizes the Nature class with a set URL template
         """
         self.url: Template = Template(
-            template="https://www.science.org/action/doSearch?AllField=${query}&ConceptID=505154&Earliest=[${year}0101+TO+${year}1231]&startPage=${page}&sortBy=Earliest&pageSize=100",
+            template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"
         )
         self.search: Search = Search()
-        self.journal: str = "Science"
+        self.journal: str = "Nature"
 
     def conductSearch(self, query: str, year: int) -> DataFrame:
         data: dict[str, List[str | int | bytes]] = DATA_STOR.copy()
-        page: int = 0
+        page: int = 1
         maxPage: int = 1
 
         with Bar(f"Conducting search for {query} in {year}...", max=1) as bar:
             while True:
-                if page > maxPage - 1:
+                if page > maxPage:
                     break
 
                 url: str = self.url.substitute(
@@ -57,7 +55,7 @@ class Science(Journal_ABC):
                 data["html"].append(resp.content.decode(errors="ignore"))
                 data["journal"].append(self.journal)
 
-                if page == 0:
+                if page == 1:
                     # Check to ensure that there exists pagination
                     paginationCheck: Literal[False] | int = self.identifyPagination(
                         resp=resp
@@ -83,13 +81,13 @@ class Science(Journal_ABC):
 
         paginationBlock: ResultSet = soup.find_all(
             name="li",
-            attrs={"class": "page-item"},
+            attrs={"class": "c-pagination__item"},
         )
 
         block: Tag
         for block in paginationBlock:
             try:
-                page: int = int(block.text)
+                page: int = int(block.get(key="data-page"))
             except ValueError:
                 continue
             except TypeError:
