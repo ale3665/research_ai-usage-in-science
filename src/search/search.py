@@ -1,3 +1,5 @@
+from webbrowser import open_new_tab
+
 from requests import Response, get
 
 
@@ -32,3 +34,14 @@ class Search:
         """
         resp: Response = get(url=url, headers=self.headers)
         return resp
+
+    def openWebpage(self, url: str) -> None:
+        """
+        openWebpage Open a given webpage
+
+        Given a URL, open it in a new browser tab.
+
+        :param url: The URL of the page to open
+        :type url: str
+        """
+        open_new_tab(url=url)
