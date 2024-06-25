@@ -1,6 +1,44 @@
+from datetime import datetime
+from typing import List
 from webbrowser import open_new_tab
 
+from pandas import DataFrame
 from requests import Response, get
+from typedframe import TypedDataFrame
+
+SEARCH_QUERIES: List[str] = [
+    r'"Deep Learning"',
+    r'"Deep Neural Network"',
+    r'"Hugging Face"',
+    r'"HuggingFace"',
+    r'"Model Checkpoint"',
+    r'"Model Weights"',
+    r'"Pre-Trained Model"',
+]
+
+RELEVANT_YEARS: List[int] = list(range(2015, datetime.now().year + 1))
+
+DATA_STOR: dict[str, List[str | int | bytes]] = {
+    "year": [],
+    "query": [],
+    "page": [],
+    "url": [],
+    "status_code": [],
+    "html": [],
+    "journal": [],
+}
+
+
+class dfSchema(TypedDataFrame):
+    schema: dict = {
+        "year": int,
+        "query": str,
+        "page": int,
+        "url": str,
+        "status_code": int,
+        "html": str,
+        "journal": str,
+    }
 
 
 class Search:
