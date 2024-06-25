@@ -6,7 +6,8 @@ from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from src.utils.search import DATA_STOR, Journal_ABC, Search, dfSchema
+from src.journals import Journal_ABC
+from src.utils.search import DATA_STOR, Search, dfSchema
 
 
 class Nature(Journal_ABC):

@@ -6,14 +6,14 @@ from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from src.search import (
+from src.journals import Journal_ABC
+from src.utils.search import (
     DATA_STOR,
     RELEVANT_YEARS,
     SEARCH_QUERIES,
-    Journal_ABC,
+    Search,
     dfSchema,
 )
-from src.utils.search import Search
 
 
 class PLOS(Journal_ABC):
@@ -91,3 +91,6 @@ class PLOS(Journal_ABC):
             maxPage = ceil(documentsFound / 100)
 
         return maxPage
+
+    def getPaperURLsFromSearchResults(self, html: str) -> List[str]:
+        return []
