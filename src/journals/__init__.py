@@ -21,7 +21,9 @@ class Journal_ABC(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def identifyPaginationOfSearchResults(self, resp: Response) -> Literal[False] | int:
+    def identifyPaginationOfSearchResults(
+        self, resp: Response
+    ) -> Literal[False] | int:
         """
         identifyPagination Identify if a web page has pagination enabled
 

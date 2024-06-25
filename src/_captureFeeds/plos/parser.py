@@ -29,7 +29,9 @@ def parseFeed(feed: FeedParserDict, journal: str) -> DataFrame:
         data["url"].append(entry["links"][0]["href"])
         data["title"].append(entry["title"])
         data["journal"].append(journal)
-        data["updated"].append(datetime.fromtimestamp(mktime(entry["updated_parsed"])))
+        data["updated"].append(
+            datetime.fromtimestamp(mktime(entry["updated_parsed"]))
+        )
         data["added"].append(datetime.now())
 
     return DataFrame(data=data)

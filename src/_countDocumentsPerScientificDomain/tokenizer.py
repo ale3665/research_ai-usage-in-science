@@ -8,7 +8,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from pyfs import resolvePath
 from transformers import AutoTokenizer
-from transformers.models.llama.tokenization_llama_fast import LlamaTokenizerFast
+from transformers.models.llama.tokenization_llama_fast import (
+    LlamaTokenizerFast,
+)
 
 
 def readFile(path: Path) -> str:
@@ -34,7 +36,9 @@ def readFile(path: Path) -> str:
 def removeStopWords(doc: str) -> str:
     tokens = word_tokenize(text=doc)
     stopTokens: set[str] = set(stopwords.words(fileids="english"))
-    return " ".join([word for word in tokens if word.lower() not in stopTokens])
+    return " ".join(
+        [word for word in tokens if word.lower() not in stopTokens]
+    )
 
 
 @click.command()

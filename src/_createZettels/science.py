@@ -2,7 +2,7 @@ import re
 from collections import namedtuple
 from os import listdir
 from pathlib import Path
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen  # nosec
 from tempfile import NamedTemporaryFile
 from typing import List
 
@@ -33,7 +33,9 @@ def formatText(string: str) -> str:
 
 
 def runZettel(zettel: ZETTEL) -> bool:
-    summaryTemp: NamedTemporaryFile = NamedTemporaryFile(mode="w+t", delete=False)
+    summaryTemp: NamedTemporaryFile = NamedTemporaryFile(
+        mode="w+t", delete=False
+    )
     noteTemp: NamedTemporaryFile = NamedTemporaryFile(mode="w+t", delete=False)
 
     summaryTemp.write(zettel.abstract)
@@ -43,14 +45,16 @@ def runZettel(zettel: ZETTEL) -> bool:
     noteTemp.close()
 
     url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
-    cmd: str = f'zettel --set-title "{zettel.title}" \
+    cmd: str = (
+        f'zettel --set-title "{zettel.title}" \
                 --set-url {url} \
                 --load-summary {summaryTemp.name} \
                 --load-note {noteTemp.name} \
                 --append-tags {" ".join(zettel.tags).strip()} \
                 --save "{zettel.path}"'
+    )
 
-    process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)
+    process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)  # nosec
 
     if process.returncode == 0:
         return True
@@ -82,16 +86,16 @@ def extractDocumentTags(soup: BeautifulSoup) -> List[str]:
     try:
         tags = [
             tagSuffix
-            + soup.find(name="div", attrs={"class": "meta-panel__overline"}).getText(
-                strip=True
-            )
+            + soup.find(
+                name="div", attrs={"class": "meta-panel__overline"}
+            ).getText(strip=True)
         ]
     except AttributeError:
         tags = [
             tagSuffix
-            + soup.find(name="div", attrs={"class": "meta-panel__type"}).getText(
-                strip=True
-            )
+            + soup.find(
+                name="div", attrs={"class": "meta-panel__type"}
+            ).getText(strip=True)
         ]
 
     formattedTags: List[str] = [f'"{tag.lower().strip()}"' for tag in tags]

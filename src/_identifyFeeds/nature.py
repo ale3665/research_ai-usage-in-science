@@ -15,7 +15,7 @@ def getRawNaturePortfolio() -> BeautifulSoup:
         return BeautifulSoup(markup=open(natureHTMLFile), features="lxml")
 
     else:
-        resp: Response = get(url=f"{NATURE_BASE_URL}/siteindex")
+        resp: Response = get(url=f"{NATURE_BASE_URL}/siteindex", timeout=60)
 
         with open(natureHTMLFile, "w") as htmlFile:
             htmlFile.write(resp.content.__str__())
@@ -25,7 +25,9 @@ def getRawNaturePortfolio() -> BeautifulSoup:
 def extractRelevantData(soup: BeautifulSoup) -> dict[str, str]:
     data: dict[str, str] = {}
 
-    searchQuery: dict[str, str] = {"class": "block pt10 pb10 equalize-line-height"}
+    searchQuery: dict[str, str] = {
+        "class": "block pt10 pb10 equalize-line-height"
+    }
     links: ResultSet = soup.find_all(name="a", attrs=searchQuery)
 
     link: Tag

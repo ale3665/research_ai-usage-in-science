@@ -6,6 +6,12 @@ from pandas import DataFrame
 from pyfs import isFile, resolvePath
 
 
+def _exitIfFileDoesNotExist(path: Path) -> None:
+    if isFile(path=path) == False:
+        print(f"{path} is not a file")
+        exit(1)
+
+
 @click.command()
 @click.option(
     "-i",
@@ -27,11 +33,13 @@ def main(inputPath: Path, outputPath: Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputPath: Path = resolvePath(path=outputPath)
 
-    assert isFile(path=absInputPath)
-    assert isFile(path=absOutputPath) == False
+    _exitIfFileDoesNotExist(path=absInputPath)
+    _exitIfFileDoesNotExist(path=absOutputPath)
 
     print(f"Reading {absInputPath} ...")
-    df: DataFrame = pandas.read_pickle(filepath_or_buffer=absInputPath)
+    df: DataFrame = pandas.read_pickle(
+        filepath_or_buffer=absInputPath,
+    )  # nosec
 
     print(f"Writing {absOutputPath} ...")
     df.to_parquet(path=absOutputPath, engine="pyarrow")

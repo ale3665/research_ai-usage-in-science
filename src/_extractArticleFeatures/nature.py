@@ -10,8 +10,12 @@ from pandas import DataFrame
 from progress.bar import Bar
 from pyfs import isDirectory, listDirectory, resolvePath
 
-DEFAULT_INPUT_DIRECTORY: Path = resolvePath(path=Path("../../data/nature/html/papers"))
-DEFAULT_OUTPUT: Path = resolvePath(path=Path("../../data/nature/csv/paperFeatures.csv"))
+DEFAULT_INPUT_DIRECTORY: Path = resolvePath(
+    path=Path("../../data/nature/html/papers")
+)
+DEFAULT_OUTPUT: Path = resolvePath(
+    path=Path("../../data/nature/csv/paperFeatures.csv")
+)
 
 
 def extractFeatures(doi: str, soup: BeautifulSoup) -> DataFrame:
@@ -21,15 +25,15 @@ def extractFeatures(doi: str, soup: BeautifulSoup) -> DataFrame:
         "abstract": [],
     }
 
-    title: str = soup.find(name="h1", attrs={"class": "c-article-title"}).get_text(
-        strip=True
-    )
+    title: str = soup.find(
+        name="h1", attrs={"class": "c-article-title"}
+    ).get_text(strip=True)
 
     abstract: str
     try:
-        abstract = soup.find(name="div", attrs={"id": "Abs1-content"}).get_text(
-            strip=True
-        )
+        abstract = soup.find(
+            name="div", attrs={"id": "Abs1-content"}
+        ).get_text(strip=True)
     except AttributeError:
         abstract = ""
 

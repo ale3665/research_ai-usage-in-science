@@ -29,7 +29,9 @@ def parseFeed(feed: FeedParserDict) -> DataFrame:
         data["url"].append(entry["prism_url"])
         data["title"].append(entry["title"])
         data["journal"].append(entry["prism_publicationname"])
-        data["updated"].append(datetime.fromtimestamp(mktime(entry["updated_parsed"])))
+        data["updated"].append(
+            datetime.fromtimestamp(mktime(entry["updated_parsed"]))
+        )
         data["added"].append(datetime.now())
 
     return DataFrame(data=data)

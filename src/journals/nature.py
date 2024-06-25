@@ -57,8 +57,8 @@ class Nature(Journal_ABC):
 
                 if page == 1:
                     # Check to ensure that there exists pagination
-                    paginationCheck: Literal[False] | int = self.identifyPagination(
-                        resp=resp
+                    paginationCheck: Literal[False] | int = (
+                        self.identifyPagination(resp=resp)
                     )
 
                     if paginationCheck is not False:

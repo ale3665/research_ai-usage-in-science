@@ -19,14 +19,19 @@ warnings.filterwarnings(action="ignore")
 
 
 def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
-    dfPerRow: List[DataFrame] = [DataFrame(data=row).T for _, row in df.iterrows()]
+    dfPerRow: List[DataFrame] = [
+        DataFrame(data=row).T for _, row in df.iterrows()
+    ]
 
     with Bar("Writing data to database...", max=len(dfPerRow)) as bar:
         row: DataFrame
         for row in dfPerRow:
             try:
                 row.to_sql(
-                    name=dbTableName, con=dbEngine, index=False, if_exists="append"
+                    name=dbTableName,
+                    con=dbEngine,
+                    index=False,
+                    if_exists="append",
                 )
             except IntegrityError:
                 pass
@@ -46,7 +51,9 @@ def writeToDB(df: DataFrame, dbTableName: str, dbEngine: Engine) -> None:
 def main(outputDB: Path) -> None:
     data: List[DataFrame] = []
 
-    dbEngine: Engine = create_engine(url=f"sqlite:///{resolvePath(path=outputDB)}")
+    dbEngine: Engine = create_engine(
+        url=f"sqlite:///{resolvePath(path=outputDB)}"
+    )
     dbTableName: str = createSchema(engine=dbEngine)
 
     with Bar(
@@ -55,7 +62,9 @@ def main(outputDB: Path) -> None:
     ) as bar:
         journal: str
         for journal in RSS_FEEDS.keys():
-            feed: FeedParserDict = parser.getRSSFeed(feedURL=RSS_FEEDS[journal])
+            feed: FeedParserDict = parser.getRSSFeed(
+                feedURL=RSS_FEEDS[journal]
+            )
             data.append(parser.parseFeed(feed=feed, journal=journal))
             bar.next()
 

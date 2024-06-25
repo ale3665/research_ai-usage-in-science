@@ -14,7 +14,9 @@ from toi import chat
 
 
 def extractText(files: List[Path]) -> List[str]:
-    with Bar("Extracting data and code hosting services...", max=len(files)) as bar:
+    with Bar(
+        "Extracting data and code hosting services...", max=len(files)
+    ) as bar:
 
         def _getContent(file: Path) -> str:
             soup: BeautifulSoup = BeautifulSoup(
@@ -86,7 +88,8 @@ def extractDataService(contentList: List[str], token: str) -> defaultdict:
 def main(token: str) -> None:
     directory: Path = resolvePath(path=Path("../../data/science/html/papers"))
     fileList: List[Path] = [
-        resolvePath(path=Path(directory, file)) for file in listdir(path=directory)
+        resolvePath(path=Path(directory, file))
+        for file in listdir(path=directory)
     ]
 
     contentList: List[str] = extractText(files=fileList)

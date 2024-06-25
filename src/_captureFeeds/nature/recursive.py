@@ -11,7 +11,7 @@ DOI_SUFFIX: str = "10.1038"
 
 
 def getSoup(url: str) -> BeautifulSoup:
-    resp: Response = get(url=url)
+    resp: Response = get(url=url, timeout=60)
     return BeautifulSoup(markup=resp.content, features="lxml")
 
 
@@ -26,9 +26,9 @@ def extractArticleFields(soup: BeautifulSoup, journal: str) -> List[Tag]:
     article: Tag
     for article in articles:
         journal: str = journal
-        title: str = article.find(name="h3", attrs={"class": "c-card__title"}).getText(
-            strip=True
-        )
+        title: str = article.find(
+            name="h3", attrs={"class": "c-card__title"}
+        ).getText(strip=True)
         url: str = article.find(
             name="a", attrs={"class": "c-card__link u-link-inherit"}
         ).get(key="href")
@@ -61,7 +61,9 @@ def parseFeed(feed: FeedParserDict) -> DataFrame:
         data["url"].append(entry["prism_url"])
         data["title"].append(entry["title"])
         data["journal"].append(entry["prism_publicationname"])
-        data["updated"].append(datetime.fromtimestamp(mktime(entry["updated_parsed"])))
+        data["updated"].append(
+            datetime.fromtimestamp(mktime(entry["updated_parsed"]))
+        )
         data["added"].append(datetime.now())
 
     return DataFrame(data=data)

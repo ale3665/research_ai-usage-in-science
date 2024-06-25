@@ -29,8 +29,13 @@ def main(inputPath: Path, outputPath: Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputPath: Path = resolvePath(path=outputPath)
 
-    assert isFile(path=absInputPath)
-    assert isDirectory(path=absOutputPath)
+    if isFile(path=absInputPath) == False:
+        print(f"{absInputPath} is not a file")
+        exit(1)
+
+    if isDirectory(path=absOutputPath) == False:
+        print(f"{absOutputPath} is not a directory")
+        exit(1)
 
     df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
 

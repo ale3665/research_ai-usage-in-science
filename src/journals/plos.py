@@ -6,7 +6,13 @@ from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
-from src.search import DATA_STOR, RELEVANT_YEARS, SEARCH_QUERIES, Journal_ABC, dfSchema
+from src.search import (
+    DATA_STOR,
+    RELEVANT_YEARS,
+    SEARCH_QUERIES,
+    Journal_ABC,
+    dfSchema,
+)
 from src.utils.search import Search
 
 
@@ -58,8 +64,8 @@ class PLOS(Journal_ABC):
 
                 if page == 1:
                     # Check to ensure that there exists pagination
-                    paginationCheck: Literal[False] | int = self.identifyPagination(
-                        resp=resp
+                    paginationCheck: Literal[False] | int = (
+                        self.identifyPagination(resp=resp)
                     )
 
                     if paginationCheck is not False:
@@ -72,7 +78,9 @@ class PLOS(Journal_ABC):
 
         return dfSchema(df=DataFrame(data=data)).df
 
-    def identifyPaginationOfSearchResults(self, resp: Response) -> Literal[False] | int:
+    def identifyPaginationOfSearchResults(
+        self, resp: Response
+    ) -> Literal[False] | int:
         maxPage: int = 1
 
         json: dict = resp.json()

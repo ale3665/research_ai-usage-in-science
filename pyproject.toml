@@ -16,9 +16,11 @@ lxml = "^5.1.0"
 pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
 zettelgeist = "^1.1.5"
 typedframe = "^0.11.0"
-
-
 pyarrow = "^16.1.0"
+
+[tool.black]
+line-length = 79
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

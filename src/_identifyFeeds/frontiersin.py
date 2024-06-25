@@ -13,7 +13,9 @@ def getJournals() -> dict:
         with open(jsonFile, "r") as jf:
             return load(fp=jf)
     else:
-        url = "https://www.frontiersin.org/api/v3/journals/search/journal-filter"
+        url = (
+            "https://www.frontiersin.org/api/v3/journals/search/journal-filter"
+        )
 
         payload = dumps(
             {
