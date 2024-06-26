@@ -8,8 +8,10 @@ from pandas import DataFrame, Series
 from progress.bar import Bar
 from pyfs import isDirectory, isFile, resolvePath
 
-from src.journals import Journal_ABC
-from src.journals.nature import Nature
+# from src.journals import Journal_ABC
+# from src.journals.nature import Nature
+
+# from zettelgeist.zettel import Zettel
 
 
 def extractPLOSContent(df: DataFrame) -> DataFrame:
@@ -40,6 +42,10 @@ def extractPLOSContent(df: DataFrame) -> DataFrame:
     return DataFrame(data=data)
 
 
+# def createZettels(df: DataFrame) -> None:
+#     z: Zettel = Zettel(data)
+
+
 @click.command()
 @click.option(
     "-i",
@@ -61,11 +67,11 @@ def main(inputPath: Path, outputDir: Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputDirPath: Path = resolvePath(path=outputDir)
 
-    if isFile(path=absInputPath) == False:
+    if not isFile(path=absInputPath):
         print(f"{absInputPath} is not a file")
         exit(1)
 
-    if isDirectory(path=absOutputDirPath) == False:
+    if not isDirectory(path=absOutputDirPath):
         print(f"{absOutputDirPath} is not a directory")
         exit(1)
 
@@ -73,10 +79,9 @@ def main(inputPath: Path, outputDir: Path) -> None:
     df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
     journalName: str = df["journal"][0]
 
-    journal: Journal_ABC
     match journalName:
         case "Nature":
-            journal = Nature()
+            print("Hel;lo")
         case "PLOS":
             extractPLOSContent(df=df)
         # case "Science":
