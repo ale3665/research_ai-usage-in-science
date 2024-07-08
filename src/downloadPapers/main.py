@@ -5,13 +5,12 @@ import click
 import pandas
 from pandas import DataFrame
 from progress.bar import Bar
-from pyfs import isFile, resolvePath
+from pyfs import isDirectory, isFile, resolvePath
 from requests import Response, get
 
 from src.downloadPapers import Journal_ABC
 from src.downloadPapers.nature import Nature
 from src.downloadPapers.plos import PLOS
-from src.downloadPapers.science import Science
 
 
 @click.command()
@@ -35,7 +34,21 @@ def main(inputPath: Path, outputPath: Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputPath: Path = resolvePath(path=outputPath)
 
-    assert isFile(path=absInputPath)
+    if not isFile(path=absInputPath):
+        print(f"{absInputPath} is not a file")
+        exit(1)
+
+    if isFile(path=absOutputPath):
+        print(f"{absOutputPath} is already exists")
+        exit(1)
+
+    if isDirectory(path=absInputPath):
+        print(f"{absInputPath} is a directory")
+        exit()
+
+    if isDirectory(path=absOutputPath):
+        print(f"{absOutputPath} is a directory")
+        exit()
 
     data: dict[str, List[str | int | bytes]] = {
         "journal": [],
@@ -54,8 +67,6 @@ def main(inputPath: Path, outputPath: Path) -> None:
             journal = Nature()
         case "PLOS":
             journal = PLOS()
-        case "Science":
-            journal = Science()
         case _:
             print("Unsupported journal")
             exit(1)
@@ -73,7 +84,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
             data["journal"].append(journal)
             data["url"].append(url)
 
-            resp: Response = get(url=url)
+            resp: Response = get(url=url, timeout=60)
 
             data["status_code"].append(resp.status_code)
             data["html"].append(resp.content)
