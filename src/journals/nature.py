@@ -25,7 +25,7 @@ class Nature(Journal_ABC):
         Initalizes the Nature class with a set URL template
         """
         self.url: Template = Template(
-            template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"
+            template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"  # noqa: E501
         )
         self.search: Search = Search()
         self.journal: str = "Nature"
@@ -59,7 +59,7 @@ class Nature(Journal_ABC):
                 if page == 1:
                     # Check to ensure that there exists pagination
                     paginationCheck: Literal[False] | int = (
-                        self.identifyPagination(resp=resp)
+                        self.identifyPaginationOfSearchResults(resp=resp)
                     )
 
                     if paginationCheck is not False:
@@ -72,7 +72,10 @@ class Nature(Journal_ABC):
 
         return dfSchema(df=DataFrame(data=data)).df
 
-    def identifyPagination(self, resp: Response) -> Literal[False] | int:
+    def identifyPaginationOfSearchResults(
+        self,
+        resp: Response,
+    ) -> Literal[False] | int:
         maxPage: int = 1
 
         soup: BeautifulSoup = BeautifulSoup(
@@ -101,3 +104,6 @@ class Nature(Journal_ABC):
             return False
         else:
             return maxPage
+
+    def getPaperURLsFromSearchResults(self, html: str) -> List[str]:
+        return []
