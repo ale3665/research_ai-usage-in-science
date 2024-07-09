@@ -8,7 +8,7 @@ from typing import List
 import click
 import pandas
 from bs4 import BeautifulSoup, Tag
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from progress.bar import Bar
 from pyfs import isDirectory, isFile, resolvePath
 
@@ -24,82 +24,126 @@ ZETTEL = namedtuple(
         "title",
         "abstract",
         "document",
-        "tags",
+        "tag",
         "path",
     ],
 )
 
 
-def formatText(string: str) -> str:
+def _formatText(string: str) -> str:
     string = re.sub(pattern=r"-\n", repl="", string=string)
     string = string.replace("\n", "")
     string = " ".join(string.split())
     return string
 
 
-def runZettel(zettel: ZETTEL) -> bool:
-    summaryTemp: NamedTemporaryFile = NamedTemporaryFile(
-        mode="w+t", delete=False
-    )
-    noteTemp: NamedTemporaryFile = NamedTemporaryFile(mode="w+t", delete=False)
-
-    summaryTemp.write(zettel.abstract)
-    noteTemp.write(zettel.document)
-
-    summaryTemp.close()
-    noteTemp.close()
-
-    url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
-    cmd: str = (
-        f'zettel --set-title "{zettel.title}" \
-                --set-url {url} \
-                --load-summary {summaryTemp.name} \
-                --load-note {noteTemp.name} \
-                --append-tags {" ".join(zettel.tags).strip()} \
-                --save "{zettel.path}"'
-    )
-
-    process: Popen[bytes] = Popen(cmd, shell=True, stdout=PIPE)  # nosec
-
-    if process.returncode == 0:
-        return True
-    else:
-        return False
+def _createSoup(html: bytes) -> BeautifulSoup:
+    return BeautifulSoup(markup=html, features="lxml")
 
 
-def extractPLOSContent(df: DataFrame) -> DataFrame:
-    data: dict[str, List] = {"title": [], "summary": [], "url": []}
+def _extractDOI_PLOS(url: str) -> str:
+    splitURL: List[str] = url.split(sep="=")
+    return splitURL[1]
 
-    with Bar("Extracting content...", max=df.shape[0]) as bar:
-        row: Series
-        for _, row in df.iterrows():
-            soup: BeautifulSoup = BeautifulSoup(
-                markup=row["html"],
-                features="lxml",
-            )
 
-            title: str = soup.find(
-                name="h1", attrs={"id": "artTitle"}
-            ).text.title()
+def _extractTitle_PLOS(soup: BeautifulSoup) -> str:
+    title: Tag = soup.find(name="h1", attrs={"id": "artTitle"})
+    return title.text
 
-            abstractContainer: Tag = soup.find(
-                name="div", attrs={"class": "abstract-content"}
-            )
-            abstract: str = abstractContainer.findChild(name="p").text
 
-            title = formatText(string=title)
-            abstract = formatText(string=abstract)
+def _extractAbstract_PLOS(soup: BeautifulSoup) -> str:
+    abstract: Tag = soup.find(name="div", attrs={"class": "abstract-content"})
+    return _formatText(string=abstract.text)
 
-            data["title"].append(title)
-            data["summary"].append(abstract)
-            data["url"].append(row["url"])
+
+def _extractDocument_PLOS(soup: BeautifulSoup) -> str:
+    pass
+
+
+def _extractTags_PLOS(soup: BeautifulSoup) -> str:
+    pass
+
+
+def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
+    data: List[ZETTEL] = []
+
+    dois: List[str] = []
+    titles: List[str] = []
+    abstracts: List[str] = []
+    documents: List[str] = []
+    tags: List[List[str]] = []
+    paths: List[Path] = []
+
+    with Bar("Extracting DOIs...", max=df.shape[0]) as bar:
+        url: str
+        for url in df["url"]:
+            doi: str = _extractDOI_PLOS(url=url)
+            dois.append(doi)
+
+            fp: Path = Path(outputDir, doi.replace("/", "_") + ".zettel")
+            paths.append(fp)
+
             bar.next()
 
-    return DataFrame(data=data)
+    with Bar("Extracting HTML Content", max=df.shape[0]) as bar:
+        html: bytes
+        for html in df["html"]:
+            soup: BeautifulSoup = BeautifulSoup(markup=html, features="lxml")
+
+            titles.append(_extractTitle_PLOS(soup=soup))
+            abstracts.append(_extractAbstract_PLOS(soup=soup))
+            documents.append("")
+            tags.append([""])
+
+            bar.next()
+
+    with Bar("Creating Zettels...", max=df.shape[0]) as bar:
+        idx: int
+        for idx in range(df.shape[0]):
+            zettel: ZETTEL = ZETTEL(
+                doi=dois[idx],
+                title=titles[idx],
+                abstract=abstracts[idx],
+                document=documents[idx],
+                tag=tags[idx],
+                path=paths[idx],
+            )
+
+            data.append(zettel)
+
+            bar.next()
+
+    return data
 
 
-# def createZettels(df: DataFrame) -> None:
-#     z: Zettel = Zettel(data)
+def createZettels(zettels: List[ZETTEL]) -> None:
+    with Bar("Creating Zettels...", max=len(zettels)) as bar:
+        zettel: ZETTEL
+        for zettel in zettels:
+            pass
+
+            abstractTempFile: NamedTemporaryFile = NamedTemporaryFile(
+                mode="w+t",
+                delete=False,
+            )
+
+            abstractTempFile.write(zettel.abstract)
+
+            abstractTempFile.close()
+
+            # --load-note {noteTemp.name} \
+            # --append-tags {" ".join(zettel.tag).strip()} \
+            url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
+            cmd: str = (
+                f'zettel --set-title "{zettel.title}" \
+                        --set-url {url} \
+                        --load-summary {abstractTempFile.name} \
+                        --save "{zettel.path}"'
+            )
+
+            Popen(cmd, shell=True, stdout=PIPE)  # nosec
+
+            bar.next()
 
 
 @click.command()
@@ -131,22 +175,27 @@ def main(inputPath: Path, outputDir: Path) -> None:
         print(f"{absOutputDirPath} is not a directory")
         exit(1)
 
-    # data: List[ZETTEL] = []
-
     print(f"Reading {absInputPath} ...")
     df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
+
     journalName: str = df["journal"][0]
 
+    data: List[ZETTEL]
     match journalName:
         case "Nature":
             print("Hel;lo")
         case "PLOS":
-            extractPLOSContent(df=df)
+            data = extractContnet_PLOS(
+                df=df,
+                outputDir=absOutputDirPath,
+            )
         # case "Science":
         #     journal = Science()
         case _:
             print("Unsupported journal")
             exit(1)
+
+    createZettels(zettels=data)
 
 
 if __name__ == "__main__":

@@ -13,11 +13,10 @@ create-dev:
 	)
 
 create-output-dir:
-	mkdir -p data/nature/html/search
-	mkdir -p data/nature/pickle/search
+	mkdir -p data/nature
+	mkdir -p data/plos
+	mkdir -p data/science
 
-	mkdir -p data/plos/html/search
-	mkdir -p data/plos/pickle/search
-
-	mkdir -p data/science/html/search
-	mkdir -p data/science/pickle/search
+	mkdir -p data/nature/zettels
+	mkdir -p data/plos/zettels
+	mkdir -p data/science/zettels
