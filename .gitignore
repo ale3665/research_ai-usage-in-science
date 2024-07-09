@@ -172,3 +172,4 @@ temp/
 *.parquet
 *.zettel
 *.orig
+*.gz
