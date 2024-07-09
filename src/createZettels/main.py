@@ -197,15 +197,11 @@ def main(inputPath: Path, outputDir: Path) -> None:
 
     data: List[ZETTEL]
     match journalName:
-        case "Nature":
-            print("Hel;lo")
         case "PLOS":
             data = extractContnet_PLOS(
                 df=df,
                 outputDir=absOutputDirPath,
             )
-        # case "Science":
-        #     journal = Science()
         case _:
             print("Unsupported journal")
             exit(1)
