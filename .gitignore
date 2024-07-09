@@ -170,3 +170,5 @@ temp/
 *.zip
 *.pickle
 *.parquet
+*.zettel
+*.orig

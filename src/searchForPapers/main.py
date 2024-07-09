@@ -6,7 +6,7 @@ from typing import List
 import click
 import pandas
 from pandas import DataFrame
-from pyfs import resolvePath
+from pyfs import isDirectory, isFile, resolvePath
 
 from src.journals import Journal_ABC
 from src.journals.nature import Nature
@@ -55,6 +55,14 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
 )
 def main(outputPath: Path, journal: str) -> None:
     absOutputPath: Path = resolvePath(path=outputPath)
+
+    if isFile(path=absOutputPath):
+        print(f"{absOutputPath} already exists.")
+        exit(1)
+
+    if isDirectory(path=absOutputPath):
+        print(f"{absOutputPath} is a directory")
+        exit(1)
 
     journalClass: Journal_ABC
     match journal:

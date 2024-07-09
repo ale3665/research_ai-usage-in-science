@@ -7,13 +7,7 @@ from progress.bar import Bar
 from requests import Response
 
 from src.journals import Journal_ABC
-from src.utils.search import (
-    DATA_STOR,
-    RELEVANT_YEARS,
-    SEARCH_QUERIES,
-    Search,
-    dfSchema,
-)
+from src.utils.search import DATA_STOR, Search, dfSchema
 
 
 class PLOS(Journal_ABC):
@@ -31,7 +25,7 @@ class PLOS(Journal_ABC):
         Initalizes the PLOS class with a set URL template
         """
         self.url: Template = Template(
-            template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"
+            template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"  # noqa: E501
         )
         self.search: Search = Search()
         self.journal: str = "PLOS"
@@ -65,7 +59,7 @@ class PLOS(Journal_ABC):
                 if page == 1:
                     # Check to ensure that there exists pagination
                     paginationCheck: Literal[False] | int = (
-                        self.identifyPagination(resp=resp)
+                        self.identifyPaginationOfSearchResults(resp=resp)
                     )
 
                     if paginationCheck is not False:
