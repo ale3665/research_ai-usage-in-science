@@ -48,7 +48,7 @@ def _extractDOI_PLOS(url: str) -> str:
 
 def _extractTitle_PLOS(soup: BeautifulSoup) -> str:
     title: Tag = soup.find(name="h1", attrs={"id": "artTitle"})
-    return title.text
+    return _formatText(string=title.text)
 
 
 def _extractAbstract_PLOS(soup: BeautifulSoup) -> str:
@@ -117,7 +117,7 @@ def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
 
 
 def createZettels(zettels: List[ZETTEL]) -> None:
-    with Bar("Creating Zettels...", max=len(zettels)) as bar:
+    with Bar("Writing Zettels to disk..", max=len(zettels)) as bar:
         zettel: ZETTEL
         for zettel in zettels:
             pass
