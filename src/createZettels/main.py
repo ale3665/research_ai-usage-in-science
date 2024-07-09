@@ -1,7 +1,7 @@
 import re
 from collections import namedtuple
 from pathlib import Path
-from subprocess import PIPE, Popen  # nosec
+from subprocess import PIPE, CompletedProcess, Popen  # nosec
 from tempfile import NamedTemporaryFile
 from typing import List
 
@@ -35,6 +35,20 @@ def _formatText(string: str) -> str:
     string = string.replace("\n", "")
     string = " ".join(string.split())
     return string
+
+
+def _storeStringInTempFile(string: str) -> str:
+    tf: NamedTemporaryFile = NamedTemporaryFile(
+        mode="w+t",
+        delete=False,
+    )
+
+    tfName: str = tf.name
+
+    tf.write(string)
+    tf.close()
+
+    return tfName
 
 
 def _createSoup(html: bytes) -> BeautifulSoup:
@@ -120,28 +134,29 @@ def createZettels(zettels: List[ZETTEL]) -> None:
     with Bar("Writing Zettels to disk..", max=len(zettels)) as bar:
         zettel: ZETTEL
         for zettel in zettels:
-            pass
-
-            abstractTempFile: NamedTemporaryFile = NamedTemporaryFile(
-                mode="w+t",
-                delete=False,
+            titleTFName: str = _storeStringInTempFile(string=zettel.title)
+            abstractTFName: str = _storeStringInTempFile(
+                string=zettel.abstract,
             )
-
-            abstractTempFile.write(zettel.abstract)
-
-            abstractTempFile.close()
 
             # --load-note {noteTemp.name} \
             # --append-tags {" ".join(zettel.tag).strip()} \
             url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
             cmd: str = (
-                f'zettel --set-title "{zettel.title}" \
+                f'zettel --load-title {titleTFName} \
                         --set-url {url} \
-                        --load-summary {abstractTempFile.name} \
+                        --load-summary {abstractTFName} \
                         --save "{zettel.path}"'
             )
 
-            Popen(cmd, shell=True, stdout=PIPE)  # nosec
+            process: CompletedProcess = Popen(
+                cmd,
+                shell=True,
+                stdout=PIPE,
+            )  # nosec
+
+            if process.returncode is not None:
+                print(zettel.doi)
 
             bar.next()
 
