@@ -94,7 +94,7 @@ def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
             doi: str = _extractDOI_PLOS(url=url)
             dois.append(doi)
 
-            fp: Path = Path(outputDir, doi.replace("/", "_") + ".zettel")
+            fp: Path = Path(outputDir, doi.replace("/", "_") + ".yaml")
             paths.append(fp)
 
             bar.next()
@@ -197,15 +197,11 @@ def main(inputPath: Path, outputDir: Path) -> None:
 
     data: List[ZETTEL]
     match journalName:
-        case "Nature":
-            print("Hel;lo")
         case "PLOS":
             data = extractContnet_PLOS(
                 df=df,
                 outputDir=absOutputDirPath,
             )
-        # case "Science":
-        #     journal = Science()
         case _:
             print("Unsupported journal")
             exit(1)
