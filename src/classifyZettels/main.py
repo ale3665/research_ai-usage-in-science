@@ -1,21 +1,20 @@
 import itertools
 from itertools import chain
 from pathlib import Path
+from sqlite3 import Connection, connect
+from typing import Hashable, List, Tuple
 
 import click
-
-# import pandas
+import pandas
 from langchain_community.llms.ollama import Ollama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.base import RunnableSequence
-
-# from pandas import DataFrame
+from pandas import DataFrame, Series
+from progress.bar import Bar
 from pyfs import isFile, resolvePath
 
 from src.classifyZettels import NATURE_SUBJECTS
-
-# from sqlite3 import Connection, connect
 
 
 def buildRunnableSequence(
@@ -39,12 +38,33 @@ def buildRunnableSequence(
     return prompt | llm | output
 
 
-# def readDB(dbPath: Path) -> DataFrame:
-#     sqlQuery: str = "SELECT title, summary FROM "
+def readDB(dbPath: Path, conn: Connection) -> DataFrame:
+    sqlQuery: str = "SELECT * FROM zettels"
+    df: DataFrame = pandas.read_sql_query(sql=sqlQuery, con=conn)
+    return df
 
-#     conn: Connection = connect(database=dbPath)
 
-#     df: DataFrame = pandas.read_sql_query()
+def inference(
+    df: DataFrame, llmRunner: RunnableSequence
+) -> List[Tuple[int, str]]:
+    data: List[Tuple[int, str]] = []
+
+    with Bar("Inferencing data...", max=df.shape[0]) as bar:
+        row: Series
+        idx: Hashable
+        for idx, row in df.iterrows():
+            title: str = row["title"]
+            abstract: str = row["summary"]
+
+            prompt: str = f"title: {title} $$$ abstract: {abstract}"
+
+            output: str = llmRunner.invoke(input=prompt)
+
+            data.append((idx, output))
+
+            bar.next()
+
+    return data
 
 
 @click.command()
@@ -63,13 +83,23 @@ def main(inputPath: Path) -> None:
         print(f"{absInputPath} is not a file")
         exit(1)
 
+    conn: Connection = connect(database=absInputPath)
+    df: DataFrame = readDB(dbPath=absInputPath, conn=conn)
+
     topics: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.values())
     # subjects: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.keys())
 
     llmRunner: RunnableSequence = buildRunnableSequence(classifications=topics)
-    output: str = llmRunner.invoke("Generate documentation for cash register")
 
-    print(output)
+    data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
+
+    datum: Tuple[int, str]
+    for datum in data:
+        # print(datum[0], datum[1])
+        df.at[datum[0], "tags"] = datum[1]
+
+    df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
+    conn.close()
 
 
 if __name__ == "__main__":
