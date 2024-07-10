@@ -1,14 +1,17 @@
-# from typing import List
+import itertools
+from itertools import chain
 
 from langchain_community.llms.ollama import Ollama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.base import RunnableSequence
 
-# from src.classifyZettels import NATURE_SUBJECTS
+from src.classifyZettels import NATURE_SUBJECTS
 
 
-def buildRunnableSequence(model: str = "llama3") -> RunnableSequence:
+def buildRunnableSequence(
+    classifications: chain, model: str = "llama3"
+) -> RunnableSequence:
 
     llm: Ollama = Ollama(model=model)
 
@@ -16,7 +19,7 @@ def buildRunnableSequence(model: str = "llama3") -> RunnableSequence:
         [
             (
                 "system",
-                "You are a world class technical documentation writer.",
+                f"Only return classifications. Only return one classification. Do not return markdown. Do not include astericks. Classify prompts as one of the following: {' '.join(classifications)}",  # noqa: E501
             ),
             ("user", "{input}"),
         ]
@@ -28,8 +31,13 @@ def buildRunnableSequence(model: str = "llama3") -> RunnableSequence:
 
 
 def main() -> None:
-    chain: RunnableSequence = buildRunnableSequence()
-    print(type(chain))
+    topics: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.values())
+    # subjects: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.keys())
+
+    llmRunner: RunnableSequence = buildRunnableSequence(classifications=topics)
+    output: str = llmRunner.invoke("Generate documentation for cash register")
+
+    print(output)
 
 
 if __name__ == "__main__":
