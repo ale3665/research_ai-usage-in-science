@@ -94,7 +94,7 @@ def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
             doi: str = _extractDOI_PLOS(url=url)
             dois.append(doi)
 
-            fp: Path = Path(outputDir, doi.replace("/", "_") + ".zettel")
+            fp: Path = Path(outputDir, doi.replace("/", "_") + ".yaml")
             paths.append(fp)
 
             bar.next()

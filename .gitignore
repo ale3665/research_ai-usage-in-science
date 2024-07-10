@@ -173,3 +173,4 @@ temp/
 *.zettel
 *.orig
 *.gz
+*.yaml
