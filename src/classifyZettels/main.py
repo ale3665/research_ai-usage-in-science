@@ -18,11 +18,10 @@ from src.classifyZettels import NATURE_SUBJECTS, SCOPUS_SUBJECTS
 
 
 def buildRunnableSequence(
-    classifications: chain,
-    model: str = "llama3",
+    classifications: chain, ollamaModel: str
 ) -> RunnableSequence:
 
-    llm: Ollama = Ollama(model=model)
+    llm: Ollama = Ollama(model=ollamaModel)
 
     prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
         [
