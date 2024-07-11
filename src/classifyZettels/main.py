@@ -34,7 +34,6 @@ def buildRunnableSequence(
     )
 
     output: StrOutputParser = StrOutputParser()
-
     return prompt | llm | output
 
 
@@ -55,13 +54,9 @@ def inference(
         for idx, row in df.iterrows():
             title: str = row["title"]
             abstract: str = row["summary"]
-
             prompt: str = f"title: {title} $$$ abstract: {abstract}"
-
             output: str = llmRunner.invoke(input=prompt)
-
             data.append((idx, output))
-
             bar.next()
 
     return data
