@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def parse_html(url):
+def parse_html(url: str) -> BeautifulSoup | None:
     response = requests.get(url, timeout=60)
 
     if response.status_code == 200:
@@ -11,6 +11,7 @@ def parse_html(url):
         return soup
     else:
         print(f"Failed to retrieve page: {response.status_code}")
+        return None
 
 
 def dataToDict(soup):
