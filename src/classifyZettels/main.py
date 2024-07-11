@@ -14,15 +14,15 @@ from pandas import DataFrame, Series
 from progress.bar import Bar
 from pyfs import isFile, resolvePath
 
-from src.classifyZettels import NATURE_SUBJECTS
-from src.classifyZettels import SCOPUS_SUBJECTS
+from src.classifyZettels import NATURE_SUBJECTS, SCOPUS_SUBJECTS
 
 
 def buildRunnableSequence(
-    classifications: chain, ollamaModel: str
+    classifications: chain,
+    model: str = "llama3",
 ) -> RunnableSequence:
 
-    llm: Ollama = Ollama(model=ollamaModel)
+    llm: Ollama = Ollama(model=model)
 
     prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
         [
@@ -81,7 +81,14 @@ def inference(
     "-c",
     "--classes",
     "classes",
-    type=click.Choice(['SCOPUS-topics', 'SCOPUS-subjects', 'nature-topics', 'nature-subjects']),
+    type=click.Choice(
+        [
+            "SCOPUS-topics",
+            "SCOPUS-subjects",
+            "nature-topics",
+            "nature-subjects",
+        ]
+    ),
     required=True,
     help="Select Nature/SCOPUS subject topic",
 )
@@ -102,76 +109,67 @@ def main(inputPath: Path, classes) -> None:
 
     conn: Connection = connect(database=absInputPath)
     df: DataFrame = readDB(dbPath=absInputPath, conn=conn)
-    
-    if classes == 'SCOPUS-topics':
+
+    if classes == "SCOPUS-topics":
         topics: chain = itertools.chain.from_iterable(SCOPUS_SUBJECTS.values())
-        llmRunner: RunnableSequence = buildRunnableSequence(classifications=topics)
+        llmRunner: RunnableSequence = buildRunnableSequence(
+            classifications=topics
+        )
 
         data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
 
         datum: Tuple[int, str]
         for datum in data:
-        # print(datum[0], datum[1])
+            # print(datum[0], datum[1])
             df.at[datum[0], "tags"] = datum[1]
 
         df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
         conn.close()
-    elif classes == 'SCOPUS-subjects':
+    elif classes == "SCOPUS-subjects":
         subjects: chain = itertools.chain.from_iterable(SCOPUS_SUBJECTS.keys())
-        llmRunner: RunnableSequence = buildRunnableSequence(classifications=subjects)
-        
+        llmRunner: RunnableSequence = buildRunnableSequence(
+            classifications=subjects
+        )
+
         data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
 
         datum: Tuple[int, str]
         for datum in data:
-        # print(datum[0], datum[1])
+            # print(datum[0], datum[1])
             df.at[datum[0], "tags"] = datum[1]
 
         df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
         conn.close()
-    elif classes == 'nature-topics':
+    elif classes == "nature-topics":
         topics: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.values())
-        llmRunner: RunnableSequence = buildRunnableSequence(classifications=topics)
-        
+        llmRunner: RunnableSequence = buildRunnableSequence(
+            classifications=topics
+        )
+
         data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
 
         datum: Tuple[int, str]
         for datum in data:
-        # print(datum[0], datum[1])
+            # print(datum[0], datum[1])
             df.at[datum[0], "tags"] = datum[1]
 
         df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
         conn.close()
-    elif classes == 'nature-subjects':
+    elif classes == "nature-subjects":
         subjects: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.keys())
-        llmRunner: RunnableSequence = buildRunnableSequence(classifications=subjects)
-        
+        llmRunner: RunnableSequence = buildRunnableSequence(
+            classifications=subjects
+        )
+
         data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
 
         datum: Tuple[int, str]
         for datum in data:
-        # print(datum[0], datum[1])
             df.at[datum[0], "tags"] = datum[1]
 
         df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
         conn.close()
-
-
-
-    # llmRunner: RunnableSequence = buildRunnableSequence(classifications=topics)
-
-    # data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
-
-    # datum: Tuple[int, str]
-    # for datum in data:
-    #     # print(datum[0], datum[1])
-    #     df.at[datum[0], "tags"] = datum[1]
-
-    # df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
-    # conn.close()
 
 
 if __name__ == "__main__":
     main()
-
-#topics: chain = itertools.chain.from_iterable(classes.values())
