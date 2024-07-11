@@ -1,0 +1,10 @@
+FROM llama3:8b
+
+PARAMETER temperature 0.5
+
+PARAMETER num_ctx 4096
+
+PARAMETER seed 42
+
+
+
