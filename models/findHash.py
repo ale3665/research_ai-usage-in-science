@@ -14,3 +14,6 @@ print(f'The {algorithm} hash of the file is: {hash_value}')
 
 # hash = d321304e6d1f8541cddca1d6994b8d34de50852d390c2a1ad7af1867423e5239
 
+# git commit c5041266168b258f1dfd30d27e1501ef50d6e298
+
+
