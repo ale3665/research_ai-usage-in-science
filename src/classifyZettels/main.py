@@ -82,24 +82,24 @@ def inference(
     "classes",
     type=click.Choice(
         [
-            "SCOPUS-topics",
-            "SCOPUS-subjects",
-            "nature-topics",
             "nature-subjects",
+            "nature-topics",
+            "scopus-subjects",
+            "scopus-topics",
         ]
     ),
     required=True,
-    help="Select Nature/SCOPUS subject topic",
+    help="Classifications to use",
 )
 @click.option(
     "-m",
     "--model",
-    "ollamaModel",
+    "model",
     type=str,
     required=True,
-    help="Select an ollama model",
+    help="A valid Ollama model to utilize as a classifier",
 )
-def main(inputPath: Path, classes) -> None:
+def main(inputPath: Path, classes: str, model: str) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
 
     if not isFile(path=absInputPath):
@@ -109,65 +109,41 @@ def main(inputPath: Path, classes) -> None:
     conn: Connection = connect(database=absInputPath)
     df: DataFrame = readDB(dbPath=absInputPath, conn=conn)
 
-    if classes == "SCOPUS-topics":
-        topics: chain = itertools.chain.from_iterable(SCOPUS_SUBJECTS.values())
-        llmRunner: RunnableSequence = buildRunnableSequence(
-            classifications=topics
-        )
+    classifications: chain
+    match classes:
+        case "nature-subjects":
+            classifications = itertools.chain.from_iterable(
+                NATURE_SUBJECTS.keys()
+            )
+        case "nature-topics":
+            classifications = itertools.chain.from_iterable(
+                NATURE_SUBJECTS.values()
+            )
+        case "scopus-subjects":
+            classifications = itertools.chain.from_iterable(
+                SCOPUS_SUBJECTS.keys()
+            )
+        case "scopus-topics":
+            classifications = itertools.chain.from_iterable(
+                SCOPUS_SUBJECTS.values()()
+            )
+        case _:
+            print("Invalid --classes option")
+            exit(1)
 
-        data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
+    llmRunner: RunnableSequence = buildRunnableSequence(
+        classifications=classifications,
+        ollamaModel=model,
+    )
 
-        datum: Tuple[int, str]
-        for datum in data:
-            # print(datum[0], datum[1])
-            df.at[datum[0], "tags"] = datum[1]
+    data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
 
-        df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
-        conn.close()
-    elif classes == "SCOPUS-subjects":
-        subjects: chain = itertools.chain.from_iterable(SCOPUS_SUBJECTS.keys())
-        llmRunner: RunnableSequence = buildRunnableSequence(
-            classifications=subjects
-        )
+    datum: Tuple[int, str]
+    for datum in data:
+        df.at[datum[0], "tags"] = datum[1]
 
-        data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
-
-        datum: Tuple[int, str]
-        for datum in data:
-            # print(datum[0], datum[1])
-            df.at[datum[0], "tags"] = datum[1]
-
-        df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
-        conn.close()
-    elif classes == "nature-topics":
-        topics: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.values())
-        llmRunner: RunnableSequence = buildRunnableSequence(
-            classifications=topics
-        )
-
-        data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
-
-        datum: Tuple[int, str]
-        for datum in data:
-            # print(datum[0], datum[1])
-            df.at[datum[0], "tags"] = datum[1]
-
-        df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
-        conn.close()
-    elif classes == "nature-subjects":
-        subjects: chain = itertools.chain.from_iterable(NATURE_SUBJECTS.keys())
-        llmRunner: RunnableSequence = buildRunnableSequence(
-            classifications=subjects
-        )
-
-        data: List[Tuple[int, str]] = inference(df=df, llmRunner=llmRunner)
-
-        datum: Tuple[int, str]
-        for datum in data:
-            df.at[datum[0], "tags"] = datum[1]
-
-        df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
-        conn.close()
+    df.to_sql(name="zettels", con=conn, if_exists="replace", index=False)
+    conn.close()
 
 
 if __name__ == "__main__":
