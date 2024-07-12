@@ -31,6 +31,25 @@ from src.downloadPapers.plos import PLOS
     help="Path to save journal paper parquet file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
+    """
+    Reads a DataFrame from a Parquet file, identifies and downloads papers based
+    on journal type, and saves the results to a new Parquet file.
+
+    This function performs the following operations:
+    1. Resolves the absolute paths for input and output files.
+    2. Checks if the input path is a valid file and not a directory, and if the output
+       path does not already exist as a file or directory.
+    3. Reads the input file into a DataFrame.
+    4. Identifies the most common journal name in the DataFrame.
+    5. Extracts paper URLs from the HTML content based on the journal type.
+    6. Downloads the papers and stores the results.
+    7. Saves the results to a new Parquet file.
+
+    :param inputPath: The path to the input file containing the DataFrame.
+    :type inputPath: Path
+    :param outputPath: The path where the output file will be stored.
+    :type outputPath: Path
+    """  # noqa: E501
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputPath: Path = resolvePath(path=outputPath)
 
