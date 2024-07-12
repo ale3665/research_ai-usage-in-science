@@ -51,6 +51,7 @@ def inference(
     df: DataFrame,
     llmRunner: RunnableSequence,
     tagName: str,
+    model: str,
 ) -> List[Tuple[int, str]]:
     data: List[Tuple[int, str]] = []
 
@@ -62,7 +63,7 @@ def inference(
             abstract: str = row["summary"]
             prompt: str = f"title: {title} $$$ abstract: {abstract}"
             output: str = llmRunner.invoke(input=prompt)
-            data.append((idx, tagName + "_" + output))
+            data.append((idx, model + "_" + tagName + "_" + output))
             bar.next()
 
     return data
@@ -160,6 +161,7 @@ def main(inputPath: Path, classificationName: str, model: str) -> None:
         df=df,
         llmRunner=llmRunner,
         tagName=classificationName,
+        model=model,
     )
 
     writeTagsToFile(data=data, filepaths=df["filename"])
