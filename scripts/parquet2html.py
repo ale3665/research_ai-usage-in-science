@@ -26,14 +26,29 @@ from pyfs import isDirectory, isFile, resolvePath
     help="Path to a directory to save HTML documents to",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
+    """
+    Main function to read a Parquet file, process its contents, and generate HTML files.
+
+    This function performs the following steps:
+    1. Resolves the input and output paths.
+    2. Checks if the input path points to a valid file and the output path points to a valid directory.
+    3. Reads a Parquet file into a DataFrame.
+    4. Iterates over the DataFrame rows and creates an HTML file for each row using BeautifulSoup to prettify the HTML content.
+    5. Displays a progress bar indicating the creation of HTML files.
+
+    :param inputPath: The path to the input Parquet file.
+    :type inputPath: Path
+    :param outputPath: The path to the directory where HTML files will be saved.
+    :type outputPath: Path
+    """  # noqa: E501
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputPath: Path = resolvePath(path=outputPath)
 
-    if isFile(path=absInputPath) == False:
+    if isFile(path=absInputPath) is False:
         print(f"{absInputPath} is not a file")
         exit(1)
 
-    if isDirectory(path=absOutputPath) == False:
+    if isDirectory(path=absOutputPath) is False:
         print(f"{absOutputPath} is not a directory")
         exit(1)
 
@@ -44,7 +59,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
         for _, row in df.iterrows():
             filepath: Path = Path(
                 absOutputPath,
-                f'{row["year"]}_{row["query"]}_{row["page"]}_{row["status_code"]}.html',
+                f'{row["year"]}_{row["query"]}_{row["page"]}_{row["status_code"]}.html',  # noqa: E501
             )
 
             soup: BeautifulSoup = BeautifulSoup(
