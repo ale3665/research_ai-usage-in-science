@@ -1,7 +1,8 @@
 import requests
 import os
+from pathlib import Path
 
-def searchOpenAlex(workID):
+def searchOpenAlex(workID: str) -> dict:
     """
     Search for work information in the OpenAlex API based on the work's ID.
 
@@ -39,21 +40,21 @@ def searchOpenAlex(workID):
         return None
 
 
-def getWorkId(query):
+def getWorkId(title) -> str:
     """
     Retrieve the ID of a work based on a query using the OpenAlex API.
 
     This function constructs a URL with the provided query, sends a GET request
     to the OpenAlex API, and retrieves the ID of the first result if available.
 
-    :param query: The query string used to search for the work in the OpenAlex API.
-    :type query: str
+    :param title: The query string used to search for the work in the OpenAlex API.
+    :type title: str
     :return: The ID of the first work matching the query. Returns None if no results are found.
     :rtype: str or None
     """
     url = "https://api.openalex.org/works"
     params = {
-        "search": query
+        "search": title
     }
     response = requests.get(url, params=params)
     response.raise_for_status()
@@ -62,15 +63,15 @@ def getWorkId(query):
         return data['results'][0]['id']
     return None
 
-def extractZettelInfo(filePath):
+def extractZettelInfo(filePath: Path) -> dict:
     """
     Extracts information from a zettel file located at the specified path.
 
     This function reads the content of the zettel file, extracts the title,
     and returns it as a dictionary.
 
-    :param file_path: The path to the zettel file.
-    :type file_path: str
+    :param filePpath: The path to the zettel file.
+    :type filePath: str
     :return: A dictionary containing the extracted information.
              Returns {"title": extracted_title} if successful.
     :rtype: dict
@@ -78,15 +79,37 @@ def extractZettelInfo(filePath):
     with open(filePath, 'r', encoding='utf-8') as file:
         content = file.read()
 
-    # Extract title, url, and summary from plaintext content
-    title = content.split('\n')[1].strip()
-    title = title.replace("title: ", "")
+    lines = content.splitlines()
+    for line in lines:
+        if line.strip().startswith("title: "):
+            title = line.strip().replace("title: ", "")
+            return {
+                "title": title,
+            }
 
-    return {
-        "title": title,
-    }
 
-def processZettelFile(filePath):
+def updateZettelFile(filePath: Path, data: dict) -> None:
+    """
+    Updates a zettel file located at the specified path with new data.
+
+    This function appends the topic, field, and domain information from `new_data`
+    to the zettel file, separating each with a newline and ending with a delimiter.
+
+    :param file_path: The path to the zettel file to be updated.
+    :type filePath: str
+    :param data: A dictionary containing new data to append to the zettel file.
+                     Expected keys are 'topic', 'field', and 'domain'.
+    :type data: dict
+    :return: None
+    """
+    with open(filePath, 'a', encoding='utf-8') as file:
+        file.write(f"OA topic: {data['topic']}\n")
+        file.write(f"OA field: {data['field']}\n")
+        file.write(f"OA domain: {data['domain']}\n")
+        file.write("---\n")
+
+
+def processZettelFile(filePath: Path) -> None:
     """
     Processes a zettel file by extracting information, searching for related work in the OpenAlex API,
     and updating the zettel file with the retrieved data if available.
@@ -99,37 +122,18 @@ def processZettelFile(filePath):
     :type filePath: str
     :return: None
     """
-    zettel = extractZettelInfo(filePath)
-    query = zettel["title"]
-    print(f"Searching OpenAlex API for '{query}'...")
-    workID = getWorkId(query)
+    zettel: dict = extractZettelInfo(filePath)
+    title: str = zettel["title"]
+    print(f"Searching OpenAlex API for '{title}'...")
+    workID: str = getWorkId(title)
     if workID:
-        result = searchOpenAlex(workID)
+        result: dict = searchOpenAlex(workID)
         if result:
             updateZettelFile(filePath, result)
             print(f"Updated {filePath} with new data.")
     else:
-        print(f"No work ID found for '{query}'. Skipping update for {filePath}.")
+        print(f"No work ID found for '{title}'. Skipping update for {filePath}.")
 
-def updateZettelFile(file_path, new_data):
-    """
-    Updates a zettel file located at the specified path with new data.
-
-    This function appends the topic, field, and domain information from `new_data`
-    to the zettel file, separating each with a newline and ending with a delimiter.
-
-    :param file_path: The path to the zettel file to be updated.
-    :type file_path: str
-    :param new_data: A dictionary containing new data to append to the zettel file.
-                     Expected keys are 'topic', 'field', and 'domain'.
-    :type new_data: dict
-    :return: None
-    """
-    with open(file_path, 'a', encoding='utf-8') as file:
-        file.write(f"OA topic: {new_data['topic']}\n")
-        file.write(f"OA field: {new_data['field']}\n")
-        file.write(f"OA domain: {new_data['domain']}\n")
-        file.write("---\n")
 
 def main() -> None:
     """
@@ -147,7 +151,7 @@ def main() -> None:
         print(f"Error: '{directory}' is not a valid directory.")
 
     for filename in os.listdir(directory):
-        filePath = os.path.join(directory, filename)
+        filePath: Path = os.path.join(directory, filename)
         if os.path.isfile(filePath):
             processZettelFile(filePath)
 
