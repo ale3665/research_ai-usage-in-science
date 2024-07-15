@@ -1,11 +1,11 @@
-# Deep Neural Network (DNN) Reusage in Science
+# AI Usage in Science
 
 > A research project to understand how researchers studying who leverage
 > scientific computing reuse DNNs within their work
 
 ## Table of Contents
 
-- [Deep Neural Network (DNN) Reusage in Science](#deep-neural-network-dnn-reusage-in-science)
+- [AI Usage in Science](#ai-usage-in-science)
   - [Table of Contents](#table-of-contents)
   - [About](#about)
   - [Dependencies](#dependencies)
@@ -46,7 +46,7 @@ different architectures.
 
 1. `git clone https://github.com/NicholasSynovic/research_ai-usage-in-science`
 1. `make create-dev`
-1. `make install`
+1. `make build`
 
 ## How to Contribute
 
@@ -56,7 +56,7 @@ maximum compatibility
 
 1. `git clone https://github.com/NicholasSynovic/research_ai-usage-in-science`
 1. `make create-dev`
-1. `make install`
+1. `make build`
 1. `pre-commit install`
 
 ## Project Tutorial
