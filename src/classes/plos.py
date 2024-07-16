@@ -3,7 +3,7 @@ from math import ceil
 from string import Template
 from typing import List
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
@@ -179,3 +179,18 @@ class PLOS(Journal_ABC):
             references.decompose()
 
         return formatText(string=content.text)
+
+    def extractJournalTagsFromPaper(self, soup: BeautifulSoup) -> List[str]:
+        data: List[str] = []
+
+        tags: ResultSet = soup.find_all(
+            name="li",
+            attrs={"class": "taxo-term"},
+        )
+
+        tag: Tag
+        for tag in tags:
+            text: str = formatText(string=tag.text)
+            data.append(text)
+
+        return data

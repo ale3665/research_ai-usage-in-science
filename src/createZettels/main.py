@@ -58,7 +58,7 @@ def extractContent(
             titles.append(journal.extractTitleFromPaper(soup=soup))
             abstracts.append(journal.extractAbstractFromPaper(soup=soup))
             documents.append(journal.extractContentFromPaper(soup=soup))
-            tags.append([""])
+            tags.extend(journal.extractJournalTagsFromPaper(soup=soup))
 
             bar.next()
 
@@ -102,14 +102,14 @@ def createZettels(zettels: List[ZETTEL]) -> None:
             )
             contentTFName: str = storeStringInTempFile(string=zettel.document)
 
-            # --append-tags {" ".join(zettel.tag).strip()} \
             url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
             cmd: str = (
                 f'zettel --set-url {url} \
                         --load-document {contentTFName} \
                         --load-summary {abstractTFName} \
                         --load-title {titleTFName} \
-                        --save "{zettel.path}"'
+                        --save "{zettel.path}" \
+                        --append-tags {" ".join(zettel.tag).strip()}'
             )
 
             process: CompletedProcess = Popen(
