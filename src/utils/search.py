@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Type
 from webbrowser import open_new_tab
 
 from requests import Response, get
@@ -29,7 +29,7 @@ DATA_STOR: dict[str, List[str | int | bytes]] = {
 
 
 class dfSchema(TypedDataFrame):
-    schema: dict = {
+    schema: dict[str, Type] = {
         "year": int,
         "query": str,
         "page": int,
@@ -55,7 +55,7 @@ class Search:
         Initalizes the Search class with standard headers
         """
         self.headers: dict[str, str] = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",  # noqa: E501
         }
 
     def search(self, url: str) -> Response:
@@ -68,8 +68,8 @@ class Search:
         :type url: str
         :return: The Response object of that URL containing the HTML, status code, and header information
         :rtype: Response
-        """
-        resp: Response = get(url=url, headers=self.headers)
+        """  # noqa: E501
+        resp: Response = get(url=url, headers=self.headers, timeout=60)
         return resp
 
     def openWebpage(self, url: str) -> None:
