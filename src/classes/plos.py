@@ -184,13 +184,13 @@ class PLOS(Journal_ABC):
         data: List[str] = []
 
         tags: ResultSet = soup.find_all(
-            name="li",
+            name="a",
             attrs={"class": "taxo-term"},
         )
 
         tag: Tag
         for tag in tags:
             text: str = formatText(string=tag.text)
-            data.append(text)
+            data.append(f'"{text}"')
 
         return data

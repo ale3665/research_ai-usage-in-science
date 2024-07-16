@@ -28,7 +28,10 @@ ZETTEL = namedtuple(
 
 
 def extractContent(
-    journal: Journal_ABC, df: DataFrame, outputDir: Path
+    journal: Journal_ABC,
+    df: DataFrame,
+    outputDir: Path,
+    numDocs: int = -1,
 ) -> List[ZETTEL]:
     data: List[ZETTEL] = []
 
@@ -38,6 +41,8 @@ def extractContent(
     documents: List[str] = []
     tags: List[List[str]] = []
     paths: List[Path] = []
+
+    df: DataFrame = df[0:numDocs]
 
     with Bar("Extracting DOIs...", max=df.shape[0]) as bar:
         url: str
@@ -58,7 +63,7 @@ def extractContent(
             titles.append(journal.extractTitleFromPaper(soup=soup))
             abstracts.append(journal.extractAbstractFromPaper(soup=soup))
             documents.append(journal.extractContentFromPaper(soup=soup))
-            tags.extend(journal.extractJournalTagsFromPaper(soup=soup))
+            tags.append(journal.extractJournalTagsFromPaper(soup=soup))
 
             bar.next()
 
@@ -73,6 +78,8 @@ def extractContent(
                 tag=tags[idx],
                 path=paths[idx],
             )
+
+            print(zettel.tag)
 
             data.append(zettel)
 
@@ -141,23 +148,28 @@ def createZettels(zettels: List[ZETTEL]) -> None:
     required=True,
     help="Directory to save Zettels to",
 )
-def main(inputPath: Path, outputDir: Path) -> None:
+@click.option(
+    "-n",
+    "--number-of-documents",
+    "numDocs",
+    type=int,
+    required=False,
+    help="Number of documents to analyze. -1 means all documents are analyzed",  # noqa: E501
+    default=-1,
+    show_default=True,
+)
+def main(inputPath: Path, outputDir: Path, numDocs: int = -1) -> None:
     """
-    Main function to read a DataFrame, extract content based on the journal,
-    and create ZETTEL objects.
+    main _summary_
 
-    This function performs the following operations:
-    1. Resolves the absolute paths for input and output directories.
-    2. Checks if the input path is a valid file and the output path is a valid directory.
-    3. Reads the input file into a DataFrame.
-    4. Determines the journal name from the DataFrame.
-    5. Extracts content based on the journal name.
-    6. Creates ZETTEL objects and writes them to disk.
+    _extended_summary_
 
-    :param inputPath: The path to the input file containing the DataFrame.
+    :param inputPath: _description_
     :type inputPath: Path
-    :param outputDir: The directory where the output files will be stored.
+    :param outputDir: _description_
     :type outputDir: Path
+    :param numDocs: _description_, defaults to -1
+    :type numDocs: int, optional
     """  # noqa: E501
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputDirPath: Path = resolvePath(path=outputDir)
@@ -173,6 +185,9 @@ def main(inputPath: Path, outputDir: Path) -> None:
     print(f"Reading {absInputPath} ...")
     df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
 
+    if numDocs < 0:
+        numDocs = df.shape[0] + 1
+
     journalName: str = df["journal"][0]
 
     data: List[ZETTEL]
@@ -187,6 +202,7 @@ def main(inputPath: Path, outputDir: Path) -> None:
         journal=journal,
         df=df,
         outputDir=absOutputDirPath,
+        numDocs=numDocs,
     )
 
     createZettels(zettels=data)
