@@ -1,4 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from typing import List
+
+from bs4 import BeautifulSoup
+from pandas import DataFrame
 
 
 class Journal_ABC(metaclass=ABCMeta):
@@ -12,25 +16,26 @@ class Journal_ABC(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def search(self) -> None:
+    def search(self, query: str, year: int) -> DataFrame:
+
         pass
 
     @abstractmethod
-    def extractPaperURLsFromSearchResult(self) -> None:
+    def extractPaperURLsFromSearchResult(self, respContent: str) -> List[str]:
         pass
 
     @abstractmethod
-    def extractDOIFromPaper(self) -> None:
+    def extractDOIFromPaper(self, url: str) -> str:
         pass
 
     @abstractmethod
-    def extractTitleFromPaper(self) -> None:
+    def extractTitleFromPaper(self, soup: BeautifulSoup) -> str:
         pass
 
     @abstractmethod
-    def extractAbstractFromPaper(self) -> None:
+    def extractAbstractFromPaper(self, soup: BeautifulSoup) -> str:
         pass
 
     @abstractmethod
-    def extractContentFromPaper(self) -> None:
+    def extractContentFromPaper(self, soup: BeautifulSoup) -> str:
         pass
