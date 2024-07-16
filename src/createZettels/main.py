@@ -1,16 +1,18 @@
-import re
 from collections import namedtuple
 from pathlib import Path
 from subprocess import PIPE, CompletedProcess, Popen  # nosec
-from tempfile import NamedTemporaryFile
 from typing import List
 
 import click
 import pandas
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 from pandas import DataFrame
 from progress.bar import Bar
 from pyfs import isDirectory, isFile, resolvePath
+
+from src.classes.journalGeneric import Journal_ABC
+from src.classes.plos import PLOS
+from src.utils import storeStringInTempFile
 
 ZETTEL = namedtuple(
     typename="zettel",
@@ -25,118 +27,9 @@ ZETTEL = namedtuple(
 )
 
 
-def _formatText(string: str) -> str:
-    """
-    Formats a given string by removing certain characters and cleaning up whitespace.
-
-    This function performs the following operations on the input string:
-    1. Removes hyphenated newlines (i.e., "-\n").
-    2. Replaces newlines with an empty string.
-    3. Collapses multiple spaces into a single space.
-
-    :param string: The input string to be formatted.
-    :type string: str
-    :return: The formatted string with cleaned-up text.
-    :rtype: str
-    """  # noqa: E501
-    string = re.sub(pattern=r"-\n", repl="", string=string)
-    string = string.replace("\n", "")
-    string = " ".join(string.split())
-    return string
-
-
-def _storeStringInTempFile(string: str) -> str:
-    """
-    Stores a given string in a temporary file and returns the file's name.
-
-    This function creates a temporary file, writes the given string to it,
-    and returns the name of the temporary file. The temporary file is not
-    deleted when closed, allowing the caller to access it later.
-
-    :param string: The input string to be stored in the temporary file.
-    :type string: str
-    :return: The name of the temporary file containing the stored string.
-    :rtype: str
-    """
-    tf: NamedTemporaryFile = NamedTemporaryFile(
-        mode="w+t",
-        delete=False,
-    )
-
-    tfName: str = tf.name
-
-    tf.write(string)
-    tf.close()
-
-    return tfName
-
-
-def _extractDOI_PLOS(url: str) -> str:
-    """
-    Extracts the DOI from a PLOS article URL.
-
-    This function takes a PLOS article URL and extracts the DOI by splitting
-    the URL at the '=' character and returning the second part.
-
-    :param url: The URL of the PLOS article.
-    :type url: str
-    :return: The extracted DOI from the URL.
-    :rtype: str
-    """
-    splitURL: List[str] = url.split(sep="=")
-    return splitURL[1]
-
-
-def _extractTitle_PLOS(soup: BeautifulSoup) -> str:
-    """
-    Extracts the title of a PLOS article from a BeautifulSoup object.
-
-    This function takes a BeautifulSoup object representing a PLOS article's HTML
-    content, finds the title element by its tag and attributes, and returns the
-    formatted title text.
-
-    :param soup: A BeautifulSoup object containing the parsed HTML of the PLOS article.
-    :type soup: BeautifulSoup
-    :return: The formatted title of the PLOS article.
-    :rtype: str
-    """  # noqa: E501
-    title: Tag = soup.find(name="h1", attrs={"id": "artTitle"})
-    return _formatText(string=title.text)
-
-
-def _extractAbstract_PLOS(soup: BeautifulSoup) -> str:
-    """
-    Extracts the abstract of a PLOS article from a BeautifulSoup object.
-
-    This function takes a BeautifulSoup object representing a PLOS article's HTML
-    content, finds the abstract element by its tag and attributes, and returns the
-    formatted abstract text.
-
-    :param soup: A BeautifulSoup object containing the parsed HTML of the PLOS article.
-    :type soup: BeautifulSoup
-    :return: The formatted abstract of the PLOS article.
-    :rtype: str
-    """  # noqa: E501
-    abstract: Tag = soup.find(name="div", attrs={"class": "abstract-content"})
-    return _formatText(string=abstract.text)
-
-
-def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
-    """
-    Extracts content from a PLOS DataFrame and creates a list of ZETTEL objects.
-
-    This function performs the following operations:
-    1. Extracts DOIs from URLs in the DataFrame.
-    2. Parses HTML content from the DataFrame to extract titles and abstracts.
-    3. Creates ZETTEL objects using the extracted information and stores them in a list.
-
-    :param df: The DataFrame containing PLOS article data.
-    :type df: DataFrame
-    :param outputDir: The directory where the output files will be stored.
-    :type outputDir: Path
-    :return: A list of ZETTEL objects containing the extracted content.
-    :rtype: List[ZETTEL]
-    """  # noqa: E501
+def extractContent(
+    journal: Journal_ABC, df: DataFrame, outputDir: Path
+) -> List[ZETTEL]:
     data: List[ZETTEL] = []
 
     dois: List[str] = []
@@ -149,7 +42,7 @@ def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
     with Bar("Extracting DOIs...", max=df.shape[0]) as bar:
         url: str
         for url in df["url"]:
-            doi: str = _extractDOI_PLOS(url=url)
+            doi: str = journal.extractDOIFromPaper(url=url)
             dois.append(doi)
 
             fp: Path = Path(outputDir, doi.replace("/", "_") + ".yaml")
@@ -162,9 +55,9 @@ def extractContnet_PLOS(df: DataFrame, outputDir: Path) -> List[ZETTEL]:
         for html in df["html"]:
             soup: BeautifulSoup = BeautifulSoup(markup=html, features="lxml")
 
-            titles.append(_extractTitle_PLOS(soup=soup))
-            abstracts.append(_extractAbstract_PLOS(soup=soup))
-            documents.append("")
+            titles.append(journal.extractTitleFromPaper(soup=soup))
+            abstracts.append(journal.extractAbstractFromPaper(soup=soup))
+            documents.append(journal.extractContentFromPaper(soup=soup))
             tags.append([""])
 
             bar.next()
@@ -203,18 +96,19 @@ def createZettels(zettels: List[ZETTEL]) -> None:
     with Bar("Writing Zettels to disk..", max=len(zettels)) as bar:
         zettel: ZETTEL
         for zettel in zettels:
-            titleTFName: str = _storeStringInTempFile(string=zettel.title)
-            abstractTFName: str = _storeStringInTempFile(
+            titleTFName: str = storeStringInTempFile(string=zettel.title)
+            abstractTFName: str = storeStringInTempFile(
                 string=zettel.abstract,
             )
+            contentTFName: str = storeStringInTempFile(string=zettel.document)
 
-            # --load-note {noteTemp.name} \
             # --append-tags {" ".join(zettel.tag).strip()} \
             url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
             cmd: str = (
-                f'zettel --load-title {titleTFName} \
-                        --set-url {url} \
+                f'zettel --set-url {url} \
+                        --load-document {contentTFName} \
                         --load-summary {abstractTFName} \
+                        --load-title {titleTFName} \
                         --save "{zettel.path}"'
             )
 
@@ -284,13 +178,16 @@ def main(inputPath: Path, outputDir: Path) -> None:
     data: List[ZETTEL]
     match journalName:
         case "PLOS":
-            data = extractContnet_PLOS(
-                df=df,
-                outputDir=absOutputDirPath,
-            )
+            journal: Journal_ABC = PLOS()
         case _:
             print("Unsupported journal")
             exit(1)
+
+    data: List[ZETTEL] = extractContent(
+        journal=journal,
+        df=df,
+        outputDir=absOutputDirPath,
+    )
 
     createZettels(zettels=data)
 
