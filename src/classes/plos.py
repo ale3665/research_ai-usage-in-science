@@ -77,7 +77,7 @@ class PLOS(Journal_ABC):
 
         return SearchResultDataFrameSchema(df=DataFrame(data=data)).df
 
-    def extractPaperURLsFromSearchResult(self, respContent: str) -> None:
+    def extractPaperURLsFromSearchResult(self, respContent: str) -> List[str]:
         data: List[str] = []
 
         json: dict = loads(s=respContent)
@@ -111,7 +111,7 @@ class PLOS(Journal_ABC):
         splitURL: List[str] = url.split(sep="=")
         return splitURL[1]
 
-    def extractTitleFromPaper(self, soup: BeautifulSoup) -> None:
+    def extractTitleFromPaper(self, soup: BeautifulSoup) -> str:
         """
         Extracts the title of a PLOS article from a BeautifulSoup object.
 
@@ -127,7 +127,7 @@ class PLOS(Journal_ABC):
         title: Tag = soup.find(name="h1", attrs={"id": "artTitle"})
         return formatText(string=title.text)
 
-    def extractAbstractFromPaper(self, soup: BeautifulSoup) -> None:
+    def extractAbstractFromPaper(self, soup: BeautifulSoup) -> str:
         """
         Extracts the abstract of a PLOS article from a BeautifulSoup object.
 
@@ -146,5 +146,19 @@ class PLOS(Journal_ABC):
         )
         return formatText(string=abstract.text)
 
-    def extractContentFromPaper(self) -> None:
-        pass
+    def extractContentFromPaper(self, soup: BeautifulSoup) -> str:
+        """
+        extractContentFromPaper _summary_
+
+        _extended_summary_
+
+        :param soup: _description_
+        :type soup: BeautifulSoup
+        :return: _description_
+        :rtype: str
+        """
+        content: Tag = soup.find(
+            name="div",
+            attrs={"id", "article-container"},
+        )
+        return formatText(string=content.text)
