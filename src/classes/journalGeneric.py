@@ -16,7 +16,7 @@ class Journal_ABC(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def extractPaperURLs(self) -> None:
+    def extractPaperURLsFromSearchResult(self) -> None:
         pass
 
     @abstractmethod

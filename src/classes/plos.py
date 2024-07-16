@@ -1,3 +1,4 @@
+from json import loads
 from math import ceil
 from string import Template
 from typing import List
@@ -13,6 +14,9 @@ from src.classes.journalGeneric import Journal_ABC
 class PLOS(Journal_ABC):
     def __init__(self) -> None:
         self.journalName: str = "PLOS"
+        self.paperURLTemplate: Template = Template(
+            template="https://journals.plos.org/plosone/article?id=${paperID}"
+        )  # noqa: E501
         self.searchURLTemplate: Template = Template(
             template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"  # noqa: E501
         )
@@ -71,8 +75,24 @@ class PLOS(Journal_ABC):
 
         return SearchResultDataFrameSchema(df=DataFrame(data=data)).df
 
-    def extractPaperURLs(self) -> None:
-        pass
+    def extractPaperURLsFromSearchResult(self, respContent: str) -> None:
+        data: List[str] = []
+
+        json: dict = loads(s=respContent)
+        searchResults: dict = json["searchResults"]
+        docs: List[dict] = searchResults["docs"]
+
+        doc: dict
+        for doc in docs:
+            (
+                data.append(
+                    self.paperURLTemplate.substitute(
+                        paperID=doc["id"],
+                    ),
+                )
+            )
+
+        return data
 
     def downloadPapers(self) -> None:
         pass
