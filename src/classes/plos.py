@@ -94,9 +94,6 @@ class PLOS(Journal_ABC):
 
         return data
 
-    def downloadPapers(self) -> None:
-        pass
-
     def extractDOIFromPaper(self) -> None:
         pass
 

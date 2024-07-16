@@ -20,10 +20,6 @@ class Journal_ABC(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def downloadPapers(self) -> None:
-        pass
-
-    @abstractmethod
     def extractDOIFromPaper(self) -> None:
         pass
 
