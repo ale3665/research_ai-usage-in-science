@@ -3,6 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
 
+import click
+from pyfs import isFile, resolvePath
+
 def extractZettelInfo(filePath: Path) -> dict:
     """
     Extracts the URL information from a zettel file.
@@ -104,8 +107,17 @@ def processZettelFile(filePath: Path) -> None:
         print(f"Updated {filePath} with new data.")
     else:
         print(f"No HTML subjects found for '{url}'. Skipping update for {filePath}.")
-    
-def main() -> None:
+
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    type=Path,
+    required=True,
+    help="Path to a directory with Zettels",
+)
+def main(inputPath: Path) -> None:
     """
     Main function to process all zettel files in a specified directory.
 
@@ -116,12 +128,13 @@ def main() -> None:
 
     :return: None
     """
-    directory: Path = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/src/createZettels/zettels"
-    if not os.path.isdir(directory):
-        print(f"Error: '{directory}' is not a valid directory.")
+    zettelDirectory: Path = resolvePath(path=inputPath)
+    
+    if not os.path.isdir(zettelDirectory):
+        print(f"Error: '{zettelDirectory}' is not a valid directory.")
 
-    for filename in os.listdir(directory):
-        filePath: Path = os.path.join(directory, filename)
+    for filename in os.listdir(zettelDirectory):
+        filePath: Path = os.path.join(zettelDirectory, filename)
         if os.path.isfile(filePath):
             processZettelFile(filePath)
 

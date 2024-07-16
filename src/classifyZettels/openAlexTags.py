@@ -2,6 +2,10 @@ import requests
 import os
 from pathlib import Path
 
+import click
+from pyfs import isFile, resolvePath
+from progress.bar import Bar
+
 def searchOpenAlex(workID: str) -> dict:
     """
     Search for work information in the OpenAlex API based on the work's ID.
@@ -77,16 +81,23 @@ def extractZettelInfo(filePath: Path) -> dict:
     :rtype: dict
     """
     with open(filePath, 'r', encoding='utf-8') as file:
-        content = file.read()
+        lines = file.readlines()
 
-    lines = content.splitlines()
+    title_lines = []
+    capturing_title = False
+
     for line in lines:
-        if line.strip().startswith("title: "):
-            title = line.strip().replace("title: ", "")
-            return {
-                "title": title,
-            }
+        stripped_line = line.strip()
+        if stripped_line.startswith("title: "):
+            capturing_title = True
+            title_lines.append(stripped_line.replace("title: ", ""))
+        elif capturing_title:
+            if stripped_line == "" or not line.startswith(" "):
+                break
+            title_lines.append(stripped_line)
 
+    title = " ".join(title_lines)
+    return {"title": title}
 
 def updateZettelFile(filePath: Path, data: dict) -> None:
     """
@@ -135,7 +146,17 @@ def processZettelFile(filePath: Path) -> None:
         print(f"No work ID found for '{title}'. Skipping update for {filePath}.")
 
 
-def main() -> None:
+
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    type=Path,
+    required=True,
+    help="Path to a directory with zettels",
+)
+def main(inputPath: Path) -> None:
     """
     Processes each zettel file in the specified directory by updating it with relevant data
     retrieved from the OpenAlex API.
@@ -146,12 +167,12 @@ def main() -> None:
 
     :return: None
     """
-    directory = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/src/createZettels/zettels"
-    if not os.path.isdir(directory):
-        print(f"Error: '{directory}' is not a valid directory.")
+    zettelDirectory: Path = resolvePath(path=inputPath)
+    if not os.path.isdir(zettelDirectory):
+        print(f"Error: '{zettelDirectory}' is not a valid directory.")
 
-    for filename in os.listdir(directory):
-        filePath: Path = os.path.join(directory, filename)
+    for filename in os.listdir(zettelDirectory):
+        filePath: Path = os.path.join(zettelDirectory, filename)
         if os.path.isfile(filePath):
             processZettelFile(filePath)
 
