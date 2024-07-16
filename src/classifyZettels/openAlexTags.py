@@ -6,6 +6,17 @@ import click
 from pyfs import isFile, resolvePath
 from progress.bar import Bar
 
+def getDirectorySize(zettelDirectory: Path) -> int:
+    """
+    Count the number of files in the given directory.
+
+    :param directory: The path to the directory.
+    :type directory: Path
+    :return: The number of files in the directory.
+    :rtype: int
+    """
+    return sum(1 for _ in zettelDirectory.iterdir() if _.is_file())
+
 def searchOpenAlex(workID: str) -> dict:
     """
     Search for work information in the OpenAlex API based on the work's ID.
@@ -135,7 +146,7 @@ def processZettelFile(filePath: Path) -> None:
     """
     zettel: dict = extractZettelInfo(filePath)
     title: str = zettel["title"]
-    print(f"Searching OpenAlex API for '{title}'...")
+    print(f"\nSearching OpenAlex API for '{title}'...")
     workID: str = getWorkId(title)
     if workID:
         result: dict = searchOpenAlex(workID)
@@ -168,14 +179,16 @@ def main(inputPath: Path) -> None:
     :return: None
     """
     zettelDirectory: Path = resolvePath(path=inputPath)
+    size = getDirectorySize(zettelDirectory)
     if not os.path.isdir(zettelDirectory):
         print(f"Error: '{zettelDirectory}' is not a valid directory.")
 
-    for filename in os.listdir(zettelDirectory):
-        filePath: Path = os.path.join(zettelDirectory, filename)
-        if os.path.isfile(filePath):
-            processZettelFile(filePath)
-
+    with Bar("Writing Open Alex tags to files...", max=size) as bar:
+        for filename in os.listdir(zettelDirectory):
+            filePath: Path = os.path.join(zettelDirectory, filename)
+            if os.path.isfile(filePath):
+                processZettelFile(filePath)
+            bar.next()
 if __name__ == "__main__":
     main()
 
