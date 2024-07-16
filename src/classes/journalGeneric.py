@@ -16,7 +16,7 @@ class Journal_ABC(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def search(self, query: str, year: int) -> DataFrame:
+    def searchJournal(self, query: str, year: int) -> DataFrame:
 
         pass
 

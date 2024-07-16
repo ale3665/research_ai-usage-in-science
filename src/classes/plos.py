@@ -10,6 +10,7 @@ from requests import Response
 
 from src.classes import SEARCH_RESULTS_STOR, SearchResultDataFrameSchema
 from src.classes.journalGeneric import Journal_ABC
+from src.classes.search import Search
 from src.utils import formatText
 
 
@@ -23,7 +24,7 @@ class PLOS(Journal_ABC):
             template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"  # noqa: E501
         )
 
-    def search(self, query: str, year: int) -> DataFrame:
+    def searchJournal(self, query: str, year: int) -> DataFrame:
         """
         search _summary_
 
@@ -51,7 +52,7 @@ class PLOS(Journal_ABC):
                     page=page,
                 )
 
-                resp: Response = self.search.search(url=url)
+                resp: Response = Search().search(url=url)
 
                 data["year"].append(year)
                 data["query"].append(query)
