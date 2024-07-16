@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 import click
-from pyfs import isFile, resolvePath
+from pyfs import resolvePath
 from progress.bar import Bar
 
 def getDirectorySize(zettelDirectory: Path) -> int:
@@ -189,6 +189,7 @@ def main(inputPath: Path) -> None:
             if os.path.isfile(filePath):
                 processZettelFile(filePath)
             bar.next()
+            
 if __name__ == "__main__":
     main()
 
