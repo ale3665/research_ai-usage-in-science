@@ -1,21 +1,25 @@
-from src.utils.search import SEARCH_QUERIES
-import click
-from pathlib import Path
-from bs4 import BeautifulSoup
-import requests
-from pyfs import isFile, resolvePath
+import ast
+import csv
 import os
 import re
-import ast
-import pandas as pd
-import csv
 from collections import Counter
+from pathlib import Path
 from typing import List
+
+import click
 import matplotlib.pyplot as plt
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 from progress.bar import Bar
+from pyfs import isFile, resolvePath
+
+from src.utils.search import SEARCH_QUERIES
+
 
 def format_url(url: str) -> str:
     return url.replace("https://", "")
+
 
 def getDirectorySize(zettelDirectory: Path) -> int:
     """
@@ -28,15 +32,16 @@ def getDirectorySize(zettelDirectory: Path) -> int:
     """
     return sum(1 for _ in zettelDirectory.iterdir() if _.is_file())
 
+
 def countKeywords(filePath: Path, queries: List[str]) -> List[str]:
     url: str = extractZettelInfo(filePath)
 
     keywordPatterns = [re.compile(k, re.IGNORECASE) for k in queries]
-    
+
     results = []
 
     # counter = Counter()
-    
+
     response = requests.get(url)
     response.raise_for_status()  # Raise an error for bad responses
     content = response.text
@@ -44,13 +49,14 @@ def countKeywords(filePath: Path, queries: List[str]) -> List[str]:
     # for pattern in keywordPatterns:
     #     keyword = pattern.pattern.strip('"').lower()
     #     counter[keyword] += len(pattern.findall(content))
-    
+
     for pattern in keywordPatterns:
         keyword = pattern.pattern.strip('"').lower()
         count = len(pattern.findall(content))
         results.append(f"{keyword}: {count}")
-    
+
     return results
+
 
 def extractZettelInfo(filePath: Path) -> dict:
     """
@@ -66,7 +72,7 @@ def extractZettelInfo(filePath: Path) -> dict:
              If the URL is not found, the dictionary will be empty.
     :rtype: dict
     """
-    with open(filePath, 'r', encoding='utf-8') as file:
+    with open(filePath, "r", encoding="utf-8") as file:
         content = file.read()
 
     lines = content.splitlines()
@@ -74,44 +80,46 @@ def extractZettelInfo(filePath: Path) -> dict:
         if line.strip().startswith("url: "):
             url: str = line.strip().replace("url: ", "")
             return url
-        
+
+
 def plotKeywordCounts(df: pd.DataFrame):
     total_counts = {
-        'deep learning': 0,
-        'deep neural network': 0,
-        'hugging face': 0,
-        'huggingface': 0,
-        'model checkpoint': 0,
-        'model weights': 0,
-        'pre-trained model': 0,
+        "deep learning": 0,
+        "deep neural network": 0,
+        "hugging face": 0,
+        "huggingface": 0,
+        "model checkpoint": 0,
+        "model weights": 0,
+        "pre-trained model": 0,
     }
-    
+
     # Loop through each row in the DataFrame
     for index, row in df.iterrows():
-        counts_str = row['search query counts']
+        counts_str = row["search query counts"]
         try:
             # Safely convert counts string to dictionary
             counts_dict = ast.literal_eval(counts_str)
         except (SyntaxError, ValueError) as e:
             print(f"Error parsing counts string for row {index}: {counts_str}")
             continue
-        
+
         # Accumulate counts for each keyword
         for key, value in counts_dict.items():
             total_counts[key.strip("'").lower()] += value
-    
+
     # Extract DOIs for x-axis labels
-    dois = df['url'].apply(lambda x: x.replace("doi.org/", ""))
-    
+    dois = df["url"].apply(lambda x: x.replace("doi.org/", ""))
+
     # Plotting the bar chart
     plt.figure(figsize=(12, 6))
-    plt.bar(dois, [sum(total_counts.values())] * len(dois), color='skyblue')
-    plt.xlabel('DOI')
-    plt.ylabel('Total Count of Keywords')
-    plt.title('Total Counts of Keywords in DOIs')
-    plt.xticks(rotation=45, ha='right')
+    plt.bar(dois, [sum(total_counts.values())] * len(dois), color="skyblue")
+    plt.xlabel("DOI")
+    plt.ylabel("Total Count of Keywords")
+    plt.title("Total Counts of Keywords in DOIs")
+    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     plt.show()
+
 
 @click.command()
 @click.option(
@@ -147,11 +155,10 @@ def main(inputPath: Path, outputPath: Path) -> None:
                 formatted_url = format_url(url)
                 results.append((formatted_url, count))
             bar.next()
-    
-    df = pd.DataFrame(results, columns=['url', 'search query counts'])
-    plotKeywordCounts(df)
-    df.to_csv(csv, index=False, encoding='utf-8')
 
+    df = pd.DataFrame(results, columns=["url", "search query counts"])
+    plotKeywordCounts(df)
+    df.to_csv(csv, index=False, encoding="utf-8")
 
 
 if __name__ == "__main__":

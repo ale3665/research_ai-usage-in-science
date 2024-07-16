@@ -1,10 +1,11 @@
-import requests
 import os
 from pathlib import Path
 
 import click
-from pyfs import resolvePath
+import requests
 from progress.bar import Bar
+from pyfs import resolvePath
+
 
 def getDirectorySize(zettelDirectory: Path) -> int:
     """
@@ -16,6 +17,7 @@ def getDirectorySize(zettelDirectory: Path) -> int:
     :rtype: int
     """
     return sum(1 for _ in zettelDirectory.iterdir() if _.is_file())
+
 
 def searchOpenAlex(doi: str) -> dict:
     """
@@ -31,26 +33,27 @@ def searchOpenAlex(doi: str) -> dict:
              Returns None if there is an error fetching data from OpenAlex.
     :rtype: dict or None
     """
-    
+
     url = f"https://api.openalex.org/works/{doi}"
-    headers = {
-        "Accept": "application/json"
-    }
+    headers = {"Accept": "application/json"}
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        
-        
+
         topic = data.get("primary_topic", {}).get("display_name", "N/A")
-        field = data.get("primary_topic", {}).get("field", {}).get("display_name", "N/A")
-        domain = data.get("primary_topic", {}).get("domain", {}).get("display_name", "N/A")
-        
-        return {
-            "topic": topic,
-            "field": field,
-            "domain": domain
-        }
+        field = (
+            data.get("primary_topic", {})
+            .get("field", {})
+            .get("display_name", "N/A")
+        )
+        domain = (
+            data.get("primary_topic", {})
+            .get("domain", {})
+            .get("display_name", "N/A")
+        )
+
+        return {"topic": topic, "field": field, "domain": domain}
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data from OpenAlex: {e}")
         return None
@@ -70,7 +73,7 @@ def extractZettelInfo(filePath: Path) -> str:
              If the URL is not found, the dictionary will be empty.
     :rtype: str
     """
-    with open(filePath, 'r', encoding='utf-8') as file:
+    with open(filePath, "r", encoding="utf-8") as file:
         content = file.read()
 
     lines = content.splitlines()
@@ -78,7 +81,6 @@ def extractZettelInfo(filePath: Path) -> str:
         if line.strip().startswith("url: "):
             url = line.strip().replace("url: ", "")
             return url
-        
 
 
 def updateZettelFile(filePath: Path, data: dict) -> None:
@@ -95,7 +97,7 @@ def updateZettelFile(filePath: Path, data: dict) -> None:
     :type data: dict
     :return: None
     """
-    with open(filePath, 'a', encoding='utf-8') as file:
+    with open(filePath, "a", encoding="utf-8") as file:
         file.write(f"OA topic: {data['topic']}\n")
         file.write(f"OA field: {data['field']}\n")
         file.write(f"OA domain: {data['domain']}\n")
@@ -119,14 +121,13 @@ def processZettelFile(filePath: Path) -> None:
     print(f"\nSearching OpenAlex API for '{url}'...")
     if url:
         result: dict = searchOpenAlex(url)
-        
+
         if result:
             updateZettelFile(filePath, result)
             print(f"Updated {filePath} with new data.")
     else:
-        
-        print(f"No doi found for '{url}'. Skipping update for {filePath}.")
 
+        print(f"No doi found for '{url}'. Skipping update for {filePath}.")
 
 
 @click.command()
@@ -160,7 +161,7 @@ def main(inputPath: Path) -> None:
             if os.path.isfile(filePath):
                 processZettelFile(filePath)
             bar.next()
-            
+
+
 if __name__ == "__main__":
     main()
-
