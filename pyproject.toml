@@ -22,6 +22,7 @@ langchain = "^0.2.7"
 langchain-core = "^0.2.12"
 langchain-community = "^0.2.7"
 matplotlib = "^3.9.1"
+seaborn = "^0.13.2"
 [tool.black]
 line-length = 79
 
