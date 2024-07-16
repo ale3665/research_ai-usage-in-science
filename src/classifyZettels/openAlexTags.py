@@ -17,21 +17,22 @@ def getDirectorySize(zettelDirectory: Path) -> int:
     """
     return sum(1 for _ in zettelDirectory.iterdir() if _.is_file())
 
-def searchOpenAlex(workID: str) -> dict:
+def searchOpenAlex(doi: str) -> dict:
     """
-    Search for work information in the OpenAlex API based on the work's ID.
+    Search for work information in the OpenAlex API based on the work's doi.
 
     This function constructs a URL with the provided work ID and sends a GET request
     to the OpenAlex API to retrieve information about the work. It extracts the topic,
     field, and domain of the work from the API response.
 
-    :param workID: The ID of the work to search for in the OpenAlex API.
-    :type workID: str
+    :param doi: The doi of the work to search for in the OpenAlex API.
+    :type doi: str
     :return: A dictionary containing the topic, field, and domain of the work.
              Returns None if there is an error fetching data from OpenAlex.
     :rtype: dict or None
     """
-    url = f"https://api.openalex.org/works/{workID}"
+    
+    url = f"https://api.openalex.org/works/{doi}"
     headers = {
         "Accept": "application/json"
     }
@@ -55,60 +56,30 @@ def searchOpenAlex(workID: str) -> dict:
         return None
 
 
-def getWorkId(title) -> str:
+def extractZettelInfo(filePath: Path) -> str:
     """
-    Retrieve the ID of a work based on a query using the OpenAlex API.
+    Extracts the URL information from a zettel file.
 
-    This function constructs a URL with the provided query, sends a GET request
-    to the OpenAlex API, and retrieves the ID of the first result if available.
+    This function reads the content of the zettel file located at `filePath`,
+    and searches for a line starting with "url: ". It then extracts and returns
+    the URL as a dictionary.
 
-    :param title: The query string used to search for the work in the OpenAlex API.
-    :type title: str
-    :return: The ID of the first work matching the query. Returns None if no results are found.
-    :rtype: str or None
-    """
-    url = "https://api.openalex.org/works"
-    params = {
-        "search": title
-    }
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    data = response.json()
-    if 'results' in data and len(data['results']) > 0:
-        return data['results'][0]['id']
-    return None
-
-def extractZettelInfo(filePath: Path) -> dict:
-    """
-    Extracts information from a zettel file located at the specified path.
-
-    This function reads the content of the zettel file, extracts the title,
-    and returns it as a dictionary.
-
-    :param filePpath: The path to the zettel file.
+    :param filePath: The path to the zettel file.
     :type filePath: str
-    :return: A dictionary containing the extracted information.
-             Returns {"title": extracted_title} if successful.
-    :rtype: dict
+    :return: A dictionary containing the extracted URL with the key "url".
+             If the URL is not found, the dictionary will be empty.
+    :rtype: str
     """
     with open(filePath, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
+        content = file.read()
 
-    title_lines = []
-    capturing_title = False
-
+    lines = content.splitlines()
     for line in lines:
-        stripped_line = line.strip()
-        if stripped_line.startswith("title: "):
-            capturing_title = True
-            title_lines.append(stripped_line.replace("title: ", ""))
-        elif capturing_title:
-            if stripped_line == "" or not line.startswith(" "):
-                break
-            title_lines.append(stripped_line)
+        if line.strip().startswith("url: "):
+            url = line.strip().replace("url: ", "")
+            return url
+        
 
-    title = " ".join(title_lines)
-    return {"title": title}
 
 def updateZettelFile(filePath: Path, data: dict) -> None:
     """
@@ -136,25 +107,25 @@ def processZettelFile(filePath: Path) -> None:
     Processes a zettel file by extracting information, searching for related work in the OpenAlex API,
     and updating the zettel file with the retrieved data if available.
 
-    This function reads the zettel file located at `filePath`, extracts its title, searches for related work
-    in the OpenAlex API using the title as a query, and updates the zettel file with information retrieved
-    from the API if a work ID is found.
+    This function reads the zettel file located at `filePath`, extracts its url, searches for related work
+    in the OpenAlex API using the url as a query, and updates the zettel file with information retrieved
+    from the API if a doi is found.
 
     :param filePath: The path to the zettel file to be processed.
     :type filePath: str
     :return: None
     """
-    zettel: dict = extractZettelInfo(filePath)
-    title: str = zettel["title"]
-    print(f"\nSearching OpenAlex API for '{title}'...")
-    workID: str = getWorkId(title)
-    if workID:
-        result: dict = searchOpenAlex(workID)
+    url = extractZettelInfo(filePath)
+    print(f"\nSearching OpenAlex API for '{url}'...")
+    if url:
+        result: dict = searchOpenAlex(url)
+        
         if result:
             updateZettelFile(filePath, result)
             print(f"Updated {filePath} with new data.")
     else:
-        print(f"No work ID found for '{title}'. Skipping update for {filePath}.")
+        
+        print(f"No doi found for '{url}'. Skipping update for {filePath}.")
 
 
 
