@@ -34,7 +34,3 @@ class Journal_ABC(metaclass=ABCMeta):
     @abstractmethod
     def extractContentFromPaper(self) -> None:
         pass
-
-    @abstractmethod
-    def createZettel(self) -> None:
-        pass

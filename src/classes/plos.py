@@ -3,12 +3,14 @@ from math import ceil
 from string import Template
 from typing import List
 
+from bs4 import BeautifulSoup, Tag
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response
 
 from src.classes import SEARCH_RESULTS_STOR, SearchResultDataFrameSchema
 from src.classes.journalGeneric import Journal_ABC
+from src.utils import formatText
 
 
 class PLOS(Journal_ABC):
@@ -94,17 +96,55 @@ class PLOS(Journal_ABC):
 
         return data
 
-    def extractDOIFromPaper(self) -> None:
-        pass
+    def extractDOIFromPaper(self, url: str) -> str:
+        """
+        Extracts the DOI from a PLOS article URL.
 
-    def extractTitleFromPaper(self) -> None:
-        pass
+        This function takes a PLOS article URL and extracts the DOI by splitting
+        the URL at the '=' character and returning the second part.
 
-    def extractAbstractFromPaper(self) -> None:
-        pass
+        :param url: The URL of the PLOS article.
+        :type url: str
+        :return: The extracted DOI from the URL.
+        :rtype: str
+        """  # noqa: E501
+        splitURL: List[str] = url.split(sep="=")
+        return splitURL[1]
+
+    def extractTitleFromPaper(self, soup: BeautifulSoup) -> None:
+        """
+        Extracts the title of a PLOS article from a BeautifulSoup object.
+
+        This function takes a BeautifulSoup object representing a PLOS article's HTML
+        content, finds the title element by its tag and attributes, and returns the
+        formatted title text.
+
+        :param soup: A BeautifulSoup object containing the parsed HTML of the PLOS article.
+        :type soup: BeautifulSoup
+        :return: The formatted title of the PLOS article.
+        :rtype: str
+        """  # noqa: E501
+        title: Tag = soup.find(name="h1", attrs={"id": "artTitle"})
+        return formatText(string=title.text)
+
+    def extractAbstractFromPaper(self, soup: BeautifulSoup) -> None:
+        """
+        Extracts the abstract of a PLOS article from a BeautifulSoup object.
+
+        This function takes a BeautifulSoup object representing a PLOS article's HTML
+        content, finds the abstract element by its tag and attributes, and returns the
+        formatted abstract text.
+
+        :param soup: A BeautifulSoup object containing the parsed HTML of the PLOS article.
+        :type soup: BeautifulSoup
+        :return: The formatted abstract of the PLOS article.
+        :rtype: str
+        """  # noqa: E501
+        abstract: Tag = soup.find(
+            name="div",
+            attrs={"class": "abstract-content"},
+        )
+        return formatText(string=abstract.text)
 
     def extractContentFromPaper(self) -> None:
-        pass
-
-    def createZettel(self) -> None:
         pass
