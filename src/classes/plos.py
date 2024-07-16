@@ -191,6 +191,6 @@ class PLOS(Journal_ABC):
         tag: Tag
         for tag in tags:
             text: str = formatText(string=tag.text)
-            data.append(f'"{text}"')
+            data.append(f'"{self.journalName}_{text}"')
 
         return data

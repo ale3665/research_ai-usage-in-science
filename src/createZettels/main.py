@@ -79,8 +79,6 @@ def extractContent(
                 path=paths[idx],
             )
 
-            print(zettel.tag)
-
             data.append(zettel)
 
             bar.next()
