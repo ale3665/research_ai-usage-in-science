@@ -161,4 +161,21 @@ class PLOS(Journal_ABC):
             name="div",
             attrs={"id", "article-container"},
         )
+
+        abstract: Tag = content.find(
+            name="div",
+            attrs={"class": "abstract-content"},
+        )
+
+        references: Tag = content.find(
+            name="ol",
+            attrs={"class": "reference"},
+        )
+
+        if abstract:
+            abstract.decompose()
+
+        if references:
+            references.decompose()
+
         return formatText(string=content.text)
