@@ -68,7 +68,8 @@ def countKeywords(directory: str, keywords: List[str]) -> pd.DataFrame:
     rows = []
     size = getDirectorySize(directory)
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
-    with Bar("Writing Open Alex tags to files...", max=size ) as bar:
+
+    with Bar("Counting keyword occurrences in Zettels...", max=size ) as bar:
         for filename in files:
             filepath = os.path.join(directory, filename)
             url = extractURL(filepath)
