@@ -3,7 +3,7 @@ import click
 from pathlib import Path
 from bs4 import BeautifulSoup
 import seaborn as sns
-from pyfs import isFile, resolvePath
+from pyfs import resolvePath
 import os
 import re
 from matplotlib.ticker import MultipleLocator
@@ -12,22 +12,15 @@ from typing import List
 import matplotlib.pyplot as plt
 from progress.bar import Bar
 
-def format_url(url: str) -> str:
+def formatURL(url: str) -> str:
+    
     return url.replace("https://", "")
 
 def getDirectorySize(zettelDirectory: Path) -> int:
-    """
-    Count the number of files in the given directory.
 
-    :param directory: The path to the directory.
-    :type directory: Path
-    :return: The number of files in the directory.
-    :rtype: int
-    """
     return sum(1 for _ in zettelDirectory.iterdir() if _.is_file())
 
 def extractURL(filePath: Path) -> str:
-    
     with open(filePath, 'r', encoding='utf-8') as file:
         content = file.read()
 
@@ -36,34 +29,41 @@ def extractURL(filePath: Path) -> str:
         if line.strip().startswith("url: "):
             url: str = line.strip().replace("url: ", "")
             return url
+
+def countKeywordsInDirectory(directory, keywords, size):
+    
+    data = []
+    with Bar("Counting search queries in Zettels...", max=size) as bar:
+        for filename in os.listdir(directory):
+    
+            filepath = os.path.join(directory, filename)
+            
+            with open(filepath, 'r', encoding='utf-8') as file:
+                content = file.read()
+            counts = {keyword: 0 for keyword in keywords}
+            for keyword in keywords:
+                counts[keyword] = len(re.findall(keyword, content, re.IGNORECASE))
+            url = extractURL(filepath)
+            doi = formatURL(url)
+            row = {'doi': doi}
+            row.update(counts)
+            data.append(row)
+            bar.next()
+
+    
+    df = pd.DataFrame(data)
+
+    return df
+
         
 
-def countKeywords(filePath: Path, queries: List[str]) -> List[str]:
-    with open(filePath, 'r', encoding='utf-8') as file:
-        content = file.read()
-    
-    keywordCounts = []
-    for query in queries:
-        pattern = re.compile(query, re.IGNORECASE)
-        count = len(pattern.findall(content))
-        keywordCounts.append(f"{query}: {count}")
-    
-    return keywordCounts
-
-def parseKeywordCounts(counts_list: List[str]) -> int:
-    total = 0
-    for count_str in counts_list:
-        match = re.search(r': (\d+)', count_str)
-        if match:
-            total += int(match.group(1))
-    
-    return total
-        
 def plot(df: pd.DataFrame):
-    df['combined counts'] = df['search query counts'].apply(parseKeywordCounts)
+
+    df['total count'] = df.drop(columns=['doi']).sum(axis=1)
+
 
     plt.figure(figsize=(12, 6))
-    ax = sns.barplot(x='doi', y='combined counts', data=df)
+    ax = sns.barplot(x='doi', y='total count', data=df)
 
     ax.set_xlabel('DOI')
     ax.set_ylabel('Combined Keyword Counts')
@@ -93,27 +93,17 @@ def plot(df: pd.DataFrame):
     help="Path to a csv file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
+
     zettelDirectory: Path = resolvePath(path=inputPath)
     csv: Path = resolvePath(path=outputPath)
-    size = getDirectorySize(zettelDirectory)
+    size: int = getDirectorySize(zettelDirectory)
     queries: List[str] = SEARCH_QUERIES
 
-    results: List = []
-
-    with Bar("Counting search queries in Zettels...", max=size) as bar:
-        for filename in os.listdir(zettelDirectory):
-            filePath: Path = os.path.join(zettelDirectory, filename)
-            if os.path.isfile(filePath):
-                count = countKeywords(filePath, queries)
-                url = extractURL(filePath)
-                doi = format_url(url)
-                results.append((doi, count))
-            bar.next()
-    
-    df = pd.DataFrame(results, columns=['doi', 'search query counts'])
-    
+    df = (countKeywordsInDirectory(zettelDirectory, queries, size))
+    print(df)
     plot(df)
-    df.to_csv(csv, index=False, encoding='utf-8')
+    df.to_csv(csv)
+
 
 
 
