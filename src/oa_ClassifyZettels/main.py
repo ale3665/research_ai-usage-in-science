@@ -1,7 +1,7 @@
 from pathlib import Path
 from sqlite3 import Connection, connect
 from string import Template
-from subprocess import PIPE, CompletedProcess, Popen  # nosec
+from subprocess import CompletedProcess, Popen  # nosec
 from typing import Hashable, List, Tuple
 
 import click
@@ -32,31 +32,29 @@ def getTags(
         row: Series
         idx: Hashable
         for idx, row in df.iterrows():
+            tagStor: List[str] = []
+
             doi: str = row["url"]
 
             resp: Response = oa.searchByDOI(doiURL=doi)
             tags: DataFrame = oa.getWorkTopics(resp=resp)
 
             for tagIDX, tagRow in tags.iterrows():
-                data.append(
-                    (
-                        idx,
-                        f"OpenAlex_topic_{tagIDX}_{tagRow['topic']}",
-                    ),
+                tags: List[str] = []
+
+                tags.append(
+                    f"\"OpenAlex_topic_{tagIDX}_{tagRow['topic']}\"",
                 )
-                data.append(
-                    (
-                        idx,
-                        f"OpenAlex_subfield_{tagIDX}_{tagRow['subfield']}",
-                    ),
+                tags.append(
+                    f"\"OpenAlex_subfield_{tagIDX}_{tagRow['subfield']}\"",
                 )
-                data.append(
-                    (
-                        idx,
-                        f"OpenAlex_field_{tagIDX}_{tagRow['field']}",
-                    ),
+                tags.append(
+                    f"\"OpenAlex_field_{tagIDX}_{tagRow['field']}\"",
                 )
 
+                tagStor.append(" ".join(tags))
+
+            data.append((idx, " ".join(tagStor)))
             bar.next()
 
     return data
@@ -78,7 +76,7 @@ def writeTagsToFile(data: List[Tuple[int, str]], filepaths: Series) -> None:
     :return: None
     """  # noqa: E501
     cmdTemplate: Template = Template(
-        template='zettel --file ${filepath} --append-tag "${tag}" --in-place',
+        template="zettel --file ${filepath} --append-tag ${tag} --in-place",
     )
 
     with Bar("Writing tags to files...", max=len(data)) as bar:
@@ -91,11 +89,13 @@ def writeTagsToFile(data: List[Tuple[int, str]], filepaths: Series) -> None:
             process: CompletedProcess = Popen(
                 cmd,
                 shell=True,
-                stdout=PIPE,
             )  # nosec
 
-            if process.returncode is not None:
-                print(fp)
+            try:
+                if process.returncode is not None:
+                    print(fp)
+            except BrokenPipeError:
+                print(bar.index)
 
             bar.next()
 

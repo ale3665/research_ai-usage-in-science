@@ -110,7 +110,7 @@ def createZettels(zettels: List[ZETTEL]) -> None:
             url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
             cmd: str = (
                 f'zettel --set-url {url} \
-                        --load-document {contentTFName} \
+                        --load-note {contentTFName} \
                         --load-summary {abstractTFName} \
                         --load-title {titleTFName} \
                         --save "{zettel.path}" \
