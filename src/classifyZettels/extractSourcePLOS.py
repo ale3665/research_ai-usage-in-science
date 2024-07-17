@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import csv
 import os
+from pyfs import resolvePath
+import click
 
 def extractURL(filePath: Path) -> str:
     """
@@ -22,7 +24,7 @@ def extractURL(filePath: Path) -> str:
             url: str = line.strip().replace("url: ", "")
             return url
 
-def extractDataLink(url):
+def extractDataLink(url: str):
     
     response = requests.get(url)
     
@@ -32,32 +34,57 @@ def extractDataLink(url):
         strongTag = soup.find('strong', string='Data Availability: ')
 
         if strongTag:
-            # Find the next <a> tag after this <strong> tag
-            dataLink = strongTag.find_next('a', href=True)
+            # Find all <a> tags after this <strong> tag until the next <strong> tag
+            dataLinks = []
+            for tag in strongTag.find_all_next():
+                if tag.name == 'strong':
+                    break
+                if tag.name == 'a' and 'href' in tag.attrs:
+                    dataLinks.append(tag['href'])
             
-            if dataLink:
-                return dataLink['href']
+            if dataLinks:
+                return dataLinks
             else:
-                return "Data link not found."
+                return ["Data links not found."]
         else:
-            return "Data Availability <strong> tag not found."
+            return ["Data Availability <strong> tag not found."]
     else:
-        return f"Failed to retrieve webpage. Status code: {response.status_code}"
+        return [f"Failed to retrieve webpage. Status code: {response.status_code}"]
     
-def linkToCSV (url, dataLink, csvFile):
-    # Open the CSV file in append mode
+def linkToCSV (url: str, dataLinks, csvFile: Path):
+    joinedLinks = ', '.join(dataLinks)
     with open(csvFile, mode='a', newline='') as file:
         writer = csv.writer(file)
-        # Write the URL and data link to the CSV file
-        writer.writerow([url, dataLink])
+        # Write the URL and joined data links to the CSV file
+        writer.writerow([f"{url}: {joinedLinks}"])
 
-def main(directory: Path) -> None:
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    type=Path,
+    required=True,
+    help="Path to a directory with zettels",
+)
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    type=Path,
+    required=True,
+    help="Path to a csv file",
+)
+def main(inputPath: Path, outputPath: Path) -> None:
+    directory: Path = resolvePath(path=inputPath)
+    csv: Path = resolvePath(path=outputPath)
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
     for filename in files:
         filepath = os.path.join(directory, filename)
-    url = extractURL()  # Replace with the actual URL
-    dataLink = extractDataLink(url)
-    
+        url = extractURL(filepath)
+        dataLinks = extractDataLink(url)
+        linkToCSV(url, dataLinks, csv)
+
 
 if __name__ == "__main__":
     main()
