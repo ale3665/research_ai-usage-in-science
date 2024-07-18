@@ -1,9 +1,14 @@
 [tool.poetry]
 name = "src"
 version = "0.1.0"
-description = ""
+description = "Tooling to support the analysis of AI usage within scientific domains"
+license = "GNU AFFERO"
 authors = ["Nicholas M. Synovic <nicholas.synovic@gmail.com>"]
 readme = "README.md"
+homepage = "https://github.com/NicholasSynovic/research_ai-usage-in-science"
+repository = "https://github.com/NicholasSynovic/research_ai-usage-in-science"
+keywords = ["research", "AI", "software engineering", "science"]
+classifiers = ["Development Status :: 3 - Alpha"]
 
 [tool.poetry.dependencies]
 python = "^3.10"

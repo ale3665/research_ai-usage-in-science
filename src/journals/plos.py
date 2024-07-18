@@ -77,7 +77,7 @@ class PLOS(Journal_ABC):
     ) -> Literal[False] | int:
         maxPage: int = 1
 
-        json: dict = resp.json()
+        json: dict[str, str] = resp.json()
 
         documentsFound: int = json["searchResults"]["numFound"]
 
