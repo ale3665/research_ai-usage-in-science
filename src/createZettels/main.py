@@ -116,7 +116,7 @@ def createZettels(zettels: List[ZETTEL]) -> None:
             cmd: str = (
                 f'zettel --set-url {url} \
                         --load-document {contentTFName} \
-                        --load-notes {notesTFName} \
+                        --load-note {notesTFName} \
                         --load-summary {abstractTFName} \
                         --load-title {titleTFName} \
                         --save "{zettel.path}" \

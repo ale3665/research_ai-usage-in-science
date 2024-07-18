@@ -196,7 +196,7 @@ class PLOS(Journal_ABC):
             text: str = formatText(string=tag.text)
             data.append(text)
 
-        return "\n".join(data)
+        return " ".join(data)
 
     def extractJournalTagsFromPaper(self, soup: BeautifulSoup) -> List[str]:
         data: List[str] = []
