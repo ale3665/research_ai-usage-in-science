@@ -21,6 +21,7 @@ ZETTEL = namedtuple(
         "title",
         "abstract",
         "document",
+        "notes",
         "tag",
         "path",
     ],
@@ -39,6 +40,7 @@ def extractContent(
     titles: List[str] = []
     abstracts: List[str] = []
     documents: List[str] = []
+    notes: List[str] = []
     tags: List[List[str]] = []
     paths: List[Path] = []
 
@@ -63,6 +65,7 @@ def extractContent(
             titles.append(journal.extractTitleFromPaper(soup=soup))
             abstracts.append(journal.extractAbstractFromPaper(soup=soup))
             documents.append(journal.extractContentFromPaper(soup=soup))
+            notes.append(journal.extractDataSourcesFromPaper(soup=soup))
             tags.append(journal.extractJournalTagsFromPaper(soup=soup))
 
             bar.next()
@@ -75,6 +78,7 @@ def extractContent(
                 title=titles[idx],
                 abstract=abstracts[idx],
                 document=documents[idx],
+                notes=notes[idx],
                 tag=tags[idx],
                 path=paths[idx],
             )
@@ -106,11 +110,13 @@ def createZettels(zettels: List[ZETTEL]) -> None:
                 string=zettel.abstract,
             )
             contentTFName: str = storeStringInTempFile(string=zettel.document)
+            notesTFName: str = storeStringInTempFile(string=zettel.notes)
 
             url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
             cmd: str = (
                 f'zettel --set-url {url} \
                         --load-document {contentTFName} \
+                        --load-notes {notesTFName} \
                         --load-summary {abstractTFName} \
                         --load-title {titleTFName} \
                         --save "{zettel.path}" \

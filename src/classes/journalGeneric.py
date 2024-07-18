@@ -41,5 +41,9 @@ class Journal_ABC(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def extractDataSourcesFromPaper(self, soup: BeautifulSoup) -> str:
+        pass
+
+    @abstractmethod
     def extractJournalTagsFromPaper(self, soup: BeautifulSoup) -> List[str]:
         pass

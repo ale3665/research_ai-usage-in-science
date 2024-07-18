@@ -181,6 +181,23 @@ class PLOS(Journal_ABC):
 
         return formatText(string=content.text)
 
+    def extractDataSourcesFromPaper(self, soup: BeautifulSoup) -> str:
+        data: List[str] = []
+
+        tags: ResultSet = soup.find_all(
+            name="div",
+            attrs={
+                "class": "supplementary-material",
+            },
+        )
+
+        tag: Tag
+        for tag in tags:
+            text: str = formatText(string=tag.text)
+            data.append(text)
+
+        return "\n".join(data)
+
     def extractJournalTagsFromPaper(self, soup: BeautifulSoup) -> List[str]:
         data: List[str] = []
 
