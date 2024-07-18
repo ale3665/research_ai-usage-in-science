@@ -1,6 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
-from subprocess import PIPE, CompletedProcess, Popen  # nosec
+from subprocess import CompletedProcess, Popen  # nosec
 from typing import List
 
 import click
@@ -126,7 +126,6 @@ def createZettels(zettels: List[ZETTEL]) -> None:
             process: CompletedProcess = Popen(
                 cmd,
                 shell=True,
-                stdout=PIPE,
             )  # nosec
 
             if process.returncode is not None:
