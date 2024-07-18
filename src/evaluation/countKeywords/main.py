@@ -15,6 +15,9 @@ def readDB(dbPath: Path) -> DataFrame:
     sql: str = "SELECT title, summary, document FROM zettels"
     conn: Connection = connect(database=dbPath)
     df: DataFrame = pandas.read_sql_query(sql=sql, con=conn)
+    df["title"] = df["title"].str.lower()
+    df["summary"] = df["summary"].str.lower()
+    df["document"] = df["document"].str.lower()
     conn.close()
     return df
 
@@ -52,7 +55,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
         print(f"{absOutputPath} exists")
         exit(1)
 
-    keywords: List[str] = [kw.strip('"') for kw in SEARCH_QUERIES]
+    keywords: List[str] = [kw.strip('"').lower() for kw in SEARCH_QUERIES]
     data: dict[str, List[int]] = {kw: [] for kw in keywords}
 
     df: DataFrame = readDB(dbPath=absInputPath)
@@ -71,7 +74,6 @@ def main(inputPath: Path, outputPath: Path) -> None:
             sums.append(countKeyword(data=documentDF, keyword=kw))
 
             data[kw].append(sum(sums))
-            print(data)
             bar.next()
 
     sumDF: DataFrame = DataFrame(data=data)
