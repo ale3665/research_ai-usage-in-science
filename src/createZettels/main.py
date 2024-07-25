@@ -1,6 +1,4 @@
-from collections import namedtuple
 from pathlib import Path
-from subprocess import CompletedProcess, Popen  # nosec
 from typing import List
 
 import click
@@ -9,23 +7,10 @@ from bs4 import BeautifulSoup
 from pandas import DataFrame
 from progress.bar import Bar
 from pyfs import isDirectory, isFile, resolvePath
+from zg.zettel import Zettel, mergeZettelsToDF
 
 from src.classes.journalGeneric import Journal_ABC
 from src.classes.plos import PLOS
-from src.utils import storeStringInTempFile
-
-ZETTEL = namedtuple(
-    typename="zettel",
-    field_names=[
-        "doi",
-        "title",
-        "abstract",
-        "document",
-        "notes",
-        "tag",
-        "path",
-    ],
-)
 
 
 def extractContent(
@@ -33,8 +18,24 @@ def extractContent(
     df: DataFrame,
     outputDir: Path,
     numDocs: int = -1,
-) -> List[ZETTEL]:
-    data: List[ZETTEL] = []
+) -> List[Zettel]:
+    """
+    extractContent _summary_
+
+    _extended_summary_
+
+    :param journal: _description_
+    :type journal: Journal_ABC
+    :param df: _description_
+    :type df: DataFrame
+    :param outputDir: _description_
+    :type outputDir: Path
+    :param numDocs: _description_, defaults to -1
+    :type numDocs: int, optional
+    :return: _description_
+    :rtype: List[Zettel]
+    """
+    data: List[Zettel] = []
 
     dois: List[str] = []
     titles: List[str] = []
@@ -73,14 +74,14 @@ def extractContent(
     with Bar("Creating Zettels...", max=df.shape[0]) as bar:
         idx: int
         for idx in range(df.shape[0]):
-            zettel: ZETTEL = ZETTEL(
-                doi=dois[idx],
-                title=titles[idx],
-                abstract=abstracts[idx],
+            zettel: Zettel = Zettel(
                 document=documents[idx],
-                notes=notes[idx],
-                tag=tags[idx],
-                path=paths[idx],
+                filename=paths[idx],
+                note=notes[idx],
+                summary=abstracts[idx],
+                title=titles[idx],
+                url=f"https://doi.org/{dois[idx].replace('_', '/')}",
+                tags=tags[idx],
             )
 
             data.append(zettel)
@@ -88,50 +89,6 @@ def extractContent(
             bar.next()
 
     return data
-
-
-def createZettels(zettels: List[ZETTEL]) -> None:
-    """
-    Writes a list of ZETTEL objects to disk.
-
-    This function iterates over a list of ZETTEL objects, creates temporary files
-    for their titles and abstracts, constructs a shell command to save the ZETTEL
-    data to disk, and executes the command. It uses a progress bar to indicate the
-    progress of the operation.
-
-    :param zettels: A list of ZETTEL objects to be written to disk.
-    :type zettels: List[ZETTEL]
-    """  # noqa: E501
-    with Bar("Writing Zettels to disk..", max=len(zettels)) as bar:
-        zettel: ZETTEL
-        for zettel in zettels:
-            titleTFName: str = storeStringInTempFile(string=zettel.title)
-            abstractTFName: str = storeStringInTempFile(
-                string=zettel.abstract,
-            )
-            contentTFName: str = storeStringInTempFile(string=zettel.document)
-            notesTFName: str = storeStringInTempFile(string=zettel.notes)
-
-            url: str = f"https://doi.org/{zettel.doi.replace('_', '/')}"
-            cmd: str = (
-                f'zettel --set-url {url} \
-                        --load-document {contentTFName} \
-                        --load-note {notesTFName} \
-                        --load-summary {abstractTFName} \
-                        --load-title {titleTFName} \
-                        --save "{zettel.path}" \
-                        --append-tags {" ".join(zettel.tag).strip()}'
-            )
-
-            process: CompletedProcess = Popen(
-                cmd,
-                shell=True,
-            )  # nosec
-
-            if process.returncode is not None:
-                print(zettel.doi)
-
-            bar.next()
 
 
 @click.command()
@@ -193,7 +150,7 @@ def main(inputPath: Path, outputDir: Path, numDocs: int = -1) -> None:
 
     journalName: str = df["journal"][0]
 
-    data: List[ZETTEL]
+    data: List[Zettel]
     match journalName:
         case "PLOS":
             journal: Journal_ABC = PLOS()
@@ -201,14 +158,18 @@ def main(inputPath: Path, outputDir: Path, numDocs: int = -1) -> None:
             print("Unsupported journal")
             exit(1)
 
-    data: List[ZETTEL] = extractContent(
+    data: List[Zettel] = extractContent(
         journal=journal,
         df=df,
         outputDir=absOutputDirPath,
         numDocs=numDocs,
     )
 
-    createZettels(zettels=data)
+    df: DataFrame = mergeZettelsToDF(zettels=data)
+
+    # df.to_csv("test.csv")
+
+    # createZettels(zettels=data)
 
 
 if __name__ == "__main__":
