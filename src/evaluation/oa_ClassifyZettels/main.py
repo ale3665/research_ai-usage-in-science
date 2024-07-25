@@ -1,7 +1,5 @@
 from pathlib import Path
 from sqlite3 import Connection, connect
-from string import Template
-from subprocess import CompletedProcess, Popen  # nosec
 from typing import Hashable, List, Tuple
 
 import click
@@ -15,7 +13,7 @@ from src.classes.openalex import OpenAlex
 
 
 def readDB(dbPath: Path) -> DataFrame:
-    sqlQuery: str = "SELECT url, filename FROM zettels"
+    sqlQuery: str = "SELECT * FROM zettels"
     conn: Connection = connect(database=dbPath)
     df: DataFrame = pandas.read_sql_query(sql=sqlQuery, con=conn)
     conn.close()
@@ -60,46 +58,6 @@ def getTags(
     return data
 
 
-def writeTagsToFile(data: List[Tuple[int, str]], filepaths: Series) -> None:
-    """
-    Writes tags to files based on the provided data and filepaths.
-
-    This function iterates over a list of data tuples containing file indices and
-    tags, constructs a command to append the tag to the corresponding file using
-    a shell command, and executes the command. It uses a progress bar to indicate
-    the progress of the operation.
-
-    :param data: A list of tuples where each tuple contains an index and a tag.
-    :type data: List[Tuple[int, str]]
-    :param filepaths: A Series containing filepaths indexed by the same indices as in data.
-    :type filepaths: Series
-    :return: None
-    """  # noqa: E501
-    cmdTemplate: Template = Template(
-        template="zettel --file ${filepath} --append-tag ${tag} --in-place",
-    )
-
-    with Bar("Writing tags to files...", max=len(data)) as bar:
-        datum: Tuple[int, str]
-        for datum in data:
-            fp: str = filepaths[datum[0]]
-
-            cmd: str = cmdTemplate.substitute(filepath=fp, tag=datum[1])
-
-            process: CompletedProcess = Popen(
-                cmd,
-                shell=True,
-            )  # nosec
-
-            try:
-                if process.returncode is not None:
-                    print(fp)
-            except BrokenPipeError:
-                print(bar.index)
-
-            bar.next()
-
-
 @click.command()
 @click.option(
     "-i",
@@ -120,7 +78,7 @@ def main(inputPath: Path) -> None:
 
     data: List[Tuple[int, str]] = getTags(df=df)
 
-    writeTagsToFile(data=data, filepaths=df["filename"])
+    print(data)
 
 
 if __name__ == "__main__":
