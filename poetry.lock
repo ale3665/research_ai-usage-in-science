@@ -2194,7 +2194,30 @@ files = [
 python-frontmatter = "*"
 tatsu = "*"
 
+[[package]]
+name = "zg"
+version = "0.1.0"
+description = "ZettelGeist - a historiographically focused notetaking system"
+optional = false
+python-versions = "^3.9"
+files = []
+develop = false
+
+[package.dependencies]
+click = "^8.1.7"
+pandas = "^2.2.2"
+pydantic = "^2.7.4"
+pyyaml = "^6.0.1"
+sqlalchemy = "^2.0.31"
+typedframe = "^0.11.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/nicholassynovic/tool_zettelgeist"
+reference = "dev"
+resolved_reference = "de521181314179abeab1c6cd84e61eb0054787cb"
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ff1bd4ff187b0eaad228ae1c91e8346384bda106d4a4dc3298f8f22d817d1aaa"
+content-hash = "c7c863f2ac6078ce8175a025692d6869478f95312f08f20fd7d0bb8b7e7c9971"

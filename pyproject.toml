@@ -28,6 +28,7 @@ langchain-core = "^0.2.12"
 langchain-community = "^0.2.7"
 matplotlib = "^3.9.1"
 seaborn = "^0.13.2"
+zg = {git = "https://github.com/nicholassynovic/tool_zettelgeist", rev = "dev"}
 [tool.black]
 line-length = 79
 
