@@ -16,7 +16,7 @@ from pandas import DataFrame, Series
 from progress.bar import Bar
 from pyfs import isFile, resolvePath
 
-from src.llm_ClassifyZettels import NATURE_SUBJECTS, SCOPUS_SUBJECTS
+from src.evaluation.llm_ClassifyZettels import NATURE_SUBJECTS, SCOPUS_SUBJECTS
 
 
 def buildRunnableSequence(

@@ -5,6 +5,11 @@ python main.py -i ../../data/plos/zg.db -c nature-topics -m llama3
 python main.py -i ../../data/plos/zg.db -c scopus-subjects -m llama3
 python main.py -i ../../data/plos/zg.db -c scopus-topics -m llama3
 
+python main.py -i ../../data/plos/zg.db -c nature-subjects -m llama3.1
+python main.py -i ../../data/plos/zg.db -c nature-topics -m llama3.1
+python main.py -i ../../data/plos/zg.db -c scopus-subjects -m llama3.1
+python main.py -i ../../data/plos/zg.db -c scopus-topics -m llama3.1
+
 python main.py -i ../../data/plos/zg.db -c nature-subjects -m gemma
 python main.py -i ../../data/plos/zg.db -c nature-topics -m gemma
 python main.py -i ../../data/plos/zg.db -c scopus-subjects -m gemma
