@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from pandas import DataFrame
 from progress.bar import Bar
 from pyfs import isDirectory, isFile, resolvePath
+from zg.models.zettelDB import ZettelDB
 from zg.zettel import Zettel, mergeZettelsToDF
 
 from src.classes.journalGeneric import Journal_ABC
@@ -20,21 +21,22 @@ def extractContent(
     numDocs: int = -1,
 ) -> List[Zettel]:
     """
-    extractContent _summary_
+    Extracts content from papers and creates Zettels.
 
-    _extended_summary_
+    This function extracts DOIs, titles, abstracts, documents, notes, tags, and paths from the given DataFrame.
+    It then uses these extracted elements to create Zettels, which are returned as a list.
 
-    :param journal: _description_
+    :param journal: The Journal interface for extracting DOI, title, abstract, document, note, tag, and path.
     :type journal: Journal_ABC
-    :param df: _description_
-    :type df: DataFrame
-    :param outputDir: _description_
+    :param df: The Pandas DataFrame containing the data to be processed.
+    :type df: pandas.DataFrame
+    :param outputDir: The directory where the extracted files will be saved.
     :type outputDir: Path
-    :param numDocs: _description_, defaults to -1
+    :param numDocs: The maximum number of documents to process. Default is -1, which means all documents in the DataFrame.
     :type numDocs: int, optional
-    :return: _description_
+    :return: A list of Zettels created from the extracted content.
     :rtype: List[Zettel]
-    """
+    """  # noqa: E501
     data: List[Zettel] = []
 
     dois: List[str] = []
@@ -142,6 +144,9 @@ def main(inputPath: Path, outputDir: Path, numDocs: int = -1) -> None:
         print(f"{absOutputDirPath} is not a directory")
         exit(1)
 
+    zdb: ZettelDB = ZettelDB(dbPath=Path("zettels.sqlite"))
+    zdb.createTables()
+
     print(f"Reading {absInputPath} ...")
     df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
 
@@ -165,11 +170,17 @@ def main(inputPath: Path, outputDir: Path, numDocs: int = -1) -> None:
         numDocs=numDocs,
     )
 
-    df: DataFrame = mergeZettelsToDF(zettels=data)
+    zdf: DataFrame = mergeZettelsToDF(zettels=data)
+    zdf["filename"] = zdf["filename"].apply(lambda x: x.__str__())
+    zdf["tags"] = zdf["tags"].apply(lambda x: "✖️".join(x).replace('"', ""))
 
-    # df.to_csv("test.csv")
-
-    # createZettels(zettels=data)
+    zdf.to_sql(
+        name="zettels",
+        con=zdb.engine,
+        index=True,
+        index_label="id",
+        if_exists="append",
+    )
 
 
 if __name__ == "__main__":

@@ -2215,7 +2215,7 @@ typedframe = "^0.11.0"
 type = "git"
 url = "https://github.com/nicholassynovic/tool_zettelgeist"
 reference = "dev"
-resolved_reference = "de521181314179abeab1c6cd84e61eb0054787cb"
+resolved_reference = "735241eff2a5c18a2da5b8ebf4f97063ba157788"
 
 [metadata]
 lock-version = "2.0"
