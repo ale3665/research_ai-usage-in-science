@@ -144,7 +144,7 @@ def main(inputPath: Path, outputDir: Path, numDocs: int = -1) -> None:
         print(f"{absOutputDirPath} is not a directory")
         exit(1)
 
-    zdb: ZettelDB = ZettelDB(dbPath=Path("zettels.sqlite"))
+    zdb: ZettelDB = ZettelDB(dbPath=Path(absOutputDirPath, "zettels.sqlite"))
     zdb.createTables()
 
     print(f"Reading {absInputPath} ...")
