@@ -2,8 +2,6 @@ import itertools
 from itertools import chain
 from pathlib import Path
 from sqlite3 import Connection, connect
-from string import Template
-from subprocess import PIPE, CompletedProcess, Popen  # nosec
 from typing import Hashable, List, Tuple
 
 import click
@@ -68,9 +66,13 @@ def readDB(dbPath: Path) -> DataFrame:
     :return: A DataFrame containing the retrieved data from the 'zettels' table.
     :rtype: DataFrame
     """  # noqa: E501
-    sqlQuery: str = "SELECT title, summary, filename FROM zettels"
+    sqlQuery: str = "SELECT * FROM zettels"
     conn: Connection = connect(database=dbPath)
-    df: DataFrame = pandas.read_sql_query(sql=sqlQuery, con=conn)
+    df: DataFrame = pandas.read_sql_query(
+        sql=sqlQuery,
+        con=conn,
+        index_col="id",
+    )
     conn.close()
     return df
 
@@ -116,42 +118,16 @@ def inference(
     return data
 
 
-def writeTagsToFile(data: List[Tuple[int, str]], filepaths: Series) -> None:
-    """
-    Writes tags to files based on the provided data and filepaths.
+def writeTagsToRows(data: List[Tuple[int, str]], df: DataFrame) -> DataFrame:
+    tempDF: DataFrame = df.copy(deep=True)
 
-    This function iterates over a list of data tuples containing file indices and
-    tags, constructs a command to append the tag to the corresponding file using
-    a shell command, and executes the command. It uses a progress bar to indicate
-    the progress of the operation.
+    datum: Tuple[int, str]
+    for datum in data:
+        oldTag: str = df["tags"].loc[datum[0]]
+        newTag: str = oldTag + "✖" + datum[1]
+        tempDF.loc[datum[0], "tags"] = newTag
 
-    :param data: A list of tuples where each tuple contains an index and a tag.
-    :type data: List[Tuple[int, str]]
-    :param filepaths: A Series containing filepaths indexed by the same indices as in data.
-    :type filepaths: Series
-    :return: None
-    """  # noqa: E501
-    cmdTemplate: Template = Template(
-        template='zettel --file ${filepath} --append-tag "${tag}" --in-place',
-    )
-
-    with Bar("Writing tags to files...", max=filepaths.size) as bar:
-        datum: Tuple[int, str]
-        for datum in data:
-            fp: str = filepaths[datum[0]]
-
-            cmd: str = cmdTemplate.substitute(filepath=fp, tag=datum[1])
-
-            process: CompletedProcess = Popen(
-                cmd,
-                shell=True,
-                stdout=PIPE,
-            )  # nosec
-
-            if process.returncode is not None:
-                print(fp)
-
-            bar.next()
+    return tempDF
 
 
 @click.command()
@@ -161,7 +137,7 @@ def writeTagsToFile(data: List[Tuple[int, str]], filepaths: Series) -> None:
     "inputPath",
     type=Path,
     required=True,
-    help="Path to a Zettelgeist database",
+    help="Path to a Zettelgeist database (NOTE: Will override contents)",
 )
 @click.option(
     "-c",
@@ -244,7 +220,9 @@ def main(inputPath: Path, classificationName: str, model: str) -> None:
         model=model,
     )
 
-    writeTagsToFile(data=data, filepaths=df["filename"])
+    newTagDF: DataFrame = writeTagsToRows(data=data, df=df)
+
+    print(newTagDF)
 
 
 if __name__ == "__main__":
