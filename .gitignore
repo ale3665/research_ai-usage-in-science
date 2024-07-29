@@ -176,3 +176,4 @@ temp/
 *.yaml
 build-docs/*
 *.sqlite
+*.png
