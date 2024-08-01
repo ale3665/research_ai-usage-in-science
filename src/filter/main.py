@@ -13,6 +13,21 @@ from src.classes.journalGeneric import Journal_ABC
 from src.classes.openalex import OpenAlex
 from src.classes.plos import PLOS
 
+FIELD_FILTER: List[str] = [
+    "Biological Sciences",
+    "Agricultural and Biological Sciences",
+    "Environmental Science",
+    "Medicine",
+    "Biochemistry Genetics and Molecular Biology",
+    "Immunology and Microbiology",
+    "Neuroscience",
+    "Dentistry",
+    "Health Professions",
+    "Nursing",
+    "Pharmacology Toxicology and Pharmaceutics",
+    "Veterinary",
+]
+
 
 def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
     data: dict[str, List[str]] = {"urls": []}
@@ -50,12 +65,13 @@ def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
         "json": [],
     }
 
+    # TODO: Remove the limiter on the number of URLs searched for
     with Bar(
         "Getting OpenAlex metadata for each paper...",
         max=df.shape[0],
     ) as bar:
         url: str
-        for url in df["urls"]:
+        for url in df["urls"][0:100]:
             resp: Response | None = oa.searchByDOI(doiURL=url)
 
             resp = None
