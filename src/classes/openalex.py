@@ -10,16 +10,31 @@ class OpenAlex(Search):
     def __init__(self) -> None:
         super().__init__()
 
-    def searchByDOI(self, doiURL: str) -> Response:
-        url: str = f"https://api.openalex.org/works/{doiURL}"
-        return self.search(url=url)
-
-    def getWorkTopics(self, resp: Response) -> DataFrame:
-        data: dict[str, List[str]] = {
+        self.topicTracker: dict[str, List[str]] = {
             "topic": [],
             "subfield": [],
             "field": [],
         }
+
+    def searchByDOI(self, doiURL: str) -> Response:
+        url: str = f"https://api.openalex.org/works/{doiURL}"
+        return self.search(url=url)
+
+    def getWorkPrimaryTopic(self, resp: Response) -> DataFrame:
+        data: dict[str, List[str]] = self.topicTracker.copy()
+
+        json: dict = resp.json()
+
+        topics: dict = json["primary_topic"]
+
+        data["topic"].append(topics["display_name"])
+        data["subfield"].append(topics["subfield"]["display_name"])
+        data["field"].append(topics["field"]["display_name"])
+
+        return DataFrame(data=data)
+
+    def getWorkTopics(self, resp: Response) -> DataFrame:
+        data: dict[str, List[str]] = self.topicTracker.copy()
 
         json: dict = resp.json()
 
