@@ -46,7 +46,7 @@ class PLOS(Journal_ABC):
                 if page > maxPage:
                     break
 
-                url: str = self.url.substitute(
+                url: str = self.searchURLTemplate.substitute(
                     query=query,
                     year=year,
                     page=page,
@@ -60,7 +60,7 @@ class PLOS(Journal_ABC):
                 data["url"].append(url)
                 data["status_code"].append(resp.status_code)
                 data["html"].append(resp.content.decode(errors="ignore"))
-                data["journal"].append(self.journal)
+                data["journal"].append(self.journalName)
 
                 if page == 1:
                     # Check to ensure that there exists pagination

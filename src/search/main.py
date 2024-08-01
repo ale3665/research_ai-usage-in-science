@@ -38,7 +38,7 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     data: List[DataFrame] = []
 
     for pair in product(SEARCH_QUERIES, RELEVANT_YEARS):
-        df: DataFrame = journal.conductSearch(query=pair[0], year=pair[1])
+        df: DataFrame = journal.searchJournal(query=pair[0], year=pair[1])
         data.append(df)
 
     df: DataFrame = pandas.concat(objs=data, ignore_index=True)
