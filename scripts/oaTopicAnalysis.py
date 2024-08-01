@@ -1,4 +1,5 @@
 from pathlib import Path
+from pprint import pprint as print
 from typing import List
 
 import click
@@ -69,6 +70,8 @@ def main(inputPath: Path, outputPath: Path) -> None:
     }
 
     plotOATagCounts(data=data, fp=outputPath)
+
+    print(uniqueFields.tolist())
 
 
 if __name__ == "__main__":
