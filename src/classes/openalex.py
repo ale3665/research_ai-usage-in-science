@@ -7,8 +7,13 @@ from src.classes.search import Search
 
 
 class OpenAlex(Search):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, email: str | None = None) -> None:
+        if email is None:
+            super().__init__()
+        else:
+            super().__init__(
+                headers={"User-Agent": f"mailto:{email}"},
+            )
 
         self.topicTracker: dict[str, List[str]] = {
             "topic": [],

@@ -1,4 +1,5 @@
 from pathlib import Path
+from time import sleep
 from typing import List
 
 import click
@@ -6,8 +7,10 @@ import pandas
 from pandas import DataFrame, Series
 from progress.bar import Bar
 from pyfs import resolvePath
+from requests import Response
 
 from src.classes.journalGeneric import Journal_ABC
+from src.classes.openalex import OpenAlex
 from src.classes.plos import PLOS
 
 
@@ -17,7 +20,8 @@ def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
     searchResultsHTML: Series = df["html"]
 
     with Bar(
-        "Extracting paper URLs from search results", max=searchResultsHTML.size
+        "Extracting paper URLs from search results...",
+        max=searchResultsHTML.size,
     ) as bar:
         result: str
         for result in searchResultsHTML:
@@ -33,7 +37,48 @@ def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
             lambda x: f"https://doi.org/{source.extractDOIFromPaper(url=x)}"
         )
 
-        return urlsDF
+    return urlsDF
+
+
+def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
+    oa: OpenAlex = OpenAlex(email=email)
+
+    data: dict[str, List[str | int]] = {
+        "doi": [],
+        "api_call": [],
+        "status_code": [],
+        "json": [],
+    }
+
+    with Bar(
+        "Getting OpenAlex metadata for each paper...",
+        max=df.shape[0],
+    ) as bar:
+        url: str
+        for url in df["urls"]:
+            data["doi"].append(url)
+
+            resp: Response = oa.searchByDOI(doiURL=url)
+
+            # TODO: Fix this code
+            if resp.status_code == 429:
+                sleep(11)
+                resp: Response = oa.searchByDOI(doiURL=url)
+                if resp.status_code == 429:
+                    print("Possible rate limit reached. Exiting")
+                    exit(2)
+
+            data["api_call"].append(resp.url)
+            data["status_code"].append(resp.status_code)
+            data["json"].append(
+                resp.content.decode(
+                    errors="ignore",
+                )
+            )
+
+            bar.next()
+
+    return DataFrame(data=data)
 
 
 @click.command()
@@ -45,7 +90,16 @@ def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
     required=True,
     help="Path to a parquet file containing journal search results",
 )
-def main(inputPath: Path) -> None:
+@click.option(
+    "-e",
+    "--email",
+    "email",
+    type=str,
+    required=False,
+    help="A valid email which will allow for access to the OpenAlex API Polite Pool",  # noqa: E501
+    default=None,
+)
+def main(inputPath: Path, email: str | None = None) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
 
     df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
@@ -60,7 +114,13 @@ def main(inputPath: Path) -> None:
 
     doisDF: DataFrame = getPaperDOIs(source=source, df=df)
 
-    print(doisDF)
+    oaDF: DataFrame = getOpenAlexResults(
+        df=doisDF,
+        email=email,
+    )
+
+    # TODO: Change this to be a command line parameter
+    oaDF.to_parquet(path="oa_plos.parquet", engine="pyarrow")
 
 
 if __name__ == "__main__":
