@@ -56,9 +56,17 @@ def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
     ) as bar:
         url: str
         for url in df["urls"]:
-            data["doi"].append(url)
+            resp: Response | None = oa.searchByDOI(doiURL=url)
 
-            resp: Response = oa.searchByDOI(doiURL=url)
+            resp = None
+
+            if resp is None:
+                data["doi"].append(url)
+                data["api_call"].append("")
+                data["status_code"].append(404)
+                data["json"].append("")
+                bar.next()
+                continue
 
             # TODO: Fix this code
             if resp.status_code == 429:
@@ -68,6 +76,7 @@ def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
                     print("Possible rate limit reached. Exiting")
                     exit(2)
 
+            data["doi"].append(url)
             data["api_call"].append(resp.url)
             data["status_code"].append(resp.status_code)
             data["json"].append(

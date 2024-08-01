@@ -21,7 +21,7 @@ class OpenAlex(Search):
             "field": [],
         }
 
-    def searchByDOI(self, doiURL: str) -> Response:
+    def searchByDOI(self, doiURL: str) -> Response | None:
         url: str = f"https://api.openalex.org/works/{doiURL}"
         return self.search(url=url)
 
