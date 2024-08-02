@@ -33,6 +33,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
     absOutputPath: Path = resolvePath(path=outputPath)
 
     data: dict[str, List[str | int | bytes]] = {
+        "doi": [],
         "url": [],
         "status_code": [],
         "html": [],
@@ -44,6 +45,8 @@ def main(inputPath: Path, outputPath: Path) -> None:
         row: Series
         for _, row in df.iterrows():
             search: Search = Search()
+
+            data["doi"].append(row["doi"])
 
             resp: Response | None = search.search(url=row["doi"])
 
