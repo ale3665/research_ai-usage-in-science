@@ -33,17 +33,20 @@ FIELD_FILTER: List[str] = [
 
 def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
     """
-    getPaperDOIs _summary_
+    Extract DOIs from paper URLs extracted from search results.
 
-    _extended_summary_
+    This function takes in a Journal_ABC instance and a Pandas DataFrame containing search results.
+    It uses the Journal_ABC instance to extract paper URLs from each search result,
+    then extracts the DOI for each URL using the Journal_ABC instance's `extractDOIFromPaper` method.
+    The resulting list of DOIs is returned as a Pandas DataFrame.
 
-    :param source: _description_
+    :param source: An instance of the Journal_ABC class, used to extract paper URLs and DOIs.
     :type source: Journal_ABC
-    :param df: _description_
+    :param df: A Pandas DataFrame containing search results from which to extract paper URLs.
     :type df: DataFrame
-    :return: _description_
+    :return: A Pandas DataFrame containing the extracted DOIs.
     :rtype: DataFrame
-    """
+    """  # noqa: E501
     data: dict[str, List[str]] = {"urls": []}
 
     searchResultsHTML: Series = df["html"]
@@ -71,17 +74,19 @@ def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
 
 def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
     """
-    getOpenAlexResults _summary_
+    Retrieve OpenAlex metadata for a list of papers.
 
-    _extended_summary_
+    This function takes in a Pandas DataFrame containing paper URLs and an optional email address.
+    It uses the OpenAlex API to retrieve metadata for each paper, storing the results in a new DataFrame.
+    The resulting DataFrame contains the DOI, API call URL, status code, and JSON response for each paper.
 
-    :param df: _description_
+    :param df: A Pandas DataFrame containing paper URLs.
     :type df: DataFrame
-    :param email: _description_
+    :param email: An optional email address used to authenticate with the OpenAlex API (if required).
     :type email: str | None
-    :return: _description_
+    :return: A new Pandas DataFrame containing the retrieved OpenAlex metadata for each paper.
     :rtype: DataFrame
-    """
+    """  # noqa: E501
     oa: OpenAlex = OpenAlex(email=email)
 
     data: dict[str, List[str | int]] = {
@@ -136,19 +141,22 @@ def filterOAResults(
     column: str,
 ) -> DataFrame:
     """
-    filterOAResults _summary_
+    Filter OpenAlex search results based on primary topics.
 
-    _extended_summary_
+    This function takes in a Pandas DataFrame containing OpenAlex search results, a list of keywords to filter by,
+    and the name of the column containing primary topics.
+    It uses the OpenAlex API to extract primary topics from each result's JSON metadata and checks if any keyword is present.
+    If a match is found, the entire row is added to a new DataFrame.
 
-    :param oaDF: _description_
+    :param oaDF: A Pandas DataFrame containing OpenAlex search results.
     :type oaDF: DataFrame
-    :param filterList: _description_
+    :param filterList: A list of keywords to filter by.
     :type filterList: List[str]
-    :param column: _description_
+    :param column: The name of the column containing primary topics.
     :type column: str
-    :return: _description_
+    :return: A new Pandas DataFrame containing filtered OpenAlex search results.
     :rtype: DataFrame
-    """
+    """  # noqa: E501
     oa: OpenAlex = OpenAlex()
     dfs: List[DataFrame] = []
 
@@ -229,23 +237,26 @@ def main(
     loadOA: Path | None = None,
 ) -> None:
     """
-    main _summary_
+    Load and filter journal search results using the OpenAlex API.
 
-    _extended_summary_
+    This script loads a parquet file containing journal search results, gets OpenAlex
+    search results for each DOIs found in the input file, filters the results based on the
+    given filter is supported), and saves
+    the filtered results to a new parquet file.
 
-    :param inputPath: _description_
-    :type inputPath: Path
-    :param oaOutputPath: _description_
-    :type oaOutputPath: Path
-    :param filter: _description_
+    :param inputPath: Path to a parquet file containing journal search results.
+    :type inputPath: Path()
+    :param oaOutputPath: Path to save OpenAlex results to.
+    :type oaOutputPath: Path()
+    :param filter: Filter to apply to papers.
     :type filter: str
-    :param outputPath: _description_
-    :type outputPath: Path
-    :param email: _description_, defaults to None
-    :type email: str | None, optional
-    :param loadOA: _description_, defaults to None
-    :type loadOA: Path | None, optional
-    """
+    :param outputPath: Path to save filtered papers to.
+    :type outputPath: Path()
+    :param email: A valid email which will allow for access to the OpenAlex API Polite Pool. Defaults to None.
+    :type email: str | None
+    :param loadOA: Path to existing OpenAlex results. If provided, the script will use these results instead of getting new ones from the API. Defaults to None.
+    :type loadOA: Path() | None
+    """  # noqa: E501
     filteredDOIDF: DataFrame
     oaDF: DataFrame
 
