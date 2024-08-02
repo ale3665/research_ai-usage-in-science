@@ -20,13 +20,13 @@ FIELD_FILTER: List[str] = [
     "Agricultural and Biological Sciences",
     "Environmental Science",
     "Medicine",
-    "Biochemistry Genetics and Molecular Biology",
+    "Biochemistry, Genetics, and Molecular Biology",
     "Immunology and Microbiology",
     "Neuroscience",
     "Dentistry",
     "Health Professions",
     "Nursing",
-    "Pharmacology Toxicology and Pharmaceutics",
+    "Pharmacology, Toxicology, and Pharmaceutics",
     "Veterinary",
 ]
 
@@ -96,13 +96,12 @@ def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
         "json": [],
     }
 
-    # TODO: Remove the limiter on the number of URLs searched for
     with Bar(
         "Getting OpenAlex metadata for each paper...",
         max=df.shape[0],
     ) as bar:
         url: str
-        for url in df["urls"][0:100]:
+        for url in df["urls"]:
             resp: Response | None = oa.searchByDOI(doiURL=url)
 
             if resp is None:
@@ -140,40 +139,38 @@ def filterOAResults(
     filterList: List[str],
     column: str,
 ) -> DataFrame:
-    """
-    Filter OpenAlex search results based on primary topics.
-
-    This function takes in a Pandas DataFrame containing OpenAlex search results, a list of keywords to filter by,
-    and the name of the column containing primary topics.
-    It uses the OpenAlex API to extract primary topics from each result's JSON metadata and checks if any keyword is present.
-    If a match is found, the entire row is added to a new DataFrame.
-
-    :param oaDF: A Pandas DataFrame containing OpenAlex search results.
-    :type oaDF: DataFrame
-    :param filterList: A list of keywords to filter by.
-    :type filterList: List[str]
-    :param column: The name of the column containing primary topics.
-    :type column: str
-    :return: A new Pandas DataFrame containing filtered OpenAlex search results.
-    :rtype: DataFrame
-    """  # noqa: E501
-    oa: OpenAlex = OpenAlex()
     dfs: List[DataFrame] = []
 
-    df: DataFrame = oaDF[oaDF["status_code"] == 200]
+    df: DataFrame = oaDF[oaDF["status_code"] == 200].reset_index(drop=True)
 
-    with Bar("Filtering OpenAlex search results...", max=df.shape[0]) as bar:
+    with Bar("Filtering academic papers...", max=df.shape[0]) as bar:
         row: Series
         for _, row in df.iterrows():
-            json: dict = loads(s=row["json"])
+            oa: OpenAlex = OpenAlex()
 
-            primaryTopics: DataFrame = oa.getWorkPrimaryTopic(json=json)
+            jsonStr: str = row["json"]
+            json: dict = loads(s=jsonStr)
 
-            if primaryTopics[column].isin(filterList).any():
-                dfs.append(row.to_frame().T)
-            bar.next()
+            ptDF: DataFrame | None = oa.getWorkPrimaryTopic(json=json)
 
-    return pandas.concat(objs=dfs)
+            if ptDF is None:
+                bar.next()
+                continue
+
+            if ptDF["field"].isin(filterList).any():
+                dfs.append(ptDF)
+                bar.next()
+            else:
+                bar.next()
+
+        return pandas.concat(objs=dfs, ignore_index=True)
+
+        # else:
+        #     print("dead")
+        # .any():
+        #     dfs.append(foo.to_frame().T)
+
+    # print(pandas.concat(objs=dfs, ignore_index=True))
 
 
 @click.command()
