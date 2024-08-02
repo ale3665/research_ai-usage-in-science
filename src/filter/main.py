@@ -139,6 +139,25 @@ def filterOAResults(
     filterList: List[str],
     column: str,
 ) -> DataFrame:
+    """
+    Filter OpenAlex results based on a list of fields.
+
+    :param oaDF: The input DataFrame containing OpenAlex data.
+    :type oaDF: pandas.DataFrame
+    :param filterList: A list of fields to filter on.
+    :type filterList: list[str]
+    :param column: [NOT USED] (default is ..., indicating a required positional argument)
+    :type column: str
+    :return: The filtered DataFrame.
+    :rtype: pandas.DataFrame
+
+    Filtering is done by iterating over the input DataFrame, checking each row's primary topic field against the filter list. If the field matches, the corresponding OpenAlex result is added to the output.
+
+    Example use cases:
+
+        >>> from mymodule import filterOAResults
+        >>> filtered_df = filterOAResults(oaDF, ["field1", "field2"])
+    """  # noqa: E501
     dfs: List[DataFrame] = []
 
     df: DataFrame = oaDF[oaDF["status_code"] == 200].reset_index(drop=True)
@@ -164,13 +183,6 @@ def filterOAResults(
                 bar.next()
 
         return pandas.concat(objs=dfs, ignore_index=True)
-
-        # else:
-        #     print("dead")
-        # .any():
-        #     dfs.append(foo.to_frame().T)
-
-    # print(pandas.concat(objs=dfs, ignore_index=True))
 
 
 @click.command()
