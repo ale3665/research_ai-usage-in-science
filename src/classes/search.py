@@ -31,7 +31,12 @@ class Search:
         :rtype: Response
         """
         try:
-            resp: Response = get(url=url, headers=self.headers, timeout=60)
+            resp: Response = get(
+                url=url,
+                headers=self.headers,
+                timeout=60,
+                allow_redirects=True,
+            )
         except ReadTimeout:
             return None
         return resp

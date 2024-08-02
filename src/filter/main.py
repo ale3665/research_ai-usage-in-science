@@ -151,7 +151,7 @@ def filterOAResults(
     :return: The filtered DataFrame.
     :rtype: pandas.DataFrame
 
-    Filtering is done by iterating over the input DataFrame, checking each row's primary topic field against the filter list. If the field matches, the corresponding OpenAlex result is added to the output.
+    Filtering is done by iterating over the input DataFrame, checking each row's primary topic field against the filter list. If the field matches, the corresponding document is added to the output.
 
     Example use cases:
 
@@ -177,7 +177,7 @@ def filterOAResults(
                 continue
 
             if ptDF["field"].isin(filterList).any():
-                dfs.append(ptDF)
+                dfs.append(row.copy().to_frame().T)
                 bar.next()
             else:
                 bar.next()
