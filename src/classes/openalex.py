@@ -25,16 +25,13 @@ class OpenAlex(Search):
         url: str = f"https://api.openalex.org/works/{doiURL}"
         return self.search(url=url)
 
-    def getWorkPrimaryTopic(self, resp: Response) -> DataFrame:
+    def getWorkPrimaryTopic(self, json: dict) -> DataFrame:
         data: dict[str, List[str]] = self.topicTracker.copy()
 
-        json: dict = resp.json()
-
-        topics: dict = json["primary_topic"]
-
-        data["topic"].append(topics["display_name"])
-        data["subfield"].append(topics["subfield"]["display_name"])
-        data["field"].append(topics["field"]["display_name"])
+        json = json["primary_topic"]
+        data["topic"].append(json["display_name"])
+        data["subfield"].append(json["subfield"]["display_name"])
+        data["field"].append(json["field"]["display_name"])
 
         return DataFrame(data=data)
 
