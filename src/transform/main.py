@@ -14,7 +14,7 @@ from pyfs import resolvePath
     "inputPath",
     type=Path,
     required=True,
-    help="Path to a filtered list of academic papers",
+    help="Path to downloaded academic papers",
 )
 @click.option(
     "-o",
