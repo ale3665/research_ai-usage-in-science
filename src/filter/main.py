@@ -139,6 +139,7 @@ def filterOAResults(
     type=click.Choice(choices=["field-biological_sciences"]),
     help="Filter to apply to papers",
     default="field-biological_sciences",
+    show_default=True,
 )
 @click.option(
     "-e",
@@ -164,6 +165,7 @@ def filterOAResults(
     required=False,
     help="OpenAlex search results to load",
     default=None,
+    show_default=True,
 )
 @click.option(
     "-o",
@@ -188,6 +190,7 @@ def main(
     email: str | None = None,
     loadOA: Path | None = None,
 ) -> None:
+    filteredDOIDF: DataFrame
     oaDF: DataFrame
 
     absInputPath: Path = resolvePath(path=inputPath)
@@ -227,13 +230,17 @@ def main(
             engine="pyarrow",
         )
 
-    foar: DataFrame = filterOAResults(
-        oaDF=oaDF,
-        filterList=FIELD_FILTER,
-        column="field",
-    )
+    match filter:
+        case "field-biological_sciences":
+            filteredDOIDF = filterOAResults(
+                oaDF=oaDF,
+                filterList=FIELD_FILTER,
+                column="field",
+            )
+        case _:
+            exit(3)
 
-    foar.to_parquet(path=absOutputPath, engine="pyarrow")
+    filteredDOIDF.to_parquet(path=absOutputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":
