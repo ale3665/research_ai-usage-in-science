@@ -32,6 +32,18 @@ FIELD_FILTER: List[str] = [
 
 
 def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
+    """
+    getPaperDOIs _summary_
+
+    _extended_summary_
+
+    :param source: _description_
+    :type source: Journal_ABC
+    :param df: _description_
+    :type df: DataFrame
+    :return: _description_
+    :rtype: DataFrame
+    """
     data: dict[str, List[str]] = {"urls": []}
 
     searchResultsHTML: Series = df["html"]
@@ -58,6 +70,18 @@ def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
 
 
 def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
+    """
+    getOpenAlexResults _summary_
+
+    _extended_summary_
+
+    :param df: _description_
+    :type df: DataFrame
+    :param email: _description_
+    :type email: str | None
+    :return: _description_
+    :rtype: DataFrame
+    """
     oa: OpenAlex = OpenAlex(email=email)
 
     data: dict[str, List[str | int]] = {
@@ -111,6 +135,20 @@ def filterOAResults(
     filterList: List[str],
     column: str,
 ) -> DataFrame:
+    """
+    filterOAResults _summary_
+
+    _extended_summary_
+
+    :param oaDF: _description_
+    :type oaDF: DataFrame
+    :param filterList: _description_
+    :type filterList: List[str]
+    :param column: _description_
+    :type column: str
+    :return: _description_
+    :rtype: DataFrame
+    """
     oa: OpenAlex = OpenAlex()
     dfs: List[DataFrame] = []
 
@@ -190,6 +228,24 @@ def main(
     email: str | None = None,
     loadOA: Path | None = None,
 ) -> None:
+    """
+    main _summary_
+
+    _extended_summary_
+
+    :param inputPath: _description_
+    :type inputPath: Path
+    :param oaOutputPath: _description_
+    :type oaOutputPath: Path
+    :param filter: _description_
+    :type filter: str
+    :param outputPath: _description_
+    :type outputPath: Path
+    :param email: _description_, defaults to None
+    :type email: str | None, optional
+    :param loadOA: _description_, defaults to None
+    :type loadOA: Path | None, optional
+    """
     filteredDOIDF: DataFrame
     oaDF: DataFrame
 
@@ -218,9 +274,6 @@ def main(
         )
 
         oaDF.to_parquet(path=absOAOutputPath, engine="pyarrow")
-
-        # TODO: Change this to be a command line parameter
-        oaDF.to_parquet(path="oa_plos.parquet", engine="pyarrow")
 
     else:
         absOAPath: Path = resolvePath(path=loadOA)
