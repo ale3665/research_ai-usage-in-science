@@ -1,7 +1,7 @@
 from json import loads
 from pathlib import Path
 from time import sleep
-from typing import List
+from typing import List, Tuple
 
 import click
 import pandas
@@ -12,7 +12,7 @@ from requests import Response
 from src.classes.journalGeneric import Journal_ABC
 from src.classes.openalex import OpenAlex
 from src.classes.plos import PLOS
-from src.utils import ifFileExistsExit
+from src.utils import extractDOIsFromHTML, ifFileExistsExit
 
 # TODO: Add filter lists for subfields and topics
 FIELD_FILTER: List[str] = [
@@ -28,62 +28,7 @@ FIELD_FILTER: List[str] = [
 ]
 
 
-def getPaperDOIs(source: Journal_ABC, df: DataFrame) -> DataFrame:
-    """
-    Extract DOIs from paper URLs extracted from search results.
-
-    This function takes in a Journal_ABC instance and a Pandas DataFrame containing search results.
-    It uses the Journal_ABC instance to extract paper URLs from each search result,
-    then extracts the DOI for each URL using the Journal_ABC instance's `extractDOIFromPaper` method.
-    The resulting list of DOIs is returned as a Pandas DataFrame.
-
-    :param source: An instance of the Journal_ABC class, used to extract paper URLs and DOIs.
-    :type source: Journal_ABC
-    :param df: A Pandas DataFrame containing search results from which to extract paper URLs.
-    :type df: DataFrame
-    :return: A Pandas DataFrame containing the extracted DOIs.
-    :rtype: DataFrame
-    """  # noqa: E501
-    data: dict[str, List[str]] = {"urls": []}
-
-    searchResultsHTML: Series = df["html"]
-
-    with Bar(
-        "Extracting paper URLs from search results...",
-        max=searchResultsHTML.size,
-    ) as bar:
-        result: str
-        for result in searchResultsHTML:
-            urls: List[str] = source.extractPaperURLsFromSearchResult(
-                respContent=result
-            )
-            data["urls"].extend(urls)
-            bar.next()
-
-        urlsDF: DataFrame = DataFrame(data=data)
-
-        urlsDF["urls"] = urlsDF["urls"].apply(
-            lambda x: f"https://doi.org/{source.extractDOIFromPaper(url=x)}"
-        )
-
-    return urlsDF
-
-
 def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
-    """
-    Retrieve OpenAlex metadata for a list of papers.
-
-    This function takes in a Pandas DataFrame containing paper URLs and an optional email address.
-    It uses the OpenAlex API to retrieve metadata for each paper, storing the results in a new DataFrame.
-    The resulting DataFrame contains the DOI, API call URL, status code, and JSON response for each paper.
-
-    :param df: A Pandas DataFrame containing paper URLs.
-    :type df: DataFrame
-    :param email: An optional email address used to authenticate with the OpenAlex API (if required).
-    :type email: str | None
-    :return: A new Pandas DataFrame containing the retrieved OpenAlex metadata for each paper.
-    :rtype: DataFrame
-    """  # noqa: E501
     oa: OpenAlex = OpenAlex(email=email)
 
     data: dict[str, List[str | int]] = {
@@ -136,25 +81,6 @@ def filterOAResults(
     filterList: List[str],
     column: str,
 ) -> DataFrame:
-    """
-    Filter OpenAlex results based on a list of fields.
-
-    :param oaDF: The input DataFrame containing OpenAlex data.
-    :type oaDF: pandas.DataFrame
-    :param filterList: A list of fields to filter on.
-    :type filterList: list[str]
-    :param column: [NOT USED] (default is ..., indicating a required positional argument)
-    :type column: str
-    :return: The filtered DataFrame.
-    :rtype: pandas.DataFrame
-
-    Filtering is done by iterating over the input DataFrame, checking each row's primary topic field against the filter list. If the field matches, the corresponding document is added to the output.
-
-    Example use cases:
-
-        >>> from mymodule import filterOAResults
-        >>> filtered_df = filterOAResults(oaDF, ["field1", "field2"])
-    """  # noqa: E501
     dfs: List[DataFrame] = []
 
     df: DataFrame = oaDF[oaDF["status_code"] == 200].reset_index(drop=True)
@@ -184,6 +110,15 @@ def filterOAResults(
 
 @click.command()
 @click.option(
+    "-e",
+    "--email",
+    "email",
+    type=str,
+    required=False,
+    help="A valid email which will allow for access to the OpenAlex API Polite Pool",  # noqa: E501
+    default=None,
+)
+@click.option(
     "-f",
     "--filter",
     "filter",
@@ -194,17 +129,8 @@ def filterOAResults(
     show_default=True,
 )
 @click.option(
-    "-e",
-    "--email",
-    "email",
-    type=str,
-    required=False,
-    help="A valid email which will allow for access to the OpenAlex API Polite Pool",  # noqa: E501
-    default=None,
-)
-@click.option(
     "-i",
-    "--load-search-results",
+    "--input",
     "inputPath",
     type=click.Path(
         exists=True,
@@ -218,8 +144,23 @@ def filterOAResults(
     help="Path to a parquet file containing journal search results",
 )
 @click.option(
-    "--load-oa-results",
-    "loadOA",
+    "-o",
+    "--output",
+    "outputPath",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+    ),
+    required=True,
+    help="Path to a parquet file to store papers that apply to the given filter",  # noqa: E501
+)
+@click.option(
+    "--oa",
+    "oaInputPath",
     type=click.Path(
         exists=True,
         file_okay=True,
@@ -234,9 +175,8 @@ def filterOAResults(
     show_default=True,
 )
 @click.option(
-    "-o",
-    "--output-filtered-papers",
-    "outputPath",
+    "--output-doi",
+    "doiOutputPath",
     type=click.Path(
         exists=False,
         file_okay=True,
@@ -246,10 +186,10 @@ def filterOAResults(
         resolve_path=True,
     ),
     required=True,
-    help="Path to a parquet file to store papers that apply to the given filter",  # noqa: E501
+    help="Path to store the DOIs of all documents identified in the search",
 )
 @click.option(
-    "--output-oa-results",
+    "--output-oa",
     "oaOutputPath",
     type=click.Path(
         exists=False,
@@ -263,75 +203,66 @@ def filterOAResults(
     help="Path to a parquet file to store OpenAlex results",
 )
 def main(
+    doiOutputPath: Path,
+    filter: str,
     inputPath: Path,
     oaOutputPath: Path,
-    filter: str,
     outputPath: Path,
     email: str | None = None,
-    loadOA: Path | None = None,
+    oaInputPath: Path | None = None,
 ) -> None:
-    """
-    Load and filter journal search results using the OpenAlex API.
+    # 1. Check that files exist
+    ifFileExistsExit(fps=[outputPath, oaOutputPath, doiOutputPath])
 
-    This script loads a parquet file containing journal search results, gets OpenAlex
-    search results for each DOIs found in the input file, filters the results based on the
-    given filter is supported), and saves
-    the filtered results to a new parquet file.
+    # 2. Identify filter and relevant column
+    filterTuple: Tuple[str, List[str]]
+    match filter:
+        case "field":
+            filterTuple = ("field", FIELD_FILTER)
+        case _:
+            exit(1)
 
-    :param inputPath: Path to a parquet file containing journal search results.
-    :type inputPath: Path()
-    :param oaOutputPath: Path to save OpenAlex results to.
-    :type oaOutputPath: Path()
-    :param filter: Filter to apply to papers.
-    :type filter: str
-    :param outputPath: Path to save filtered papers to.
-    :type outputPath: Path()
-    :param email: A valid email which will allow for access to the OpenAlex API Polite Pool. Defaults to None.
-    :type email: str | None
-    :param loadOA: Path to existing OpenAlex results. If provided, the script will use these results instead of getting new ones from the API. Defaults to None.
-    :type loadOA: Path() | None
-    """  # noqa: E501
-    filteredDOIDF: DataFrame
+    # 3. Load search results
+    print(f'Reading data from "{inputPath}"...')
+    df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
+
+    # 4. Extract DOIs from papers in the search result
+    print("Extracting DOIs from search results...")
+    source: Journal_ABC
+    match df["journal"][0]:
+        case "PLOS":
+            source = PLOS()
+        case _:
+            exit(1)
+
+    doisDF: DataFrame = extractDOIsFromHTML(source=source, df=df)
+
+    # 5. Save DOI DataFrame
+    print(f'Writing data to "{doiOutputPath}"...')
+    doisDF.to_parquet(path=doiOutputPath, engine="pyarrow")
+
+    # 6. Load OpenAlex search results if they exist
     oaDF: DataFrame
+    if oaInputPath is not None:
+        print(f'Reading data from "{oaInputPath}"...')
+        oaDF = pandas.read_parquet(path=oaInputPath, engine="pyarrow")
+    # 7. Get OpenAlex search results if they do not exist
+    else:
+        oaDF = getOpenAlexResults(df=doisDF, email=email)
 
-    ifFileExistsExit(fps=[outputPath, oaOutputPath])
-
-    if loadOA is None:
-        df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
-        journal: str = df["journal"][0]
-
-        source: Journal_ABC
-        match journal:
-            case "PLOS":
-                source = PLOS()
-            case _:
-                exit(1)
-
-        doisDF: DataFrame = getPaperDOIs(source=source, df=df)
-
-        oaDF = getOpenAlexResults(
-            df=doisDF,
-            email=email,
-        )
-
+        # 7a. Save OpenAlex DataFrame
+        print(f'Writing data to "{oaOutputPath}"...')
         oaDF.to_parquet(path=oaOutputPath, engine="pyarrow")
 
-    else:
-        oaDF = pandas.read_parquet(
-            path=loadOA,
-            engine="pyarrow",
-        )
+    # 8. Filter documents based on field, subfield, or topic
+    filteredDOIDF: DataFrame = filterOAResults(
+        oaDF=oaDF,
+        column=filterTuple[0],
+        filterList=filterTuple[1],
+    )
 
-    match filter:
-        case "field-biological_sciences":
-            filteredDOIDF = filterOAResults(
-                oaDF=oaDF,
-                filterList=FIELD_FILTER,
-                column="field",
-            )
-        case _:
-            exit(3)
-
+    # 9. Write filtered documents to file
+    print(f'Writing data to "{outputPath}"...')
     filteredDOIDF.to_parquet(path=outputPath, engine="pyarrow")
 
 

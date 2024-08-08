@@ -4,6 +4,11 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List
 
+from pandas import DataFrame, Series
+from progress.bar import Bar
+
+from src.classes.journalGeneric import Journal_ABC
+
 
 def ifFileExistsExit(fps: List[Path]) -> None:
     fp: Path
@@ -14,19 +19,6 @@ def ifFileExistsExit(fps: List[Path]) -> None:
 
 
 def formatText(string: str) -> str:
-    """
-    Formats a given string by removing certain characters and cleaning up whitespace.
-
-    This function performs the following operations on the input string:
-    1. Removes hyphenated newlines (i.e., "-\n").
-    2. Replaces newlines with an empty string.
-    3. Collapses multiple spaces into a single space.
-
-    :param string: The input string to be formatted.
-    :type string: str
-    :return: The formatted string with cleaned-up text.
-    :rtype: str
-    """  # noqa: E501
     string = re.sub(pattern=r"-\n", repl="", string=string)
     string = string.replace("\n", "")
     string = " ".join(string.split())
@@ -34,18 +26,6 @@ def formatText(string: str) -> str:
 
 
 def storeStringInTempFile(string: str) -> str:
-    """
-    Stores a given string in a temporary file and returns the file's name.
-
-    This function creates a temporary file, writes the given string to it,
-    and returns the name of the temporary file. The temporary file is not
-    deleted when closed, allowing the caller to access it later.
-
-    :param string: The input string to be stored in the temporary file.
-    :type string: str
-    :return: The name of the temporary file containing the stored string.
-    :rtype: str
-    """
     tf: NamedTemporaryFile = NamedTemporaryFile(
         mode="w+t",
         delete=False,
@@ -57,3 +37,39 @@ def storeStringInTempFile(string: str) -> str:
     tf.close()
 
     return tfName
+
+
+def extractDOIsFromHTML(source: Journal_ABC, df: DataFrame) -> DataFrame:
+    data: dict[str, List[str | int]] = {
+        "urls": [],
+        "query": [],
+        "year": [],
+        "journal": [],
+    }
+
+    with Bar(
+        "Extracting paper URLs from search results...",
+        max=df.shape[0],
+    ) as bar:
+        row: Series
+        for _, row in df.iterrows():
+            urls: List[str] = source.extractPaperURLsFromSearchResult(
+                respContent=row["html"]
+            )
+
+            url: str
+            for url in urls:
+                data["urls"].append(url)
+                data["query"].append(row["query"])
+                data["year"].append(row["year"])
+                data["journal"].append(row["journal"])
+
+            bar.next()
+
+        urlsDF: DataFrame = DataFrame(data=data)
+
+        urlsDF["urls"] = urlsDF["urls"].apply(
+            lambda x: f"https://doi.org/{source.extractDOIFromPaper(url=x)}"
+        )
+
+    return urlsDF
