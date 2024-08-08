@@ -1,5 +1,16 @@
 import re
+from os.path import isfile
+from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import List
+
+
+def ifFileExistsExit(fps: List[Path]) -> None:
+    fp: Path
+    for fp in fps:
+        if isfile(path=fp):
+            print(f'"{fp}" exists')
+            exit(1)
 
 
 def formatText(string: str) -> str:

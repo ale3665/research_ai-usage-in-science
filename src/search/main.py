@@ -6,11 +6,11 @@ from typing import List
 import click
 import pandas
 from pandas import DataFrame
-from pyfs import isDirectory, isFile, resolvePath
 
 from src.classes import RELEVANT_YEARS, SEARCH_QUERIES
 from src.classes.journalGeneric import Journal_ABC
 from src.classes.plos import PLOS
+from src.utils import ifFileExistsExit
 
 MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
     template="Search for documents in ${journal} mega journal",
@@ -66,7 +66,14 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     "--output",
     "outputPath",
     required=True,
-    type=Path,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
     help="Output parquet file to save Pandas DataFrame to",
 )
 def main(outputPath: Path, journal: str) -> None:
@@ -87,15 +94,7 @@ def main(outputPath: Path, journal: str) -> None:
                     include 'nature' and 'plos'.
     :type journal: str
     """  # noqa: E501
-    absOutputPath: Path = resolvePath(path=outputPath)
-
-    if isFile(path=absOutputPath):
-        print(f"{absOutputPath} already exists.")
-        exit(1)
-
-    if isDirectory(path=absOutputPath):
-        print(f"{absOutputPath} is a directory")
-        exit(1)
+    ifFileExistsExit(fps=[outputPath])
 
     journalClass: Journal_ABC
     match journal:
@@ -106,7 +105,7 @@ def main(outputPath: Path, journal: str) -> None:
 
     df: DataFrame = runCollector(journal=journalClass)
 
-    df.to_parquet(path=absOutputPath, engine="pyarrow")
+    df.to_parquet(path=outputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":
