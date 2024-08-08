@@ -3,7 +3,7 @@ from typing import List, Type
 
 from typedframe import TypedDataFrame
 
-RELEVANT_YEARS: List[int] = list(range(2015, datetime.now().year + 1))
+RELEVANT_YEARS: List[int] = list(range(2014, datetime.now().year + 1))
 
 SEARCH_QUERIES: List[str] = [
     r'"Deep Learning"',
