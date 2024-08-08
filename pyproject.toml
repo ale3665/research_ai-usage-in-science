@@ -36,3 +36,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 aius-search = "src.search.main:main"
+aius-search-plot = "src.search.plot:main"
