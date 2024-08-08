@@ -18,23 +18,6 @@ MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
 
 
 def runCollector(journal: Journal_ABC) -> DataFrame:
-    """
-    Collects data from a specified journal using predefined search queries and years.
-
-    This function orchestrates the process of gathering articles from a specific
-    journal. It iterates over combinations of predefined search queries and years,
-    conducts searches, and aggregates the results into a single DataFrame. It also
-    removes duplicate entries based on URLs to ensure that each article is unique.
-
-    :param journal: The journal from which data is to be collected. This object
-                    must adhere to the Journal_ABC interface, which includes a
-                    method for conducting searches given a query and a year.
-    :type journal: Journal_ABC
-    :return: A DataFrame containing aggregated results of all searches performed,
-             with duplicates removed. The DataFrame includes article metadata such
-             as titles, authors, publication dates, and URLs.
-    :rtype: DataFrame
-    """  # noqa: E501
     data: List[DataFrame] = []
 
     for pair in product(SEARCH_QUERIES, RELEVANT_YEARS):
@@ -77,23 +60,6 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     help="Output parquet file to save Pandas DataFrame to",
 )
 def main(outputPath: Path, journal: str) -> None:
-    """
-    Main function to execute the data collection process for specified journal types.
-
-    This function orchestrates the data collection from a specific journal by:
-    1. Resolving the output file path.
-    2. Ensuring the output file does not preexist to prevent overwriting.
-    3. Matching the input journal type to its corresponding class.
-    4. Running the data collector to gather and consolidate data.
-    5. Saving the collected data to a Parquet file at the specified output path.
-
-    :param outputPath: The path where the collected data will be stored as a Parquet file.
-                       The function will exit if a file or directory already exists at this path.
-    :type outputPath: Path
-    :param journal: The identifier for the journal type to collect data from. Supported types
-                    include 'nature' and 'plos'.
-    :type journal: str
-    """  # noqa: E501
     ifFileExistsExit(fps=[outputPath])
 
     journalClass: Journal_ABC
