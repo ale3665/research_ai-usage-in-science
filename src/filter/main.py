@@ -7,27 +7,24 @@ import click
 import pandas
 from pandas import DataFrame, Series
 from progress.bar import Bar
-from pyfs import resolvePath
 from requests import Response
 
 from src.classes.journalGeneric import Journal_ABC
 from src.classes.openalex import OpenAlex
 from src.classes.plos import PLOS
+from src.utils import ifFileExistsExit
 
 # TODO: Add filter lists for subfields and topics
 FIELD_FILTER: List[str] = [
-    "Biological Sciences",
     "Agricultural and Biological Sciences",
     "Environmental Science",
-    "Medicine",
-    "Biochemistry, Genetics, and Molecular Biology",
+    "Biochemistry Genetics and Molecular Biology",
     "Immunology and Microbiology",
     "Neuroscience",
-    "Dentistry",
-    "Health Professions",
-    "Nursing",
-    "Pharmacology, Toxicology, and Pharmaceutics",
-    "Veterinary",
+    "Earth and Planetary Sciences",
+    "Physics and Astronomy",
+    "Chemistry",
+    "Materials Science",
 ]
 
 
@@ -191,9 +188,9 @@ def filterOAResults(
     "--filter",
     "filter",
     required=False,
-    type=click.Choice(choices=["field-biological_sciences"]),
-    help="Filter to apply to papers",
-    default="field-biological_sciences",
+    type=click.Choice(choices=["field"]),
+    help="Specify what paper attribute to filter on",
+    default="field",
     show_default=True,
 )
 @click.option(
@@ -209,14 +206,28 @@ def filterOAResults(
     "-i",
     "--load-search-results",
     "inputPath",
-    type=Path,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+    ),
     required=True,
     help="Path to a parquet file containing journal search results",
 )
 @click.option(
     "--load-oa-results",
     "loadOA",
-    type=Path,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+    ),
     required=False,
     help="OpenAlex search results to load",
     default=None,
@@ -226,14 +237,28 @@ def filterOAResults(
     "-o",
     "--output-filtered-papers",
     "outputPath",
-    type=Path,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+    ),
     required=True,
     help="Path to a parquet file to store papers that apply to the given filter",  # noqa: E501
 )
 @click.option(
     "--output-oa-results",
     "oaOutputPath",
-    type=Path,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+    ),
     required=True,
     help="Path to a parquet file to store OpenAlex results",
 )
@@ -269,14 +294,10 @@ def main(
     filteredDOIDF: DataFrame
     oaDF: DataFrame
 
-    absInputPath: Path = resolvePath(path=inputPath)
-    absOAOutputPath: Path = resolvePath(path=oaOutputPath)
-    absOutputPath: Path = resolvePath(path=outputPath)
+    ifFileExistsExit(fps=[outputPath, oaOutputPath])
 
     if loadOA is None:
-        df: DataFrame = pandas.read_parquet(
-            path=absInputPath, engine="pyarrow"
-        )
+        df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
         journal: str = df["journal"][0]
 
         source: Journal_ABC
@@ -293,13 +314,11 @@ def main(
             email=email,
         )
 
-        oaDF.to_parquet(path=absOAOutputPath, engine="pyarrow")
+        oaDF.to_parquet(path=oaOutputPath, engine="pyarrow")
 
     else:
-        absOAPath: Path = resolvePath(path=loadOA)
-
         oaDF = pandas.read_parquet(
-            path=absOAPath,
+            path=loadOA,
             engine="pyarrow",
         )
 
@@ -313,7 +332,7 @@ def main(
         case _:
             exit(3)
 
-    filteredDOIDF.to_parquet(path=absOutputPath, engine="pyarrow")
+    filteredDOIDF.to_parquet(path=outputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":
