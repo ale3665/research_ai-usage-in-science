@@ -8,9 +8,9 @@ import pandas
 from pandas import DataFrame
 from pyfs import isDirectory, isFile, resolvePath
 
+from src.classes import RELEVANT_YEARS, SEARCH_QUERIES
 from src.classes.journalGeneric import Journal_ABC
 from src.classes.plos import PLOS
-from src.utils.search import RELEVANT_YEARS, SEARCH_QUERIES
 
 MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
     template="Search for documents in ${journal} mega journal",
