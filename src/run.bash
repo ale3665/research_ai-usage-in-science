@@ -31,3 +31,13 @@ aius-download-papers \
 aius-transform-papers \
     --input $PLOS_PATH/filtered_downloadedPapers_$DATE.parquet \
     --output $PLOS_PATH/transformed_papers_$DATE.parquet
+
+# 6. Evaluation: Count keywords
+aius-evaluation-count-keywords \
+    --input $PLOS_PATH/transformed_papers_$DATE.parquet \
+    --output $PLOS_PATH/evaluation_countKeywords_$DATE.csv
+
+# 7. Evaluation: Count tags
+aius-evaluation-count-tags \
+    --input $PLOS_PATH/transformed_papers_$DATE.parquet \
+    --output $PLOS_PATH/evaluation_countTags_$DATE.csv

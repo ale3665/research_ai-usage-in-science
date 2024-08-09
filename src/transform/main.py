@@ -38,6 +38,8 @@ def extractContent(df: DataFrame, journal: Journal_ABC) -> DataFrame:
                 journal.extractAbstractFromPaper(soup=soup)
             )
             data["content"].append(journal.extractContentFromPaper(soup=soup))
+
+            # TODO: Add support for extracting OA Tags
             data["tags"].append(journal.extractJournalTagsFromPaper(soup=soup))
 
             bar.next()

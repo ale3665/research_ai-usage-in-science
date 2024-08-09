@@ -1,19 +1,10 @@
 from pathlib import Path
-from sqlite3 import Connection, connect
 
 import click
 import pandas
 from pandas import DataFrame, Series
-from pyfs import resolvePath
 
-
-def readDB(dbPath: Path) -> DataFrame:
-    sql: str = "SELECT tags FROM zettels"
-    conn: Connection = connect(database=dbPath)
-    df: DataFrame = pandas.read_sql_query(sql=sql, con=conn)
-    df["tags"] = df["tags"].apply(lambda x: x.split("✖"))
-    conn.close()
-    return df
+from src.utils import ifFileExistsExit
 
 
 @click.command()
@@ -21,30 +12,56 @@ def readDB(dbPath: Path) -> DataFrame:
     "-i",
     "--input",
     "inputPath",
-    type=Path,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
-    help="Path to a Zettelgeist database",
+    help="Path to a transformed set of papers",
 )
 @click.option(
     "-o",
     "--output",
     "outputPath",
-    type=Path,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to store data in CSV format",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    absInputPath: Path = resolvePath(path=inputPath)
-    absOutputPath: Path = resolvePath(path=outputPath)
+    # 1. Check if output path already exists
+    ifFileExistsExit(fps=[outputPath])
 
-    df: DataFrame = readDB(dbPath=absInputPath)
+    # 2. Read in transformed documents
+    print(f'Reading "{inputPath}"...')
+    df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
 
-    explodedDF: DataFrame = df.explode(column="tags", ignore_index=True)
-    explodedDF["tags"] = explodedDF["tags"].str.strip("️")
+    # 3. Extract relevant columns
+    relevantDOI: DataFrame = df[["doi", "tags"]]
+    explodedDF: DataFrame = relevantDOI.explode(
+        column="tags",
+        ignore_index=True,
+    )
+    explodedDF["tags"] = explodedDF["tags"].str.replace(pat='"', repl="")
 
+    # 4. Count the tags
     tagCounts: Series = explodedDF.value_counts(subset="tags")
 
-    tagCounts.to_csv(path_or_buf=absOutputPath)
+    # 5. Write results
+    print(f'Writing "{outputPath}"...')
+    tagCounts.to_csv(path_or_buf=outputPath)
 
 
 if __name__ == "__main__":
