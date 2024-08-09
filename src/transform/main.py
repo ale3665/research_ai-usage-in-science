@@ -6,10 +6,10 @@ import pandas
 from bs4 import BeautifulSoup
 from pandas import DataFrame, Series
 from progress.bar import Bar
-from pyfs import resolvePath
 
 from src.classes.journalGeneric import Journal_ABC
 from src.classes.plos import PLOS
+from src.utils import ifFileExistsExit
 
 
 def extractContent(df: DataFrame, journal: Journal_ABC) -> DataFrame:
@@ -50,7 +50,7 @@ def extractContent(df: DataFrame, journal: Journal_ABC) -> DataFrame:
     "-i",
     "--input",
     "inputPath",
-    type=Path,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False, readable=True, resolve_path=True, path_type=Path,),
     required=True,
     help="Path to downloaded academic papers",
 )
@@ -58,20 +58,19 @@ def extractContent(df: DataFrame, journal: Journal_ABC) -> DataFrame:
     "-o",
     "--output",
     "outputPath",
-    type=Path,
+    type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True, readable=False, resolve_path=True, path_type=Path,),
     required=True,
     help="Path to save journal paper parquet file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    absInputPath: Path = resolvePath(path=inputPath)
-    absOutputPath: Path = resolvePath(path=outputPath)
+    ifFileExistsExit(fps=[outputPath])
 
-    df: DataFrame = pandas.read_parquet(path=absInputPath)
+    df: DataFrame = pandas.read_parquet(path=inputPath)
 
     foo: DataFrame = df[df["status_code"] == 200]
 
     extractContent(df=foo, journal=PLOS()).to_parquet(
-        path=absOutputPath,
+        path=outputPath,
         engine="pyarrow",
     )
 
