@@ -50,7 +50,15 @@ def extractContent(df: DataFrame, journal: Journal_ABC) -> DataFrame:
     "-i",
     "--input",
     "inputPath",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False, readable=True, resolve_path=True, path_type=Path,),
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to downloaded academic papers",
 )
@@ -58,7 +66,15 @@ def extractContent(df: DataFrame, journal: Journal_ABC) -> DataFrame:
     "-o",
     "--output",
     "outputPath",
-    type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True, readable=False, resolve_path=True, path_type=Path,),
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to save journal paper parquet file",
 )

@@ -16,7 +16,15 @@ from src.utils import ifFileExistsExit
     "-i",
     "--input",
     "inputPath",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False, readable=True, resolve_path=True, path_type=Path,),
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to a filtered list of academic papers",
 )
@@ -24,7 +32,15 @@ from src.utils import ifFileExistsExit
     "-o",
     "--output",
     "outputPath",
-    type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True, readable=False, resolve_path=True, path_type=Path),
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to save journal paper parquet file",
 )
@@ -58,7 +74,9 @@ def main(inputPath: Path, outputPath: Path) -> None:
 
             data["url"].append(resp.url)
             data["status_code"].append(resp.status_code)
-            data["html"].append(resp.absOutputPathcontent.decode(errors="ignore"))
+            data["html"].append(
+                resp.absOutputPathcontent.decode(errors="ignore")
+            )
 
             bar.next()
 
