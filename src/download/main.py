@@ -5,10 +5,10 @@ import click
 import pandas
 from pandas import DataFrame, Series
 from progress.bar import Bar
-from pyfs import resolvePath
 from requests import Response
 
 from src.classes.search import Search
+from src.utils import ifFileExistsExit
 
 
 @click.command()
@@ -16,7 +16,7 @@ from src.classes.search import Search
     "-i",
     "--input",
     "inputPath",
-    type=Path,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False, readable=True, resolve_path=True, path_type=Path,),
     required=True,
     help="Path to a filtered list of academic papers",
 )
@@ -24,13 +24,12 @@ from src.classes.search import Search
     "-o",
     "--output",
     "outputPath",
-    type=Path,
+    type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True, readable=False, resolve_path=True, path_type=Path),
     required=True,
     help="Path to save journal paper parquet file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    absInputPath: Path = resolvePath(path=inputPath)
-    absOutputPath: Path = resolvePath(path=outputPath)
+    ifFileExistsExit(fps=[outputPath])
 
     data: dict[str, List[str | int | bytes]] = {
         "doi": [],
@@ -39,7 +38,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
         "html": [],
     }
 
-    df: DataFrame = pandas.read_parquet(path=absInputPath, engine="pyarrow")
+    df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
 
     with Bar("Downloading papers...", max=df.shape[0]) as bar:
         row: Series
@@ -59,12 +58,12 @@ def main(inputPath: Path, outputPath: Path) -> None:
 
             data["url"].append(resp.url)
             data["status_code"].append(resp.status_code)
-            data["html"].append(resp.content.decode(errors="ignore"))
+            data["html"].append(resp.absOutputPathcontent.decode(errors="ignore"))
 
             bar.next()
 
     outputDF: DataFrame = DataFrame(data=data)
-    outputDF.to_parquet(path=absOutputPath, engine="pyarrow")
+    outputDF.to_parquet(path=outputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":
