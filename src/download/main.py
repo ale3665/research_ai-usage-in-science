@@ -74,9 +74,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
 
             data["url"].append(resp.url)
             data["status_code"].append(resp.status_code)
-            data["html"].append(
-                resp.absOutputPathcontent.decode(errors="ignore")
-            )
+            data["html"].append(resp.content.decode(errors="ignore"))
 
             bar.next()
 
