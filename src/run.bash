@@ -30,4 +30,4 @@ aius-download-papers \
 # 5. Transform the downloaded papers into something usable
 aius-transform-papers \
     --input $PLOS_PATH/filtered_downloadedPapers_$DATE.parquet \
-    --output $PLOS_PATH/transformed_papers$DATE.parquet
+    --output $PLOS_PATH/transformed_papers_$DATE.parquet
