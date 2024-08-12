@@ -175,3 +175,6 @@ temp/
 *.gz
 *.yaml
 build-docs/*
+*.sqlite
+*.png
+!images/*

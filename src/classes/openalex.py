@@ -7,19 +7,39 @@ from src.classes.search import Search
 
 
 class OpenAlex(Search):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, email: str | None = None) -> None:
+        if email is None:
+            super().__init__()
+        else:
+            super().__init__(
+                headers={"User-Agent": f"mailto:{email}"},
+            )
 
-    def searchByDOI(self, doiURL: str) -> Response:
-        url: str = f"https://api.openalex.org/works/{doiURL}"
-        return self.search(url=url)
-
-    def getWorkTopics(self, resp: Response) -> DataFrame:
-        data: dict[str, List[str]] = {
+        self.topicTracker: dict[str, List[str]] = {
             "topic": [],
             "subfield": [],
             "field": [],
         }
+
+    def searchByDOI(self, doiURL: str) -> Response | None:
+        url: str = f"https://api.openalex.org/works/{doiURL}"
+        return self.search(url=url)
+
+    def getWorkPrimaryTopic(self, json: dict) -> DataFrame | None:
+        data: dict[str, List[str]] = self.topicTracker.copy()
+
+        try:
+            json = json["primary_topic"]
+            data["topic"].append(json["display_name"])
+            data["subfield"].append(json["subfield"]["display_name"])
+            data["field"].append(json["field"]["display_name"])
+        except TypeError:
+            return None
+
+        return DataFrame(data=data)
+
+    def getWorkTopics(self, resp: Response) -> DataFrame:
+        data: dict[str, List[str]] = self.topicTracker.copy()
 
         json: dict = resp.json()
 

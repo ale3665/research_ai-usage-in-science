@@ -14,7 +14,8 @@
   - [Project Tutorial](#project-tutorial)
     - [Reimplementing From Existing Dataset](#reimplementing-from-existing-dataset)
     - [Reimplementing From Scratch](#reimplementing-from-scratch)
-      - [1. Search Mega Journals For Documents With Relevant Key Words](#1-search-mega-journals-for-documents-with-relevant-key-words)
+      - [Search For Papers In Mega Journals](#search-for-papers-in-mega-journals)
+      - [Filtering Academic Papers](#filtering-academic-papers)
 
 ## About
 
@@ -74,6 +75,17 @@ parse, and present our findings from this data.
 We will assume that you have properly installed this project on your machine to
 reduce repetition. If not, see [*How to Install*](#how-to-install)
 
-#### 1. Search Mega Journals For Documents With Relevant Key Words
+#### Search For Papers In Mega Journals
 
-1.
+Our research focuses on academic papers that were published within mega
+journals. We leverage mega journals as they, by definition, support open access
+and typically have lenient licensing with respect to downloading and parsing the
+content of the works.
+
+![Filtering academic venues](images/FilteringAcademincVenues.png)
+
+![Querying academic venues](images/QueryingAcademicJournals.png)
+
+#### Filtering Academic Papers
+
+![Filtering academic papers](images/FilteringAcademicWorks.png)

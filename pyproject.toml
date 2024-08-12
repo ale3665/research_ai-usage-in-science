@@ -18,16 +18,15 @@ requests = "^2.31.0"
 click = "^8.1.7"
 bs4 = "^0.0.2"
 lxml = "^5.1.0"
-pyfs = {git = "https://github.com/NicholasSynovic/python-fs-utils"}
 zettelgeist = "^1.1.5"
 typedframe = "^0.11.0"
 pyarrow = "^16.1.0"
-
 langchain = "^0.2.7"
 langchain-core = "^0.2.12"
 langchain-community = "^0.2.7"
 matplotlib = "^3.9.1"
 seaborn = "^0.13.2"
+
 [tool.black]
 line-length = 79
 
@@ -37,5 +36,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 aius-search = "src.search.main:main"
-aius-search-html-conversion = "src.search.htmlConversion:main"
-aius-download-papers = "src.downloadPapers.main:main"
+aius-search-plot = "src.search.plot:main"
+aius-filter-search-results = "src.filter.main:main"
+aius-download-papers = "src.download.main:main"
+aius-transform-papers = "src.transform.main:main"
+aius-evaluation-count-keywords = "src.evaluation.countKeywords.main:main"
+aius-evaluation-count-tags = "src.evaluation.countTags.main:main"

@@ -17,7 +17,6 @@ class Journal_ABC(metaclass=ABCMeta):
 
     @abstractmethod
     def searchJournal(self, query: str, year: int) -> DataFrame:
-
         pass
 
     @abstractmethod

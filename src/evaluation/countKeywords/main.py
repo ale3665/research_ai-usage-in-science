@@ -1,29 +1,44 @@
+import re
+from functools import partial
 from pathlib import Path
-from sqlite3 import Connection, connect
 from typing import List
 
 import click
 import pandas
 from pandas import DataFrame, Series
 from progress.bar import Bar
-from pyfs import isFile, resolvePath
 
 from src.classes import SEARCH_QUERIES
+from src.utils import ifFileExistsExit
 
 
-def readDB(dbPath: Path) -> DataFrame:
-    sql: str = "SELECT title, summary, document FROM zettels"
-    conn: Connection = connect(database=dbPath)
-    df: DataFrame = pandas.read_sql_query(sql=sql, con=conn)
-    df["title"] = df["title"].str.lower()
-    df["summary"] = df["summary"].str.lower()
-    df["document"] = df["document"].str.lower()
-    conn.close()
-    return df
+def countKeywords(df: DataFrame, keywords: List[str]) -> DataFrame:
+    data: dict[str, List[int]] = {kw: [] for kw in keywords}
+    data["doi"] = []
 
+    with Bar("Counting keywords...", max=df.shape[0]) as bar:
+        row: Series[str]
+        for _, row in df.iterrows():
+            data["doi"].append(row["doi"])
 
-def countKeyword(data: Series, keyword: str) -> int:
-    return data.str.count(pat=keyword).sum()
+            title: str = row["titles"].lower()
+            abstract: str = row["abstracts"].lower()
+            content: str = row["content"].lower()
+
+            kw: str
+            for kw in keywords:
+                partialFind: partial = partial(re.finditer, pattern=kw)
+                count: int = 0
+
+                count += len(list(partialFind(string=title)))
+                count += len(list(partialFind(string=abstract)))
+                count += len(list(partialFind(string=content)))
+
+                data[kw].append(count)
+
+            bar.next()
+
+    return DataFrame(data=data)
 
 
 @click.command()
@@ -31,53 +46,51 @@ def countKeyword(data: Series, keyword: str) -> int:
     "-i",
     "--input",
     "inputPath",
-    type=Path,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
-    help="Path to a Zettelgeist database",
+    help="Path to a transformed set of papers",
 )
 @click.option(
     "-o",
     "--output",
     "outputPath",
-    type=Path,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to store data in CSV format",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    absInputPath: Path = resolvePath(path=inputPath)
-    absOutputPath: Path = resolvePath(path=outputPath)
+    # 1. Check if output path already exists
+    ifFileExistsExit(fps=[outputPath])
 
-    if not isFile(path=absInputPath):
-        print(f"{absInputPath} is not a file")
-        exit(1)
-
-    if isFile(path=absOutputPath):
-        print(f"{absOutputPath} exists")
-        exit(1)
-
+    # 2. Format keywords
     keywords: List[str] = [kw.strip('"').lower() for kw in SEARCH_QUERIES]
-    data: dict[str, List[int]] = {kw: [] for kw in keywords}
 
-    df: DataFrame = readDB(dbPath=absInputPath)
-    titleDF: Series[str] = df["title"]
-    summaryDF: Series[str] = df["summary"]
-    documentDF: Series[str] = df["document"]
+    # 3. Read in transformed documents
+    print(f'Reading "{inputPath}"...')
+    df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
 
-    with Bar(
-        "Counting the number of keywords per zettel...", max=len(keywords)
-    ) as bar:
-        kw: str
-        for kw in keywords:
-            sums: List[int] = []
-            sums.append(countKeyword(data=titleDF, keyword=kw))
-            sums.append(countKeyword(data=summaryDF, keyword=kw))
-            sums.append(countKeyword(data=documentDF, keyword=kw))
+    # 4. Count keywords
+    ckDF: DataFrame = countKeywords(df=df, keywords=keywords)
 
-            data[kw].append(sum(sums))
-            bar.next()
-
-    sumDF: DataFrame = DataFrame(data=data)
-    sumDF.to_csv(path_or_buf=absOutputPath, index=False)
+    # 5. Write results
+    print(f'Writing "{outputPath}"...')
+    ckDF.to_csv(path_or_buf=outputPath, index=False)
 
 
 if __name__ == "__main__":

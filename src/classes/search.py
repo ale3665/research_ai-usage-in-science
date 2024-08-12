@@ -1,4 +1,5 @@
 from requests import Response, get
+from requests.exceptions import ReadTimeout
 
 
 class Search:
@@ -18,7 +19,7 @@ class Search:
         """
         self.headers: dict[str, str] = headers
 
-    def search(self, url: str) -> Response:
+    def search(self, url: str) -> Response | None:
         """
         search _summary_
 
@@ -29,5 +30,13 @@ class Search:
         :return: _description_
         :rtype: Response
         """
-        resp: Response = get(url=url, headers=self.headers, timeout=60)
+        try:
+            resp: Response = get(
+                url=url,
+                headers=self.headers,
+                timeout=60,
+                allow_redirects=True,
+            )
+        except ReadTimeout:
+            return None
         return resp
