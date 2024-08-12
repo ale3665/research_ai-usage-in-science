@@ -34,7 +34,7 @@ def readDB(dbPath: Path) -> DataFrame:
 #         print(f"Failed to get the data source for URL {url}: {e}")
 #         return None
     
-def extractDataSource(url):
+def extractDataSource(url) -> str:
     """
     Extract the final data source (host) from a URL after following redirects.
     
@@ -46,10 +46,11 @@ def extractDataSource(url):
     """
     try:
         response = requests.get(url, timeout=10)  # Set a timeout of 10 seconds
-        final_url = response.url
-        return final_url
-        # parsed_url = urlparse(final_url)
-        # return parsed_url.netloc
+        newURL = response.url
+        
+        parsed_url = urlparse(newURL)
+        datasource = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        return datasource
     except requests.RequestException as e:
         print(f"Failed to get the data source for URL {url}: {e}")
         return None
@@ -89,7 +90,7 @@ def datasource(dbPath: Path) -> DataFrame:
 def main(inputPath: Path, outputPath:Path) -> None:
     absInputPath: Path = resolvePath(path=inputPath)
     absOutputPath: Path = resolvePath(path=outputPath)
-
+    
     df = datasource(absInputPath)
     df.to_csv(absOutputPath, index=False)
 
