@@ -20,11 +20,13 @@ def plotBarValues(data: dict) -> None:
         )
 
 def plotResults(df: DataFrame, fp: Path) -> None:
+
+    df["tags"] = df["tags"].str.replace("PLOS_", "", regex=False)
     dfSorted = df.sort_values(by="count", ascending=False).head(10)
     
     sns.barplot(x="tags", y="count", data=dfSorted)
     plt.title("Top 10 Tags by Count")
-    plt.xlabel("OA Tag")
+    plt.xlabel("OpenAlex Tag")
     plt.ylabel("Count")
 
     plotBarValues(dfSorted.set_index("tags")["count"].to_dict())
