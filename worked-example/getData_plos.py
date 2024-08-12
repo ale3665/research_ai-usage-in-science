@@ -2,19 +2,17 @@ from os.path import isfile
 from typing import List
 
 import pandas
+from common import FILENAME, saveDFToJSON
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response, get
 
-RANDOM_SEED: int = 42
-
 
 def getJSONResponse() -> DataFrame:
-    filename: str = "searchResponse_plos.json"
 
     json: DataFrame
-    if isfile(path=filename):
-        json = pandas.read_json(path_or_buf=filename)
+    if isfile(path=FILENAME):
+        json = pandas.read_json(path_or_buf=FILENAME)
 
     else:
         dfs: List[DataFrame] = []
@@ -39,7 +37,7 @@ def getJSONResponse() -> DataFrame:
 
         json = pandas.concat(objs=dfs, ignore_index=True)
         json["id"] = json["id"].apply(lambda x: f"https://doi.org/{x}")
-        json.to_json(path_or_buf=filename, index=False, indent=4)
+        saveDFToJSON(df=json, filename=FILENAME)
 
     return json
 
