@@ -20,10 +20,10 @@ def plotBarValues(data: dict) -> None:
         )
 
 def plotResults(df: DataFrame, fp: Path) -> None:
-    dfSorted = df.sort_values(by="count", ascending=False).head(20)
+    dfSorted = df.sort_values(by="count", ascending=False).head(10)
     
     sns.barplot(x="tags", y="count", data=dfSorted)
-    plt.title("Top 20 Tags by Count")
+    plt.title("Top 10 Tags by Count")
     plt.xlabel("OA Tag")
     plt.ylabel("Count")
 
@@ -54,7 +54,8 @@ def plotResults(df: DataFrame, fp: Path) -> None:
     help="Path to search results csv file to plot data from",
 )
 @click.option(
-    "--fig-1",
+    "-f",
+    "--figure",
     "fig1Path",
     type=click.Path(
         exists=False,
@@ -74,7 +75,7 @@ def main(inputPath: Path, fig1Path: Path) -> None:
     print(f'Reading "{inputPath}... ')
     df: DataFrame = pandas.read_csv(inputPath)
 
-    print("Plotting tag count per doi...")
+    print("Plotting count per tag...")
     plotResults(df=df, fp=fig1Path)
 
 

@@ -71,7 +71,8 @@ def plotResults(df: DataFrame, fp: Path, outputCSV: Path) -> None:
     help="Path to search results csv file to plot data from",
 )
 @click.option(
-    "--fig-1",
+    "-f",
+    "--figure",
     "fig1Path",
     type=click.Path(
         exists=False,
@@ -107,7 +108,7 @@ def main(inputPath: Path, fig1Path: Path, outputPath: Path) -> None:
     print(f'Reading "{inputPath}... ')
     df: DataFrame = pandas.read_csv(inputPath)
 
-    print("Plotting keyword counts per doi...")
+    print("Plotting counts per keyword...")
     plotResults(df=df, fp=fig1Path, outputCSV=outputPath)
 
 

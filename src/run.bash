@@ -37,7 +37,18 @@ aius-evaluation-count-keywords \
     --input $PLOS_PATH/transformed_papers_$DATE.parquet \
     --output $PLOS_PATH/evaluation_countKeywords_$DATE.csv
 
-# 7. Evaluation: Count tags
+# 7. Plot count keywords
+aius-evaluation-plot-keywords \
+    --input $PLOS_PATH/evaluation_countKeywords_$DATE.csv \
+    --figure $PLOS_PATH/evaluation_countKeywords.png \
+    --output $PLOS_PATH/evaluation_zeroKeywords_$DATE.csv
+
+# 8. Evaluation: Count tags
 aius-evaluation-count-tags \
     --input $PLOS_PATH/transformed_papers_$DATE.parquet \
     --output $PLOS_PATH/evaluation_countTags_$DATE.csv
+
+#9. Plot count tags
+aius-evaluation-plot-tags \
+    --input $PLOS_PATH/evaluation_countTags_$DATE.csv \
+    --figure $PLOS_PATH/evaluation_countTags.png
