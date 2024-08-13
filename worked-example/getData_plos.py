@@ -17,15 +17,15 @@ def getJSONResponse() -> DataFrame:
     else:
         dfs: List[DataFrame] = []
 
-        with Bar("Getting JSON responses...", max=75) as bar:
+        with Bar("Getting JSON responses...", max=1) as bar:
             page: int
-            for page in range(1, 76):
+            for page in range(1, 2):
                 # Query: "Deep Learning"
                 # Year: 2016
                 # Page: 1
-                # Max page: 75
+                # Max page: 1
                 url: str = (
-                    f"https://journals.plos.org/plosone/dynamicSearch?filterStartDate=2016-01-01&filterEndDate=2016-12-31&resultsPerPage=100&q=%E2%80%9DDeep%20Learning%E2%80%9D&sortOrder=DATE_NEWEST_FIRST&page={page}&filterArticleTypes=Research%20Article"  # noqa: E501
+                    f"https://journals.plos.org/plosone/dynamicSearch?filterArticleTypes=Research%20Article&filterStartDate=2016-01-01&filterEndDate=2016-12-31&resultsPerPage=60&unformattedQuery=%22Deep%20Learning%22&q=%22Deep%20Learning%22&page={page}"  # noqa: E501
                 )
 
                 resp: Response = get(url=url, timeout=60)

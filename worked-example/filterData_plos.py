@@ -57,7 +57,7 @@ def main() -> None:
     else:
         json: DataFrame = pandas.read_json(path_or_buf=FILENAME)
         sampledDF: DataFrame = json.sample(
-            n=100,
+            frac=0.50,
             replace=False,
             random_state=42,
             ignore_index=True,
@@ -65,7 +65,7 @@ def main() -> None:
 
         saveDFToJSON(df=sampledDF, filename=SAMPLED_FILENAME)
 
-        df: DataFrame = filterWithOpenAlex(df=df)
+        df = filterWithOpenAlex(df=sampledDF)
 
         saveDFToJSON(df=df, filename=FILTERED_SAMPLE_FILENAME)
 
