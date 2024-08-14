@@ -1,62 +1,101 @@
-import pandas
-import ollama 
 from pathlib import Path
+from typing import List
 
-def identifyModel(filePath: Path, output: Path):
-    df = pandas.read_parquet(filePath)
-    
-    system_message = {
-        "role": "system", 
-        "content": f"""You are a pre-trained machine learning model identifier for academic papers. 
-        Your task is to extract the names of pre-trained models from paper titles. 
-        Return only the name of the identified model. If there are more than one, return them as a 
-        numbered list. You keep responses concise without any extra information.
-        input: BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding
-        output: BERT
-        """
-    }
+import click
+import pandas
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.output_parsers import StrOutputParser
+from langchain_ollama.llms import OllamaLLM
+
+
+def identifyModel(inputPath: Path, outputPath: Path):
+    df = pandas.read_parquet(inputPath)
+    model: OllamaLLM = OllamaLLM(model="llama3.1")
 
     results = []
-    max_iterations = 30
+    max_iterations = 10
+
+    parser: StrOutputParser = StrOutputParser()
+
+    chain = model | parser
 
     for i, row in enumerate(df.itertuples(index=False)):
         if i >= max_iterations:
             break
-        
-        title = getattr(row, 'titles', 'n/a')  
-        
 
-        user_message = {
-            "role": "user",
-            "content": f"""From the following academic paper title, identify the names of machine learning models 
-            and return the name. If there are none, return 'n/a'.
-            \n\n{title}"""
-        }
-        
-        response = ollama.chat(model="myModel", messages=[system_message, user_message])
-        content = response.get('message', {}).get('content', '').strip()
+        title = getattr(row, "titles", "n/a")
 
-        #many responses are coming back empty, showing something is wrongn n/a rather than 'n/a'
-        if content and content != 'n/a':
-            results.append({"title": title, "response": content})
-        #responses can comeback empty (something went wrong)
-        # if not content:
-        #     content = 'empty'
+        promptTemplate: List = [
+            SystemMessage(
+                content="""You are a deep learning model identifier for academic papers.
+        Your task is to extract the names of pre-trained models from paper titles alone.
+        Return only the name of the identified model. If there are more than one, return them as a
+        numbered list. If there are none, return 'n/a'. You keep responses concise without any extra information.
+        input: 'SceneGPT: A Language Model for 3D Scene Understanding'
+        output: 'SceneGPT'
+        input: 'DiffLoRA: Generating Personalized Low-Rank Adaptation Weights with Diffusion'
+        output: 'DiffLoRA'
+        input: 'Self-Supervised Learning on MeerKAT Wide-Field Continuum Images'
+        output: 'MeerKAT'
+        input: 'Utilize Transformers for translating Wikipedia category names'
+        output: 'n/a'
+        input: 'Building Decision Making Models Through Language Model Regime'
+        output: 'n/a'
+        """  # noqa: E501
+            ),
+            HumanMessage(content=f"""{title}"""),
+        ]
+        parser: StrOutputParser = StrOutputParser()
+        # parser = JsonOutputParser()
 
-        results.append({"title": title, "response": content})
+        chain = model | parser
+        resp: str = chain.invoke(input=promptTemplate)
 
-        
+        print(resp)
+
+        results.append({"title": title, "response": resp})
+
     resultsDF = pandas.DataFrame(results)
-    
-    resultsDF.to_csv(output, index=False)
 
-        
+    resultsDF.to_csv(outputPath, index=False)
 
 
-def main() -> None:
-    filePath = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/data/plos/transformed_papers_08-12-2024.parquet"
-    csvPath = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/src/evaluation/identifyModel/tiTest.csv"
-    identifyModel(filePath, csvPath)
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    required=True,
+    help="Path to a transformed set of papers",
+)
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    required=True,
+    help="Path to store data in CSV format",
+)
+def main(inputPath: Path, outputPath: Path) -> None:
+    identifyModel(inputPath, outputPath)
+
 
 if __name__ == "__main__":
     main()

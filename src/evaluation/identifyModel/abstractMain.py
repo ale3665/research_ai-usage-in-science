@@ -1,64 +1,120 @@
-import pandas
-import ollama 
 from pathlib import Path
+from typing import List
 
-def identifyModel(filePath: Path, output: Path):
-    df = pandas.read_parquet(filePath)
-    
-    system_message = {
-        "role": "system", 
-        "content": f"""You are a pre-trained machine learning model identifier for academic papers. 
-        Your task is to extract the names of pre-trained models from paper abstracts. 
-        Return only the name of the identified model. If there are more than one, return them as a 
-        numbered list. You keep responses concise without any extra information.
-        input: Unlike recent language representation models, BERT is designed to pre-train deep bidirectional 
-        representations from unlabeled text by jointly conditioning on both left and right context in all layers.
-        As a result, the pre-trained BERT model can be fine-tuned with just one additional output layer to create 
-        state-of-the-art models for a wide range of tasks, such as question answering and language inference, without 
-        substantial task-specific architecture modifications.
-        output: BERT
-        """
-    }
+import click
+import pandas
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.output_parsers import StrOutputParser
+from langchain_ollama.llms import OllamaLLM
+
+
+def identifyModel(inputPath: Path, outputPath: Path):
+    df = pandas.read_parquet(inputPath)
+    model: OllamaLLM = OllamaLLM(model="llama3.1")
 
     results = []
-    max_iterations = 40
+    max_iterations = 30
+
+    parser: StrOutputParser = StrOutputParser()
+    # parser = JsonOutputParser()
+
+    chain = model | parser
 
     for i, row in enumerate(df.itertuples(index=False)):
         if i >= max_iterations:
             break
-        
-        title = getattr(row, 'titles', 'n/a')  
-        abstract = getattr(row, 'abstracts', 'n/a') 
 
-        user_message = {
-            "role": "user",
-            "content": f"""From the following abstract, identify the names of machine learning models 
-            and return the name. Do not identify machine learning techniques such as 'neural network model' 
-            or 'principal component analysis'. If there are none, return 'n/a'.
-            \n\n{abstract}"""
-        }
-        
-        response = ollama.chat(model="myModel", messages=[system_message, user_message])
-        content = response.get('message', {}).get('content', '').strip()
+        title = getattr(row, "titles", "n/a")
+        abstract = getattr(row, "abstracts", "n/a")
 
-        if not content:
-            content = 'n/a'
+        promptTemplate: List = [
+            SystemMessage(
+                content="""You are a deep learning model identifier for academic papers.
+        Your task is to extract the names of pre-trained models from paper abstracts alone.
+        Return only the name of the identified model. If there are more than one, return them as a
+        numbered list. If there are none, return 'n/a'. You keep responses concise without any extra information.
+        input: 'We adopted a pre-trained deep learning model (VGGFace) for AIFR on a dataset of 5,000 indigenous
+                African faces (FAGE\_v2) collected for this study. FAGE\_v2 was curated via Internet image searches
+                of 500 individuals evenly distributed across 10 African countries. VGGFace was trained on FAGE\_v2
+                to obtain the best accuracy of 81.80\%.'
+        output: 'VGGFace'
+        input: 'The current paper presents an improved model, called sparse HMAX, which integrates sparse firing.
+                This model is able to learn higher-level features of objects on unlabeled training images. Unlike
+                most other deep learning models that explicitly address global structure of images in every layer,
+                sparse HMAX addresses local to global structure gradually along the hierarchy by applying patch-based
+                learning to the output of the previous layer.'
+        output: 'sparse HMAX'
+        input: 'Furthermore, to integrate action-sensitive information into VLM, we introduce Action-Cue-Injected
+                Temporal Prompt Learning (ActPrompt), which injects action cues into the image encoder of VLM for
+                better discovering action-sensitive patterns.'
+        output: 'ActPrompt'
+        input: 'Multimodal Large Language Models (MLLMs) demonstrate remarkable image-language capabilities, but
+                their widespread use faces challenges in cost-effective training and adaptation. Existing
+                approaches often necessitate expensive language model retraining and limited adaptability.
+                Additionally, the current focus on zero-shot performance improvements offers insufficient guidance
+                for task-specific tuning.'
+        output: 'n/a'
+        input: 'Most vulnerability detection studies focus on datasets of vulnerabilities in C/C++ code, offering
+                limited language diversity. Thus, the effectiveness of deep learning methods, including large language
+                models (LLMs), in detecting software vulnerabilities beyond these languages is still largely unexplored.'
+        output: 'n/a'
+        """  # noqa: E501, W605
+            ),
+            HumanMessage(content=f"""{abstract}"""),
+        ]
 
-        results.append({"title": title, "response": content})
+        parser: StrOutputParser = StrOutputParser()
+        # parser = JsonOutputParser()
 
-        #print(f"Title: {title}\nAbstract: {abstract}\nModel Identified: {content}\n")
-    
+        chain = model | parser
+        resp: str = chain.invoke(input=promptTemplate)
+
+        print(resp)
+
+        results.append({"title": title, "response": resp})
+
     resultsDF = pandas.DataFrame(results)
-    
-    resultsDF.to_csv(output, index=False)
 
-        
+    resultsDF.to_csv(outputPath, index=False)
 
 
-def main() -> None:
-    filePath = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/data/plos/transformed_papers_08-12-2024.parquet"
-    csvPath = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/src/evaluation/identifyModel/abTest.csv"
-    identifyModel(filePath, csvPath)
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    required=True,
+    help="Path to a transformed set of papers",
+)
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    required=True,
+    help="Path to store data in CSV format",
+)
+def main(inputPath: Path, outputPath: Path) -> None:
+
+    identifyModel(inputPath, outputPath)
+
 
 if __name__ == "__main__":
     main()

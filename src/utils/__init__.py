@@ -18,10 +18,12 @@ def ifFileExistsExit(fps: List[Path]) -> None:
             exit(1)
 
 
-def formatText(string: str) -> str:
+def formatText(string: str, stripNewLines: bool = True) -> str:
     string = re.sub(pattern=r"-\n", repl="", string=string)
-    string = string.replace("\n", "")
-    string = " ".join(string.split())
+    if stripNewLines:
+        string = string.replace("\n", "")
+        string = " ".join(string.split())
+
     return string
 
 

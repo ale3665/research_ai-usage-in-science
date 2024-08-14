@@ -1,17 +1,23 @@
-import pandas
-import ollama 
 from pathlib import Path
+from typing import List
 
-def identifyModel(filePath: Path, output: Path):
-    df = pandas.read_parquet(filePath)
-    
-    system_message = {
-        "role": "system", 
-        "content": f"""You are a pre-trained machine learning model identifier for academic papers. 
-        Your task is to extract the names of pre-trained models from paper content. 
-        Return only the name of the identified model. If there are more than one, return them as a 
-        numbered list. You keep responses concise without any extra information."""
-    }
+import click
+import pandas
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.output_parsers import StrOutputParser
+from langchain_ollama.llms import OllamaLLM
+
+
+def identifyModel(inputPath: Path, outputPath: Path):
+    df = pandas.read_parquet(inputPath)
+    model: OllamaLLM = OllamaLLM(model="llama3.1")
+
+    size = 3000
+
+    parser: StrOutputParser = StrOutputParser()
+    # parser = JsonOutputParser()
+
+    chain = model | parser
 
     results = []
     max_iterations = 5
@@ -19,41 +25,82 @@ def identifyModel(filePath: Path, output: Path):
     for i, row in enumerate(df.itertuples(index=False)):
         if i >= max_iterations:
             break
-        
-        title = getattr(row, 'titles', 'n/a')  
-        content = getattr(row, 'content', 'n/a') 
 
-        user_message = {
-            "role": "user",
-            "content": f"""From the following academic paper content, identify the names of machine learning models 
-            and return the name. Only list the model names, not the authors, references or other content. If there are none, return 'n/a'. I will provide an example.
-            input: 'SVM [42] is a discriminative classification algorithm which is able to find a decision hyper-plane with the maximum distance 
-            (margin) to the nearest data points (Support Vectors) of each class. As a result, this method has a high generalization power. '
-            output: SVM
-            \n\n{content}"""
-        }
-        
-        response = ollama.chat(model="myModel", messages=[system_message, user_message])
-        answer = response.get('message', {}).get('content', '').strip()
+        title = getattr(row, "titles", "n/a")
+        content = getattr(row, "content", "n/a")
 
-        if not answer:
-            answer = 'n/a'
+        chunks = [
+            content[i : i + size]  # noqa: E203
+            for i in range(0, len(content), size)
+        ]
 
-        results.append({"title": title, "response": answer})
+        list = []
+        for chunk in chunks:
 
-        #print(f"Title: {title}\nAbstract: {abstract}\nModel Identified: {content}\n")
-    
+            promptTemplate: List = [
+                SystemMessage(
+                    content="""You are a deep learning model identifier for academic papers.
+            Your task is to read the contents of an academic paper up until 'references' and extract the names of pre-trained models that occur in the paper.
+            Return only the name(s) of the models. If there are none, return 'n/a'.
+            You keep responses concise without any extra information.
+            """  # noqa: E501
+                ),
+                HumanMessage(content=chunk),
+            ]
+
+            parser: StrOutputParser = StrOutputParser()
+            # parser = JsonOutputParser()
+
+            chain = model | parser
+            resp: str = chain.invoke(input=promptTemplate)
+            list.append(resp)
+
+        combined_results = "\n".join(list)
+        combined_results = combined_results.replace("\n", " ").strip()
+
+    results.append({"title": title, "response": combined_results})
+
     resultsDF = pandas.DataFrame(results)
-    
-    resultsDF.to_csv(output, index=False)
 
-        
+    resultsDF.to_csv(outputPath, index=False)
 
 
-def main() -> None:
-    filePath = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/data/plos/transformed_papers_08-12-2024.parquet"
-    csvPath = "/Users/karolinaryzka/Documents/AIUS/research_ai-usage-in-science/src/evaluation/identifyModel/coTest.csv"
-    identifyModel(filePath, csvPath)
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    required=True,
+    help="Path to a transformed set of papers",
+)
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    required=True,
+    help="Path to store data in CSV format",
+)
+def main(inputPath: Path, outputPath: Path) -> None:
+    identifyModel(inputPath, outputPath)
+
 
 if __name__ == "__main__":
     main()
