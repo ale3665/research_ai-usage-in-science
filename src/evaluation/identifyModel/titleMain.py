@@ -13,7 +13,7 @@ def identifyModel(inputPath: Path, outputPath: Path):
     model: OllamaLLM = OllamaLLM(model="llama3.1")
 
     results = []
-    max_iterations = 10
+    max_iterations = 50
 
     parser: StrOutputParser = StrOutputParser()
 
@@ -24,36 +24,34 @@ def identifyModel(inputPath: Path, outputPath: Path):
             break
 
         title = getattr(row, "titles", "n/a")
+        doi = getattr(row, "doi", "n/a")
 
         promptTemplate: List = [
             SystemMessage(
                 content="""You are a deep learning model identifier for academic papers.
         Your task is to extract the names of pre-trained models from paper titles alone.
         Return only the name of the identified model. If there are more than one, return them as a
-        numbered list. If there are none, return 'n/a'. You keep responses concise without any extra information.
-        input: 'SceneGPT: A Language Model for 3D Scene Understanding'
-        output: 'SceneGPT'
-        input: 'DiffLoRA: Generating Personalized Low-Rank Adaptation Weights with Diffusion'
-        output: 'DiffLoRA'
-        input: 'Self-Supervised Learning on MeerKAT Wide-Field Continuum Images'
-        output: 'MeerKAT'
-        input: 'Utilize Transformers for translating Wikipedia category names'
-        output: 'n/a'
-        input: 'Building Decision Making Models Through Language Model Regime'
-        output: 'n/a'
+        numbered list. If there are none, return 😞 . You keep responses concise without any extra information.
+        input: SceneGPT: A Language Model for 3D Scene Understanding
+        output: SceneGPT
+        input: DiffLoRA: Generating Personalized Low-Rank Adaptation Weights with Diffusion
+        output: DiffLoRA
+        input: Self-Supervised Learning on MeerKAT Wide-Field Continuum Images
+        output: MeerKAT
+        input: Utilize Transformers for translating Wikipedia category names
+        output: 😞
+        input: Building Decision Making Models Through Language Model Regime
+        output: 😞
         """  # noqa: E501
             ),
             HumanMessage(content=f"""{title}"""),
         ]
         parser: StrOutputParser = StrOutputParser()
-        # parser = JsonOutputParser()
 
         chain = model | parser
         resp: str = chain.invoke(input=promptTemplate)
 
-        print(resp)
-
-        results.append({"title": title, "response": resp})
+        results.append({"doi": doi, "prompt": title, "response": resp})
 
     resultsDF = pandas.DataFrame(results)
 
