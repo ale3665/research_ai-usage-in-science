@@ -1,5 +1,12 @@
 #!/bin/bash
-DATE=$(date +"%m-%d-%Y")
+
+source optparse.bash
+
+optparse.define short=e long=email desc="email to use for openAlex" variable=EMAIL
+optparse.define short=d long=date desc="date to search" variable=DATE default=$(date +"%m-%d-%Y")
+
+#source $( optparse.build )
+
 PLOS_PATH="../data/plos"
 
 # 1. Search for documents within mega journals
@@ -15,7 +22,7 @@ aius-search-plot \
 
 # 3. Filter for papers indexed in OpenAlex
 aius-filter-search-results \
-    --email $1 \
+    --email "$EMAIL" \
     --filter=field \
     --input $PLOS_PATH/search_$DATE.parquet \
     --output $PLOS_PATH/field_filteredSearch_$DATE.parquet \
@@ -52,3 +59,5 @@ aius-evaluation-count-tags \
 aius-evaluation-plot-tags \
     --input $PLOS_PATH/evaluation_countTags_$DATE.csv \
     --figure $PLOS_PATH/evaluation_countTags.png
+
+
