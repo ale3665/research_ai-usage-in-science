@@ -50,3 +50,6 @@ class OpenAlex(Search):
             data["field"].append(topic["field"]["display_name"])
 
         return DataFrame(data=data)
+
+    def getCitedByCount(self, json: dict) -> int:
+        return int(json["cited_by_count"])

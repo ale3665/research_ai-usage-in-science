@@ -80,6 +80,8 @@ def filterOAResults(
     oaDF: DataFrame,
     filterList: List[str],
     column: str,
+    filterIntersection: int = 2,
+    citedByMinimum: int = 1,
 ) -> DataFrame:
     dfs: List[DataFrame] = []
 
@@ -95,11 +97,18 @@ def filterOAResults(
 
             ptDF: DataFrame | None = oa.getWorkTopics(json=json)
 
+            if oa.getCitedByCount(json=json) < citedByMinimum:
+                bar.next()
+                continue
+
             if ptDF is None:
                 bar.next()
                 continue
 
-            if len(FIELD_FILTER.intersection(ptDF["field"])) < 2:
+            if (
+                len(FIELD_FILTER.intersection(ptDF["field"]))
+                < filterIntersection
+            ):
                 bar.next()
                 continue
             else:
