@@ -38,10 +38,8 @@ class OpenAlex(Search):
 
         return DataFrame(data=data)
 
-    def getWorkTopics(self, resp: Response) -> DataFrame:
+    def getWorkTopics(self, json: dict) -> DataFrame:
         data: dict[str, List[str]] = self.topicTracker.copy()
-
-        json: dict = resp.json()
 
         topics: List[dict[str, str | dict[str, str]]] = json["topics"]
 

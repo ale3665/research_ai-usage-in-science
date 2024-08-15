@@ -21,7 +21,7 @@ class PLOS(Journal_ABC):
             template="https://journals.plos.org/plosone/article?id=${paperID}"
         )  # noqa: E501
         self.searchURLTemplate: Template = Template(
-            template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article"  # noqa: E501
+            template="https://journals.plos.org/plosone/dynamicSearch?filterStartDate=${year}-01-01&filterEndDate=${year}-12-31&resultsPerPage=100&q=${query}&sortOrder=DATE_NEWEST_FIRST&page=${page}&filterArticleTypes=Research Article&unfilteredQuery=${query}"  # noqa: E501
         )
 
     def searchJournal(self, query: str, year: int) -> DataFrame:

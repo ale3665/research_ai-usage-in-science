@@ -93,7 +93,7 @@ def filterOAResults(
             jsonStr: str = row["json"]
             json: dict = loads(s=jsonStr)
 
-            ptDF: DataFrame | None = oa.getWorkPrimaryTopic(json=json)
+            ptDF: DataFrame | None = oa.getWorkTopics(json=json)
 
             if ptDF is None:
                 bar.next()
