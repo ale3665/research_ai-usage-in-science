@@ -15,7 +15,7 @@ from src.classes.plos import PLOS
 from src.utils import extractDOIsFromHTML, ifFileExistsExit
 
 # TODO: Add filter lists for subfields and topics
-FIELD_FILTER: List[str] = [
+FIELD_FILTER: set[str] = {
     "Agricultural and Biological Sciences",
     "Environmental Science",
     "Biochemistry Genetics and Molecular Biology",
@@ -25,7 +25,7 @@ FIELD_FILTER: List[str] = [
     "Physics and Astronomy",
     "Chemistry",
     "Materials Science",
-]
+}
 
 
 def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
@@ -99,10 +99,11 @@ def filterOAResults(
                 bar.next()
                 continue
 
-            if ptDF["field"].isin(filterList).any():
-                dfs.append(row.copy().to_frame().T)
+            if len(FIELD_FILTER.intersection(ptDF["field"])) < 2:
                 bar.next()
+                continue
             else:
+                dfs.append(row.copy().to_frame().T)
                 bar.next()
 
         return pandas.concat(objs=dfs, ignore_index=True)
