@@ -94,9 +94,13 @@ def inference(df: DataFrame, model: str = "llama3.1") -> DataFrame:
 def main(inputPath: Path, outputPath: Path) -> None:
     ifFileExistsExit(fps=[outputPath])
 
+    print(f'Reading data from "{inputPath}"...')
     df: DataFrame = pandas.read_parquet(path=inputPath, engine="pyarrow")
 
-    print(inference(df=df))
+    filteredDF: DataFrame = inference(df=df)
+
+    print(f'Writing data to "{outputPath}"...')
+    filteredDF.to_parquet(path=outputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":
