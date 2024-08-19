@@ -1,73 +1,73 @@
 from pathlib import Path
-from sqlite3 import Connection, connect
-from urllib.parse import urlparse
-from pandas import DataFrame
+
+import click
 import pandas
 import requests
-from pyfs import isFile, resolvePath
-import click
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from bs4 import BeautifulSoup
+from pandas import DataFrame
+from progress.bar import Bar
 
-def readDB(dbPath: Path) -> DataFrame:
-    sqlQuery: str = "SELECT url, filename FROM zettels"
-    conn: Connection = connect(database=dbPath)
-    df: DataFrame = pandas.read_sql_query(sql=sqlQuery, con=conn)
-    conn.close()
-    return df
 
-# def extractDataSource(url):
-#     """
-#     Extract the final data source (host) from a URL after following redirects.
-    
-#     Parameters:
-#     url (str): The URL to extract the host from.
-    
-#     Returns:
-#     str: The host of the final URL after redirects.
-#     """
-#     try:
-#         response = requests.get(url)
-#         final_url = response.url
-#         parsed_url = urlparse(final_url)
-#         return parsed_url.netloc
-#     except requests.RequestException as e:
-#         print(f"Failed to get the data source for URL {url}: {e}")
-#         return None
-    
-def extractDataSource(url) -> str:
-    """
-    Extract the final data source (host) from a URL after following redirects.
-    
-    Parameters:
-    url (str): The URL to extract the host from.
-    
-    Returns:
-    str: The host of the final URL after redirects.
-    """
-    try:
-        response = requests.get(url, timeout=10)  # Set a timeout of 10 seconds
-        newURL = response.url
-        
-        parsed_url = urlparse(newURL)
-        datasource = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        return datasource
-    except requests.RequestException as e:
-        print(f"Failed to get the data source for URL {url}: {e}")
-        return None
+def getSource(inputPath: Path, ouputPath: Path):
+    pandas.set_option("display.max_colwidth", None)
+    df: DataFrame = pandas.read_parquet(inputPath)
+    results = []
 
-def datasource(dbPath: Path) -> DataFrame:
-    """
-    Create a DataFrame with 'url' and 'datasource' columns.
-    
-    Parameters:
-    dbPath (Path): Path to the database file.
-    
-    Returns:
-    pd.DataFrame: DataFrame with 'url' and 'datasource' columns.
-    """
-    df = readDB(dbPath)
-    df['datasource'] = df['url'].apply(extractDataSource)
-    return df
+    bar = Bar("Processing Rows", max=len(df))
+
+    for index, row in df.iterrows():
+
+        doi = row["doi"]
+        url = row["url"]
+
+        try:
+            response = requests.get(url, timeout=20)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to retrieve URL {url}: {e}")
+            results.append(
+                {
+                    "doi": doi,
+                    "url": " " + url,
+                    "dataAvailabilityText": " ",
+                    "dataAvailabilityLink": " ",
+                }
+            )
+            bar.next()
+            continue
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        dataURL = ""
+        dataAvailability = ""
+
+        p_tags = soup.find_all("p")
+        for p_tag in p_tags:
+            strong_tag = p_tag.find("strong")
+            if strong_tag and "Data Availability:" in strong_tag.text:
+                # Extract the full text after "Data Availability:"
+                dataAvailability = p_tag.get_text(separator=" ", strip=True)
+
+                # Find the URL within this section
+                a_tag = p_tag.find("a", href=True)
+                if a_tag:
+                    dataURL = a_tag["href"]
+                break
+
+        results.append(
+            {
+                "doi": doi,
+                "url": " " + url,
+                "dataAvailabilityText": " " + dataAvailability,
+                "dataAvailabilityLink": " " + dataURL,
+            }
+        )
+        bar.next()
+
+    bar.finish()
+
+    resultDF = pandas.DataFrame(results)
+    resultDF.to_csv(ouputPath, index=False)
 
 
 @click.command()
@@ -75,24 +75,37 @@ def datasource(dbPath: Path) -> DataFrame:
     "-i",
     "--input",
     "inputPath",
-    type=Path,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
-    help="Path to a Zettelgeist database",
+    help="Path to a transformed set of papers",
 )
 @click.option(
     "-o",
     "--output",
     "outputPath",
-    type=Path,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
     required=True,
     help="Path to store data in CSV format",
 )
-def main(inputPath: Path, outputPath:Path) -> None:
-    absInputPath: Path = resolvePath(path=inputPath)
-    absOutputPath: Path = resolvePath(path=outputPath)
-    
-    df = datasource(absInputPath)
-    df.to_csv(absOutputPath, index=False)
+def main(inputPath: Path, outputPath: Path) -> None:
+    getSource(inputPath, outputPath)
+
 
 if __name__ == "__main__":
     main()
