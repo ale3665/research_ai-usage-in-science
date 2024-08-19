@@ -8,66 +8,99 @@ from pandas import DataFrame
 from progress.bar import Bar
 
 
-def getSource(inputPath: Path, ouputPath: Path):
-    pandas.set_option("display.max_colwidth", None)
+def supportingInfo(inputPath: Path, outputPath: Path) -> DataFrame:
+
     df: DataFrame = pandas.read_parquet(inputPath)
+
     results = []
-
     bar = Bar("Processing Rows", max=len(df))
+    rowID = 1
 
-    for index, row in df.iterrows():
-
+    for _, row in df.iterrows():
         doi = row["doi"]
-        url = row["url"]
 
         try:
-            response = requests.get(url, timeout=20)
+
+            response = requests.get(doi, timeout=20)
             response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to retrieve URL {url}: {e}")
-            results.append(
-                {
-                    "doi": doi,
-                    "url": " " + url,
-                    "dataAvailabilityText": " ",
-                    "dataAvailabilityLink": " ",
-                }
-            )
-            bar.next()
-            continue
 
-        soup = BeautifulSoup(response.text, "html.parser")
+            soup = BeautifulSoup(response.content, "html.parser")
 
-        dataURL = ""
-        dataAvailability = ""
+            supportingInfoSection = soup.find(id="section5")
+            if not supportingInfoSection:
+                supportingInfoTitle = soup.find(
+                    "h2", string="Supporting information"
+                )
+                supportingInfoSection = (
+                    supportingInfoTitle.find_next_sibling()
+                    if supportingInfoTitle
+                    else None
+                )
 
-        p_tags = soup.find_all("p")
-        for p_tag in p_tags:
-            strong_tag = p_tag.find("strong")
-            if strong_tag and "Data Availability:" in strong_tag.text:
-                # Extract the full text after "Data Availability:"
-                dataAvailability = p_tag.get_text(separator=" ", strip=True)
+            if supportingInfoSection:
+                supplementaryMaterials = supportingInfoSection.find_all(
+                    "div", class_="supplementary-material"
+                )
+                for material in supplementaryMaterials:
+                    dataKeyTitle = material.find(
+                        "h3", class_="siTitle title-small"
+                    )
+                    if dataKeyTitle:
 
-                # Find the URL within this section
-                a_tag = p_tag.find("a", href=True)
-                if a_tag:
-                    dataURL = a_tag["href"]
-                break
+                        dataKey = (
+                            dataKeyTitle.find("a").text.strip()
+                            if dataKeyTitle.find("a")
+                            else "N/A"
+                        )
+                        dataTitle = (
+                            dataKeyTitle.get_text(separator=" ")
+                            .replace(dataKey, "")
+                            .strip()
+                        )
 
-        results.append(
-            {
-                "doi": doi,
-                "url": " " + url,
-                "dataAvailabilityText": " " + dataAvailability,
-                "dataAvailabilityLink": " " + dataURL,
-            }
-        )
+                        dataDesc = material.find("p", class_="preSiDOI")
+                        dataDescText = (
+                            dataDesc.text.strip() if dataDesc else "N/A"
+                        )
+
+                        dataURL = (
+                            material.find("p", class_="siDoi").find("a")[
+                                "href"
+                            ]
+                            if material.find("p", class_="siDoi")
+                            else "N/A"
+                        )
+
+                        dataType = material.find("p", class_="postSiDOI")
+                        dataTypeText = (
+                            dataType.text.strip() if dataType else "N/A"
+                        )
+
+                        results.append(
+                            {
+                                "ID": rowID,
+                                "DOI": doi,
+                                "Data Key": dataKey,
+                                "Data Title": dataTitle,
+                                "Data Desc": dataDescText,
+                                "Data URL": dataURL,
+                                "Data Type": dataTypeText,
+                            }
+                        )
+
+                        rowID += 1
+        except Exception as e:
+            print(f"Error processing URL {doi}: {e}")
+
         bar.next()
 
     bar.finish()
 
-    resultDF = pandas.DataFrame(results)
-    resultDF.to_csv(ouputPath, index=False)
+    resultsDf = DataFrame(results)
+
+    resultsDf.to_csv(outputPath, index=False)
+
+    return resultsDf
 
 
 @click.command()
@@ -92,19 +125,19 @@ def getSource(inputPath: Path, ouputPath: Path):
     "--output",
     "outputPath",
     type=click.Path(
-        exists=False,
+        exists=True,
         file_okay=True,
         dir_okay=False,
-        writable=True,
-        readable=False,
+        writable=False,
+        readable=True,
         resolve_path=True,
         path_type=Path,
     ),
     required=True,
-    help="Path to store data in CSV format",
+    help="Path to a csv file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    getSource(inputPath, outputPath)
+    print(supportingInfo(inputPath, outputPath))
 
 
 if __name__ == "__main__":
