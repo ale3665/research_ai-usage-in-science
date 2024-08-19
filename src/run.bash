@@ -52,7 +52,7 @@ aius-evaluation-count-keywords \
 # 7. Plot count keywords
 aius-evaluation-plot-keywords \
     --input $PLOS_PATH/evaluation_countKeywords_$DATE.csv \
-    --figure $PLOS_PATH/evaluation_countKeywords.png \
+    --figure $PLOS_PATH/evaluation_countKeywords_$DATE.png \
     --output $PLOS_PATH/evaluation_zeroKeywords_$DATE.csv
 
 # 8. Evaluation: Count tags
@@ -63,4 +63,4 @@ aius-evaluation-count-tags \
 #9. Plot count tags
 aius-evaluation-plot-tags \
     --input $PLOS_PATH/evaluation_countTags_$DATE.csv \
-    --figure $PLOS_PATH/evaluation_countTags.png
+    --figure $PLOS_PATH/evaluation_countTags_$DATE.png
