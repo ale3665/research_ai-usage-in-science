@@ -15,7 +15,6 @@ def identifyModel(inputPath: Path, outputPath: Path):
     size = 3000
 
     parser: StrOutputParser = StrOutputParser()
-    # parser = JsonOutputParser()
 
     chain = model | parser
 

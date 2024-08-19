@@ -16,7 +16,6 @@ def identifyModel(inputPath: Path, outputPath: Path):
     max_iterations = 30
 
     parser: StrOutputParser = StrOutputParser()
-    # parser = JsonOutputParser()
 
     chain = model | parser
 
