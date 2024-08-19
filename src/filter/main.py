@@ -15,7 +15,7 @@ from src.classes.plos import PLOS
 from src.utils import extractDOIsFromHTML, ifFileExistsExit
 
 # TODO: Add filter lists for subfields and topics
-FIELD_FILTER: List[str] = [
+FIELD_FILTER: set[str] = {
     "Agricultural and Biological Sciences",
     "Environmental Science",
     "Biochemistry Genetics and Molecular Biology",
@@ -25,7 +25,7 @@ FIELD_FILTER: List[str] = [
     "Physics and Astronomy",
     "Chemistry",
     "Materials Science",
-]
+}
 
 
 def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
@@ -80,6 +80,8 @@ def filterOAResults(
     oaDF: DataFrame,
     filterList: List[str],
     column: str,
+    filterIntersection: int = 2,
+    citedByMinimum: int = 1,
 ) -> DataFrame:
     dfs: List[DataFrame] = []
 
@@ -93,16 +95,24 @@ def filterOAResults(
             jsonStr: str = row["json"]
             json: dict = loads(s=jsonStr)
 
-            ptDF: DataFrame | None = oa.getWorkPrimaryTopic(json=json)
+            ptDF: DataFrame | None = oa.getWorkTopics(json=json)
+
+            if oa.getCitedByCount(json=json) < citedByMinimum:
+                bar.next()
+                continue
 
             if ptDF is None:
                 bar.next()
                 continue
 
-            if ptDF["field"].isin(filterList).any():
-                dfs.append(row.copy().to_frame().T)
+            if (
+                len(FIELD_FILTER.intersection(ptDF["field"]))
+                < filterIntersection
+            ):
                 bar.next()
+                continue
             else:
+                dfs.append(row.copy().to_frame().T)
                 bar.next()
 
         return pandas.concat(objs=dfs, ignore_index=True)

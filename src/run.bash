@@ -1,5 +1,17 @@
 #!/bin/bash
-DATE=$(date +"%m-%d-%Y")
+
+source optparse.bash
+
+optparse.define short=e long=email desc="Email to leverage OpenAlex polite pool" variable=EMAIL
+optparse.define short=d long=date desc="Optional date value to leverage pre-computed results" variable=DATE default=$(date +"%m-%d-%Y")
+
+source $( optparse.build )
+
+if [ -z "$EMAIL" ]; then
+    echo "-e, --email can't be empty."
+    exit 1
+fi
+
 PLOS_PATH="../data/plos"
 
 # 1. Search for documents within mega journals
@@ -15,7 +27,7 @@ aius-search-plot \
 
 # 3. Filter for papers indexed in OpenAlex
 aius-filter-search-results \
-    --email $1 \
+    --email "$EMAIL" \
     --filter=field \
     --input $PLOS_PATH/search_$DATE.parquet \
     --output $PLOS_PATH/field_filteredSearch_$DATE.parquet \
