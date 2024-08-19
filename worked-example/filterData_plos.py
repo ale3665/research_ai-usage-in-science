@@ -26,7 +26,7 @@ FIELD_FILTER: set[str] = {
 
 
 def filterWithOpenAlex(df: DataFrame) -> DataFrame:
-    data: dict[str, List[str | bool]] = {
+    data: dict[str, List[str | bool | List[str]]] = {
         "doi": [],
         "field": [],
         "ns": [],
@@ -38,11 +38,27 @@ def filterWithOpenAlex(df: DataFrame) -> DataFrame:
             url: str = f"https://api.openalex.org/works/{doi}"
             resp: Response = get(url=url, timeout=60)
 
-            field: dict = resp.json()["primary_topic"]["field"]["display_name"]
+            json: dict = resp.json()
+
+            if json["cited_by_count"] == 0:
+                bar.next()
+                continue
+
+            # field: dict = json["primary_topic"]["field"]["display_name"]
+
+            fields: List[str] = [
+                topic["field"]["display_name"] for topic in json["topics"]
+            ]
 
             data["doi"].append(doi)
-            data["field"].append(field)
-            data["ns"].append(field in FIELD_FILTER)
+            data["field"].append(fields)
+            data["ns"].append(
+                (
+                    True
+                    if sum([x in FIELD_FILTER for x in fields]) > 1
+                    else False
+                ),
+            )
 
             bar.next()
 
