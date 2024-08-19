@@ -19,7 +19,13 @@ def plotBarValues(data: dict) -> None:
 
 
 def plotFieldCount(df: DataFrame, fp: str) -> None:
-    data: Series = df["field"].value_counts(sort=True, ascending=False)
+    data: Series = df["field"].explode()
+    data = data.str.replace(pat=" and", repl="\nand")
+    data = data.str.replace(
+        pat="Physics\nand Astronomy",
+        repl="Physics and\nAstronomy",
+    )
+    data = data.value_counts(sort=True, ascending=False)
 
     sns.barplot(data=data)
     plt.title(
@@ -28,6 +34,7 @@ def plotFieldCount(df: DataFrame, fp: str) -> None:
     )
     plt.xlabel(xlabel="OA Topic Label", labelpad=10, fontsize="large")
     plt.ylabel(ylabel="Count", fontsize="large")
+    plt.xticks(rotation=45, ha="right")
 
     plotBarValues(data=data.to_dict())
 
