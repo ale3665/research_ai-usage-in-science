@@ -15,6 +15,7 @@ def getUrls(inputPath: Path) -> DataFrame:
     df: DataFrame = pandas.read_parquet(inputPath)
 
     urlList = []
+    dataTypeList = []
     bar = Bar("Processing Rows", max=len(df))
     rowID = 1
 
@@ -56,7 +57,12 @@ def getUrls(inputPath: Path) -> DataFrame:
                             if material.find("p", class_="siDoi")
                             else "N/A"
                         )
+                        dataType = material.find("p", class_="postSiDOI")
+                        dataTypeText = (
+                            dataType.text.strip() if dataType else "N/A"
+                        )
                         urlList.append(dataURL)
+                        dataTypeList.append(dataTypeText)
 
                         rowID += 1
         except Exception as e:
@@ -66,7 +72,7 @@ def getUrls(inputPath: Path) -> DataFrame:
 
     bar.finish()
 
-    return urlList
+    return urlList, dataTypeList
 
 
 def extractDomains(urlList: List[str], outputPath: Path) -> List[str]:
