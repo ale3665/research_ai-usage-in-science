@@ -1,9 +1,10 @@
+from pathlib import Path
 from webbrowser import open_new_tab
 
+import click
 import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
-from common import FILTERED_SAMPLE_FILENAME
 from pandas import DataFrame, Series
 
 
@@ -43,8 +44,25 @@ def plotFieldCount(df: DataFrame, fp: str) -> None:
     plt.clf()
 
 
-def main() -> None:
-    df: DataFrame = pandas.read_json(path_or_buf=FILTERED_SAMPLE_FILENAME)
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    required=True,
+    help="Path to PLOS filtered samples",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
+)
+def main(inputPath: Path) -> None:
+    df: DataFrame = pandas.read_json(path_or_buf=inputPath)
 
     relevantPapers: DataFrame = df[df["ns"] == True]  # noqa: E712
 

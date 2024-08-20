@@ -63,7 +63,7 @@ def getJSONResponse(fp: Path) -> DataFrame:
 def main(outputPath: Path) -> None:
     ifFileExistsExit(fps=[outputPath])
 
-    json: DataFrame = getJSONResponse()
+    json: DataFrame = getJSONResponse(fp=outputPath)
     print("Total documents found:", json.shape[0])
 
 
