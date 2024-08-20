@@ -72,12 +72,13 @@ def main() -> None:
 
     else:
         json: DataFrame = pandas.read_json(path_or_buf=FILENAME)
-        sampledDF: DataFrame = json.sample(
-            frac=0.50,
-            replace=False,
-            random_state=42,
-            ignore_index=True,
-        )
+        # sampledDF: DataFrame = json.sample(
+        #     frac=0.50,
+        #     replace=False,
+        #     random_state=42,
+        #     ignore_index=True,
+        # )
+        sampledDF = json
 
         saveDFToJSON(df=sampledDF, filename=SAMPLED_FILENAME)
 

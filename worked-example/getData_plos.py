@@ -1,18 +1,19 @@
 from os.path import isfile
+from pathlib import Path
 from typing import List
 
+import click
 import pandas
-from common import FILENAME, saveDFToJSON
+from common import ifFileExistsExit, saveDFToJSON
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response, get
 
 
-def getJSONResponse() -> DataFrame:
-
+def getJSONResponse(fp: Path) -> DataFrame:
     json: DataFrame
-    if isfile(path=FILENAME):
-        json = pandas.read_json(path_or_buf=FILENAME)
+    if isfile(path=fp):
+        json = pandas.read_json(path_or_buf=fp)
 
     else:
         dfs: List[DataFrame] = []
@@ -37,12 +38,31 @@ def getJSONResponse() -> DataFrame:
 
         json = pandas.concat(objs=dfs, ignore_index=True)
         json["id"] = json["id"].apply(lambda x: f"https://doi.org/{x}")
-        saveDFToJSON(df=json, filename=FILENAME)
+        saveDFToJSON(df=json, filename=fp)
 
     return json
 
 
-def main() -> None:
+@click.command()
+@click.option(
+    "-o",
+    "--output",
+    "outputPath",
+    required=True,
+    help="Path to save PLOS search results",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+)
+def main(outputPath: Path) -> None:
+    ifFileExistsExit(fps=[outputPath])
+
     json: DataFrame = getJSONResponse()
     print("Total documents found:", json.shape[0])
 
