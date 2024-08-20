@@ -30,7 +30,24 @@ def extractExternalLinks(htmlContent) -> List:
                 if parsed_href.netloc and parsed_href.netloc != "":
                     externalLinks.append(href)
 
-    return externalLinks
+    domains = extractDomains(externalLinks)
+
+    return domains
+
+
+def extractDomains(urlList: List[str]) -> List[str]:
+    domains = []
+
+    for url in urlList:
+        try:
+            parsed_url = urlparse(url)
+            domain = parsed_url.netloc
+            domains.append(domain)
+        except Exception as e:
+            print(f"Error processing URL {url}: {e}")
+            domains.append("N/A")  # In case of an error, append "N/A"
+
+    return domains
 
 
 def parseDoi(inputPath, outputPath: Path) -> None:
