@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
 from pandas import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy
 
 from src.utils import ifFileExistsExit
+
 
 def plotBarValues(data: dict) -> None:
     for i, (_, value) in enumerate(zip(data.keys(), data.values())):
@@ -19,11 +19,12 @@ def plotBarValues(data: dict) -> None:
             color="black",
         )
 
+
 def plotResults(df: DataFrame, fp: Path) -> None:
 
     df["tags"] = df["tags"].str.replace("PLOS_", "", regex=False)
     dfSorted = df.sort_values(by="count", ascending=False).head(10)
-    
+
     sns.barplot(x="tags", y="count", data=dfSorted)
     plt.title("Top 10 Tags by Count")
     plt.xlabel("OpenAlex Tag")
@@ -31,7 +32,7 @@ def plotResults(df: DataFrame, fp: Path) -> None:
 
     plotBarValues(dfSorted.set_index("tags")["count"].to_dict())
 
-    plt.xticks(rotation=45, ha="right")
+    plt.xticks(rotation=50, ha="right")
 
     plt.tight_layout()
     plt.savefig(fp)
@@ -79,7 +80,6 @@ def main(inputPath: Path, fig1Path: Path) -> None:
 
     print("Plotting count per tag...")
     plotResults(df=df, fp=fig1Path)
-
 
 
 if __name__ == "__main__":
