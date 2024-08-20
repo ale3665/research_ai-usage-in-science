@@ -1,13 +1,9 @@
-from os.path import isfile
+from pathlib import Path
 from typing import List
 
+import click
 import pandas
-from common import (
-    FILENAME,
-    FILTERED_SAMPLE_FILENAME,
-    SAMPLED_FILENAME,
-    saveDFToJSON,
-)
+from common import ifFileExistsExit, saveDFToJSON
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response, get
@@ -65,26 +61,84 @@ def filterWithOpenAlex(df: DataFrame) -> DataFrame:
     return DataFrame(data=data)
 
 
-def main() -> None:
+@click.command()
+@click.option(
+    "-i",
+    "--input",
+    "inputPath",
+    required=True,
+    help="Path to PLOS search results",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
+)
+@click.option(
+    "--sample-output",
+    "sampleOutput",
+    required=True,
+    help="Path to store sampled data",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+)
+@click.option(
+    "--filter-output",
+    "filterOutput",
+    required=True,
+    help="Path to store filtered sample data",
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+)
+@click.option(
+    "--sample-frac",
+    "sampleFrac",
+    required=False,
+    default=0.5,
+    help="Fraction of data to sample (float; 0 - 1.0)",
+    type=float,
+    show_default=True,
+)
+def main(
+    inputPath: Path,
+    sampleOutput: Path,
+    filterOutput: Path,
+    sampleFrac: float,
+) -> None:
     df: DataFrame
-    if isfile(path=FILTERED_SAMPLE_FILENAME):
-        df = pandas.read_json(path_or_buf=FILTERED_SAMPLE_FILENAME)
+    ifFileExistsExit(fps=[sampleOutput, filterOutput])
 
-    else:
-        json: DataFrame = pandas.read_json(path_or_buf=FILENAME)
-        # sampledDF: DataFrame = json.sample(
-        #     frac=0.50,
-        #     replace=False,
-        #     random_state=42,
-        #     ignore_index=True,
-        # )
-        sampledDF = json
+    json: DataFrame = pandas.read_json(path_or_buf=inputPath)
+    sampledDF: DataFrame = json.sample(
+        frac=sampleFrac,
+        replace=False,
+        random_state=42,
+        ignore_index=True,
+    )
 
-        saveDFToJSON(df=sampledDF, filename=SAMPLED_FILENAME)
+    saveDFToJSON(df=sampledDF, filename=sampleOutput)
 
-        df = filterWithOpenAlex(df=sampledDF)
+    df: DataFrame = filterWithOpenAlex(df=sampledDF)
 
-        saveDFToJSON(df=df, filename=FILTERED_SAMPLE_FILENAME)
+    saveDFToJSON(df=df, filename=filterOutput)
 
     print(
         "Number of documents with valid tag:",
