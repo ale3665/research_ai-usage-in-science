@@ -1,10 +1,12 @@
 from pathlib import Path
+from typing import List
 from urllib.parse import urlparse
 
 import click
 import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
+from pandas import DataFrame, Series
 
 
 def plotBarValues(data: dict) -> None:
@@ -18,45 +20,59 @@ def plotBarValues(data: dict) -> None:
         )
 
 
-def extract_domains(links: str) -> list:
-
-    urls = links.split("; ")
+def extractDomains(df: DataFrame) -> DataFrame:
     domains = []
-    for url in urls:
-        parsed_url = urlparse(url)
-        domain = parsed_url.netloc
-        if domain:
+    row: Series
+    for _, row in df.iterrows():
+        try:
+            parsed_url = urlparse(row["link"])
+            domain = parsed_url.netloc
             domains.append(domain)
-    return domains
+        except Exception as e:
+            print(f"Error processing URL {row['link']}: {e}")
+            domains.append("N/A")  # if blank append N/A
+    data: dict[str, List[str]] = {
+        "doi": df["doi"],
+        "link": df["link"],
+        "domain": domains,
+    }
+    return DataFrame(data=data)
 
 
-def plot(input: str, output: str) -> None:
-    df = pandas.read_csv(input)
+def githubLinks(df: DataFrame) -> DataFrame:
 
-    if "Links" not in df.columns:
-        raise ValueError("The CSV file must contain a 'Links' column.")
+    githubDF = df[df["domain"].str.contains("github")]
 
-    all_domains = df["Links"].apply(extract_domains).explode()
-    domain_counts = all_domains.value_counts()
+    githubDF = githubDF.drop(columns=["domain"])
 
-    top_domains = domain_counts.head(10).reset_index()
-    top_domains.columns = ["Links", "Count"]
+    return githubDF
+
+
+def plot(df: DataFrame, output: str) -> None:
+
+    if "link" not in df.columns:
+        raise ValueError("The CSV file must contain a 'link' column.")
+
+    counts = df["link"].value_counts()
+
+    topDomains = counts.head(10).reset_index()
+    topDomains.columns = ["link", "Count"]
 
     plt.figure(figsize=(12, 8))
 
     sns.barplot(
-        x="Links",
+        x="link",
         y="Count",
-        data=top_domains,
+        data=topDomains,
         palette="viridis",
-        hue="Links",
+        hue="link",
         dodge=False,
     )
 
     plt.xlabel("Domain")
     plt.ylabel("Frequency")
 
-    plotBarValues(top_domains.set_index("Links")["Count"].to_dict())
+    plotBarValues(topDomains.set_index("link")["Count"].to_dict())
 
     plt.title("Top 10 Most Occurring Domains of External Paper Links")
     plt.xticks(rotation=45, ha="right")
@@ -87,7 +103,7 @@ def plot(input: str, output: str) -> None:
     "--output",
     "outputPath",
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=True,
         dir_okay=False,
         writable=False,
@@ -99,7 +115,12 @@ def plot(input: str, output: str) -> None:
     help="Path to a png file of plots",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    plot(inputPath, outputPath)
+    df: DataFrame = pandas.read_csv(inputPath)
+    tranformDF: DataFrame = extractDomains(df=df)
+
+    # ghDF: DataFrame = githubLinks(df=tranformDF)
+
+    plot(tranformDF, outputPath)
 
 
 if __name__ == "__main__":
