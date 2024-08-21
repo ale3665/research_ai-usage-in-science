@@ -118,9 +118,9 @@ def main(inputPath: Path, outputPath: Path) -> None:
     df: DataFrame = pandas.read_csv(inputPath)
     tranformDF: DataFrame = extractDomains(df=df)
 
-    # ghDF: DataFrame = githubLinks(df=tranformDF)
-
-    plot(tranformDF, outputPath)
+    ghDF: DataFrame = githubLinks(df=tranformDF)
+    print(ghDF.sample(n=5, random_state=42))
+    # plot(tranformDF, outputPath)
 
 
 if __name__ == "__main__":
