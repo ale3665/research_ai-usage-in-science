@@ -14,14 +14,15 @@ from src.classes.search import Search
 from src.utils import formatText
 
 
-class PEERJ(Journal_ABC):
+class royalSociety(Journal_ABC):
     def __init__(self) -> None:
-        self.journalName: str = "PeerJ"
+        self.journalName: str = "PLOS"
         self.paperURLTemplate: Template = Template(
-            template="https://peerj.com/articles/{paperID}/"
+            template="https://royalsocietypublishing.org/doi/{paperID}"
         )  # noqa: E501
+        # needs month with year, add functionality for month
         self.searchURLTemplate: Template = Template(
-            template="https://peerj.com/search?q={query}&published-gte={year}&published-lte={year}&page={page}"  # noqa: E501
+            template="https://royalsocietypublishing.org/action/doSearch?field1=AllField&text1={query}&ConceptID=&ConceptID=&publication=&Ppub=&AfterMonth={month}&AfterYear={year}&BeforeMonth={month}&BeforeYear={year}&access=on&pageSize=20&startPage={page}"  # noqa: E501
         )
 
     def searchJournal(self, query: str, year: int) -> DataFrame:
@@ -125,7 +126,7 @@ class PEERJ(Journal_ABC):
         :return: The formatted title of the PLOS article.
         :rtype: str
         """  # noqa: E501
-        title: Tag = soup.find(name="h1", attrs={"id", "article-title"})
+        title: Tag = soup.find(name="h1", attrs={"class": "citation__title"})
         return formatText(string=title.text)
 
     def extractAbstractFromPaper(self, soup: BeautifulSoup) -> str:
@@ -143,7 +144,7 @@ class PEERJ(Journal_ABC):
         """  # noqa: E501
         abstract: Tag = soup.find(
             name="div",
-            attrs={"class": "abstract"},
+            attrs={"class": "abstractSection abstractInFull"},
         )
         return formatText(string=abstract.text)
 
@@ -159,21 +160,18 @@ class PEERJ(Journal_ABC):
         :rtype: str
         """
         content: Tag = soup.find(
-            name="article",
-            attrs={
-                "itemscope": "itemscope",
-                "itemtype": "http://schema.org/ScholarlyArticle",
-            },
+            name="div",
+            attrs={"id": "article-container"},
         )
 
         abstract: Tag = content.find(
             name="div",
-            attrs={"class": "abstract"},
+            attrs={"class": "abstractSection abstractInFull"},
         )
 
         references: Tag = content.find(
-            name="section",
-            attrs={"class": "ref-list-container"},
+            name="ol",
+            attrs={"class": "reference"},
         )
 
         if abstract:
@@ -188,8 +186,11 @@ class PEERJ(Journal_ABC):
         data: List[str] = []
 
         tags: ResultSet = soup.find_all(
-            name="section",
-            attrs={"class": "sec", "id": "supplemental-information"},
+            name="h3",
+            attrs={
+                "class": "article-section__title section__title to-section ",
+                "id": "d1e1736",
+            },
         )
 
         tag: Tag
@@ -199,7 +200,7 @@ class PEERJ(Journal_ABC):
 
         return " ".join(data)
 
-    # can't find in html for peerj
+    # none
     def extractJournalTagsFromPaper(self, soup: BeautifulSoup) -> List[str]:
         data: List[str] = []
 
