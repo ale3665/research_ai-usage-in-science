@@ -40,8 +40,6 @@ def filterWithOpenAlex(df: DataFrame) -> DataFrame:
                 bar.next()
                 continue
 
-            # field: dict = json["primary_topic"]["field"]["display_name"]
-
             fields: List[str] = [
                 topic["field"]["display_name"] for topic in json["topics"]
             ]
@@ -79,10 +77,11 @@ def filterWithOpenAlex(df: DataFrame) -> DataFrame:
     ),
 )
 @click.option(
-    "--sample-output",
-    "sampleOutput",
+    "-o",
+    "--output",
+    "outputPath",
     required=True,
-    help="Path to store sampled data",
+    help="Path to store filtered sampled data",
     type=click.Path(
         exists=False,
         file_okay=True,
@@ -92,62 +91,19 @@ def filterWithOpenAlex(df: DataFrame) -> DataFrame:
         resolve_path=True,
         path_type=Path,
     ),
-)
-@click.option(
-    "--filter-output",
-    "filterOutput",
-    required=True,
-    help="Path to store filtered sample data",
-    type=click.Path(
-        exists=False,
-        file_okay=True,
-        dir_okay=False,
-        writable=True,
-        readable=False,
-        resolve_path=True,
-        path_type=Path,
-    ),
-)
-@click.option(
-    "--sample-frac",
-    "sampleFrac",
-    required=False,
-    default=0.5,
-    help="Fraction of data to sample (float; 0 - 1.0)",
-    type=float,
-    show_default=True,
 )
 def main(
     inputPath: Path,
-    sampleOutput: Path,
-    filterOutput: Path,
-    sampleFrac: float,
+    outputPath: Path,
 ) -> None:
     df: DataFrame
-    ifFileExistsExit(fps=[sampleOutput, filterOutput])
+    ifFileExistsExit(fps=[outputPath])
 
-    json: DataFrame = pandas.read_json(path_or_buf=inputPath)
-    sampledDF: DataFrame = json.sample(
-        frac=sampleFrac,
-        replace=False,
-        random_state=42,
-        ignore_index=True,
-    )
+    df: DataFrame = pandas.read_json(path_or_buf=inputPath)
 
-    saveDFToJSON(df=sampledDF, filename=sampleOutput)
+    filteredDF: DataFrame = filterWithOpenAlex(df=df)
 
-    df: DataFrame = filterWithOpenAlex(df=sampledDF)
-
-    saveDFToJSON(df=df, filename=filterOutput)
-
-    print(
-        "Number of documents with valid tag:",
-        df[df["ns"] == True].shape[0],  # noqa: E712
-    )
-    print(
-        "Number of documents with invalid tag:",
-        df[df["ns"] == False].shape[0],  # noqa: E712
-    )
+    saveDFToJSON(df=filteredDF, filename=outputPath)
 
 
 if __name__ == "__main__":
