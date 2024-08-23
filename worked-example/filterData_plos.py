@@ -30,7 +30,7 @@ def filterWithOpenAlex(df: DataFrame) -> DataFrame:
 
     with Bar("Filtering data through OpenAlex...", max=df.shape[0]) as bar:
         doi: str
-        for doi in df["id"]:
+        for doi in df["doi"]:
             url: str = f"https://api.openalex.org/works/{doi}"
             resp: Response = get(url=url, timeout=60)
 
