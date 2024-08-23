@@ -1,5 +1,6 @@
-from os.path import isfile
+from math import ceil
 from pathlib import Path
+from string import Template
 from typing import List
 
 import click
@@ -10,37 +11,43 @@ from progress.bar import Bar
 from requests import Response, get
 
 
-def getJSONResponse(fp: Path) -> DataFrame:
-    json: DataFrame
-    if isfile(path=fp):
-        json = pandas.read_json(path_or_buf=fp)
+def getDocuments(year: int = 2016, resultsPerPage: int = 100) -> DataFrame:
+    dfs: List[DataFrame] = []
 
-    else:
-        dfs: List[DataFrame] = []
+    urlTemplate: Template = Template(
+        template=f"https://journals.plos.org/plosone/dynamicSearch?filterArticleTypes=Research%20Article&filterStartDate={year}-01-01&filterEndDate={year}-12-31&resultsPerPage={resultsPerPage}&unformattedQuery=%22Deep%20Learning%22&q=%22Deep%20Learning%22&page=$page"  # noqa: E501
+    )
 
-        with Bar("Getting JSON responses...", max=1) as bar:
-            page: int
-            for page in range(1, 2):
-                # Query: "Deep Learning"
-                # Year: 2016
-                # Page: 1
-                # Max page: 1
-                url: str = (
-                    f"https://journals.plos.org/plosone/dynamicSearch?filterArticleTypes=Research%20Article&filterStartDate=2016-01-01&filterEndDate=2016-12-31&resultsPerPage=60&unformattedQuery=%22Deep%20Learning%22&q=%22Deep%20Learning%22&page={page}"  # noqa: E501
-                )
+    pageNum: int = 1
 
-                resp: Response = get(url=url, timeout=60)
-                json = resp.json()
+    with Bar("Searching for documents...", max=1) as bar:
+        while True:
+            url: str = urlTemplate.substitute(page=pageNum)
 
-                dfs.append(DataFrame(data=json["searchResults"]["docs"]))
+            resp: Response = get(url=url, timeout=60)
+            json: dict = resp.json()
 
+            if pageNum == 1:
+                totalDocuments: int = json["searchResults"]["numFound"]
+                maxPages: int = ceil(totalDocuments / resultsPerPage)
+
+                bar.max = maxPages
+
+            df: DataFrame = DataFrame(data=json["searchResults"]["docs"])
+            dfs.append(df)
+
+            if pageNum >= maxPages:
+                bar.next()
+                break
+
+            else:
                 bar.next()
 
-        json = pandas.concat(objs=dfs, ignore_index=True)
-        json["id"] = json["id"].apply(lambda x: f"https://doi.org/{x}")
-        saveDFToJSON(df=json, filename=fp)
+            pageNum += 1
 
-    return json
+    documents: DataFrame = pandas.concat(objs=dfs, ignore_index=True)
+    documents["doi"] = documents["id"].apply(lambda x: f"https://doi.org/{x}")
+    return documents
 
 
 @click.command()
@@ -49,7 +56,7 @@ def getJSONResponse(fp: Path) -> DataFrame:
     "--output",
     "outputPath",
     required=True,
-    help="Path to save PLOS search results",
+    help="Path to save PLOS search results (parquet)",
     type=click.Path(
         exists=False,
         file_okay=True,
@@ -60,11 +67,21 @@ def getJSONResponse(fp: Path) -> DataFrame:
         path_type=Path,
     ),
 )
-def main(outputPath: Path) -> None:
+@click.option(
+    "-y",
+    "--year",
+    "year",
+    required=False,
+    help="Year to search data",
+    type=int,
+    default=2016,
+    show_default=True,
+)
+def main(outputPath: Path, year: int = 2016) -> None:
     ifFileExistsExit(fps=[outputPath])
 
-    json: DataFrame = getJSONResponse(fp=outputPath)
-    print("Total documents found:", json.shape[0])
+    df: DataFrame = getDocuments(year=year)
+    saveDFToJSON(df=df, filename=outputPath)
 
 
 if __name__ == "__main__":
