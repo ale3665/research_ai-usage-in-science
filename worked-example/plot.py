@@ -83,6 +83,19 @@ def main(inputPath: Path, outputPath: Path) -> None:
 
     relevantPapers: DataFrame = df[df["ns"] == True]  # noqa: E712
 
+    print(relevantPapers.columns)
+
+    relevantPapers = relevantPapers[
+        ~relevantPapers["doi"].isin(
+            values=[
+                "https://doi.org/10.1371/journal.pone.0146490",
+                "https://doi.org/10.1371/journal.pone.0168753",
+                "https://doi.org/10.1371/journal.pone.0156505",
+            ]
+        )
+    ]
+    print(relevantPapers["doi"])
+
     plotFieldCount(df=relevantPapers, fp=outputPath)
 
 

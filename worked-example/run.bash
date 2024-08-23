@@ -17,7 +17,7 @@ python3.10 filterData_plos.py \
     --input $DATA_PATH/searchResponse_plos_$DATE.json \
     --sample-output $DATA_PATH/sampled_searchResponse_plos_$DATE.json \
     --filter-output $DATA_PATH/filter_sampled_searchResponse_plos_$DATE.json \
-    --sample-frac 0.5
+    --sample-frac 1
 
 # 3. Open data
 python3.10 openSamples.py \
