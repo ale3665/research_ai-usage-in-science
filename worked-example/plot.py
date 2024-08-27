@@ -94,6 +94,7 @@ def main(inputPath: Path, outputPath: Path) -> None:
             ]
         )
     ]
+    print("\nRelevant papers")
     print(relevantPapers["doi"])
 
     plotFieldCount(df=relevantPapers, fp=outputPath)

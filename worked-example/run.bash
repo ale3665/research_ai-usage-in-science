@@ -26,15 +26,13 @@ python3.10 filterData_plos.py \
     --input $DATA_PATH/sampled_searchResponse_${YEAR}_plos_${DATE}.json \
     --output $DATA_PATH/filtered_sampled_searchResponse_${YEAR}_plos_${DATE}.json
 
-exit
-
-
-
-# 3. Open data
-python3.10 openSamples.py \
-    --input $DATA_PATH/filter_sampled_searchResponse_${YEAR}_plos_${DATE}.json
-
 # 4. Plot data
 python3.10 plot.py \
-    --input $DATA_PATH/filter_sampled_searchResponse_${YEAR}_plos_${DATE}.json \
-    --output $DATA_PATH/filter_sampled_searchResponse_plot_${YEAR}_plos_${DATE}.png \
+    --input $DATA_PATH/filtered_sampled_searchResponse_${YEAR}_plos_${DATE}.json \
+    --output $DATA_PATH/filtered_sampled_searchResponse_plot_${YEAR}_plos_${DATE}.png
+
+
+
+# # 3. Open data
+# python3.10 openSamples.py \
+#     --input $DATA_PATH/filter_sampled_searchResponse_${YEAR}_plos_${DATE}.json
