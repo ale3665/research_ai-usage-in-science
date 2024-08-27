@@ -4,7 +4,8 @@ import click
 import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
-from common import ifFileExistsExit
+
+# from common import ifFileExistsExit
 from pandas import DataFrame, Series
 
 
@@ -78,12 +79,10 @@ def plotFieldCount(df: DataFrame, fp: str) -> None:
     ),
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    ifFileExistsExit(fps=[outputPath])
+    # ifFileExistsExit(fps=[outputPath])
     df: DataFrame = pandas.read_json(path_or_buf=inputPath)
 
     relevantPapers: DataFrame = df[df["ns"] == True]  # noqa: E712
-
-    print(relevantPapers.columns)
 
     relevantPapers = relevantPapers[
         ~relevantPapers["doi"].isin(
