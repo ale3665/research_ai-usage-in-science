@@ -1,5 +1,4 @@
 import re
-from functools import partial
 from pathlib import Path
 from typing import List
 
@@ -12,9 +11,20 @@ from src.classes import SEARCH_QUERIES
 from src.utils import ifFileExistsExit
 
 
+def createFuzzyRegex(keyword: str) -> str:
+    escapedKeyword: str = re.escape(keyword)
+    # looks for escaped space character in keyword, allowing then any characters between words to provide a match, the ? makes it non greedy # noqa: E501
+    fuzzyPattern: str = re.sub(r"\\ ", r".*?", escapedKeyword)
+    return fuzzyPattern
+
+
 def countKeywords(df: DataFrame, keywords: List[str]) -> DataFrame:
     data: dict[str, List[int]] = {kw: [] for kw in keywords}
     data["doi"] = []
+
+    fuzzyPatterns = {
+        kw: re.compile(createFuzzyRegex(kw), re.IGNORECASE) for kw in keywords
+    }
 
     with Bar("Counting keywords...", max=df.shape[0]) as bar:
         row: Series[str]
@@ -25,14 +35,13 @@ def countKeywords(df: DataFrame, keywords: List[str]) -> DataFrame:
             abstract: str = row["abstracts"].lower()
             content: str = row["content"].lower()
 
-            kw: str
-            for kw in keywords:
-                partialFind: partial = partial(re.finditer, pattern=kw)
+            for kw, pattern in fuzzyPatterns.items():
+
                 count: int = 0
 
-                count += len(list(partialFind(string=title)))
-                count += len(list(partialFind(string=abstract)))
-                count += len(list(partialFind(string=content)))
+                count += len(list(pattern.finditer(title)))
+                count += len(list(pattern.finditer(abstract)))
+                count += len(list(pattern.finditer(content)))
 
                 data[kw].append(count)
 
