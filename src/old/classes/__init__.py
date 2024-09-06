@@ -27,15 +27,6 @@ SEARCH_RESULTS_STOR: dict[str, List[str | int | bytes]] = {
 
 
 class SearchResultDataFrameSchema(TypedDataFrame):
-    """
-    SearchResultDataFrameSchema _summary_
-
-    _extended_summary_
-
-    :param TypedDataFrame: _description_
-    :type TypedDataFrame: _type_
-    """
-
     schema: dict[str, Type] = {
         "year": int,
         "query": str,

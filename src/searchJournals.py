@@ -1,20 +1,15 @@
 from itertools import product
 from pathlib import Path
-from string import Template
 from typing import List
 
 import click
 import pandas
 from pandas import DataFrame
 
-from src.journals import RELEVANT_YEARS, SEARCH_QUERIES
 from src.journals._generic import Journal_ABC
 from src.journals.plos import PLOS
+from src.search import RELEVANT_YEARS, SEARCH_QUERIES
 from src.utils import ifFileExistsExit
-
-MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
-    template="Search for documents in ${journal} mega journal",
-)
 
 
 def runCollector(journal: Journal_ABC) -> DataFrame:
@@ -25,6 +20,7 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
         data.append(df)
 
     df: DataFrame = pandas.concat(objs=data, ignore_index=True)
+
     df.drop_duplicates(
         subset=["url"],
         keep="first",
@@ -40,15 +36,18 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     "-j",
     "--journal",
     "journal",
-    required=True,
-    type=click.Choice(choices=["plos"]),
-    help="Search for documents in a supported mega-journal",
+    required=False,
+    type=click.Choice(choices=["plos"], case_sensitive=False),
+    help="Journal to search for documents in",
+    default="plos",
+    show_default=True,
 )
 @click.option(
     "-o",
     "--output",
     "outputPath",
     required=True,
+    help="Output parquet file to save Pandas DataFrame to",
     type=click.Path(
         exists=False,
         file_okay=True,
@@ -57,9 +56,17 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
         resolve_path=True,
         path_type=Path,
     ),
-    help="Output parquet file to save Pandas DataFrame to",
 )
 def main(outputPath: Path, journal: str) -> None:
+    """
+    Searches through a given journal and outputs a Pandas DataFrame stored as an Apache Parquet file with the search results.
+
+    These search results are the raw outputs of the search meant to be post-processed for usage in other scripts.
+
+    While the data outputted from this script can be leveraged independently, it is better to use this data in the following pipeline:
+
+    **aius-search** -> aius-extract-documents -> aius-filter-documents -> aius-sample-documents -> aius-download-documents
+    """  # noqa: E501
     ifFileExistsExit(fps=[outputPath])
 
     journalClass: Journal_ABC

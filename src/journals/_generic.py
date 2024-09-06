@@ -15,7 +15,7 @@ class Journal_ABC(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def extractDOIFromPaper(self, url: str) -> str:
+    def extract_DOI(self, url: str) -> str:
         pass
 
     @abstractmethod
