@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
 from pandas import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy
 
 from src.utils import ifFileExistsExit
+
+# from pandas.core.groupby.generic import DataFrameGroupBy
+
 
 def plotBarValues(data: dict) -> None:
     for i, (_, value) in enumerate(zip(data.keys(), data.values())):
@@ -19,10 +21,11 @@ def plotBarValues(data: dict) -> None:
             color="black",
         )
 
+
 def plotResults(df: DataFrame, fp: Path, outputCSV: Path) -> None:
-    
-    dfKeywords = df.drop(columns=['doi'])
-    
+
+    dfKeywords = df.drop(columns=["doi"])
+
     keywordSums = dfKeywords.sum().sort_values(ascending=False)
     data = keywordSums.to_dict()
 
@@ -33,7 +36,6 @@ def plotResults(df: DataFrame, fp: Path, outputCSV: Path) -> None:
 
     plotBarValues(data)
 
-    
     plt.xticks(rotation=45, ha="right")
 
     plt.tight_layout()
@@ -47,11 +49,9 @@ def plotResults(df: DataFrame, fp: Path, outputCSV: Path) -> None:
     noKeywordsDF = df[dfKeywords.sum(axis=1) == 0]
 
     # Save the DOIs of rows with no keywords to another CSV file
-    noKeywordsDF[['doi']].to_csv(outputCSV, index=False)
+    noKeywordsDF[["doi"]].to_csv(outputCSV, index=False)
     print(f"CSV file with DOIs of rows with no keywords saved to {outputCSV}")
 
-    
-    
 
 @click.command()
 @click.option(
