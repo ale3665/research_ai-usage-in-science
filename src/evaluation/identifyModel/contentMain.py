@@ -15,7 +15,6 @@ def identifyModel(inputPath: Path, outputPath: Path):
     size = 3000
 
     parser: StrOutputParser = StrOutputParser()
-    # parser = JsonOutputParser()
 
     chain = model | parser
 
@@ -26,7 +25,8 @@ def identifyModel(inputPath: Path, outputPath: Path):
         if i >= max_iterations:
             break
 
-        title = getattr(row, "titles", "n/a")
+        doi = getattr(row, "doi", "n/a")
+
         content = getattr(row, "content", "n/a")
 
         chunks = [
@@ -41,7 +41,7 @@ def identifyModel(inputPath: Path, outputPath: Path):
                 SystemMessage(
                     content="""You are a deep learning model identifier for academic papers.
             Your task is to read the contents of an academic paper up until 'references' and extract the names of pre-trained models that occur in the paper.
-            Return only the name(s) of the models. If there are none, return 'n/a'.
+            Return only the name(s) of the models. If there are none, return 😞.
             You keep responses concise without any extra information.
             """  # noqa: E501
                 ),
@@ -58,7 +58,9 @@ def identifyModel(inputPath: Path, outputPath: Path):
         combined_results = "\n".join(list)
         combined_results = combined_results.replace("\n", " ").strip()
 
-    results.append({"title": title, "response": combined_results})
+        results.append(
+            {"doi": doi, "prompt": content, "response": combined_results}
+        )
 
     resultsDF = pandas.DataFrame(results)
 

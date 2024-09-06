@@ -1,12 +1,11 @@
 from pathlib import Path
+from urllib.parse import urlparse
 
 import click
 import matplotlib.pyplot as plt
 import pandas
 import seaborn as sns
 from pandas import DataFrame
-
-from src.utils import ifFileExistsExit
 
 
 def plotBarValues(data: dict) -> None:
@@ -20,23 +19,47 @@ def plotBarValues(data: dict) -> None:
         )
 
 
+def extract_domain(url: str):
+    print(f"Processing URL: {url}")
+
+    if pandas.notna(url):
+        parsed_url = urlparse(url)
+        netloc = parsed_url.netloc
+
+        # Remove any port number
+        domain = netloc.split(":")[0]
+
+        parts = domain.split(".")
+        if len(parts) >= 2:
+            return ".".join(parts[-2:])  # main domain and suffix
+        return domain
+
+    return "Unknown"
+
+
 def plotResults(df: DataFrame, fp: Path) -> None:
 
-    df["tags"] = df["tags"].str.replace("PLOS_", "", regex=False)
-    dfSorted = df.sort_values(by="count", ascending=False).head(10)
+    print("Sample URLs:")
+    print(df["dataAvailabilityLink"].head())
 
-    sns.barplot(x="tags", y="count", data=dfSorted)
-    plt.title("Top 10 Tags by Count")
-    plt.xlabel("OpenAlex Tag")
+    df["domain"] = df["dataAvailabilityLink"].apply(extract_domain)
+
+    print("Extracted domains:")
+    print(df[["dataAvailabilityLink", "domain"]].head())
+
+    domain_counts = df["domain"].value_counts().reset_index()
+    domain_counts.columns = ["domain", "count"]
+
+    plt.figure(figsize=(12, 8))
+    sns.barplot(x="domain", y="count", data=domain_counts)
+    plt.title("Count of Different Artifact Locations")
+    plt.xlabel("Domain")
     plt.ylabel("Count")
-
-    plotBarValues(dfSorted.set_index("tags")["count"].to_dict())
-
-    plt.xticks(rotation=50, ha="right")
-
+    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
+
     plt.savefig(fp)
-    plt.clf()
+    plt.show()
 
 
 @click.command()
@@ -73,13 +96,14 @@ def plotResults(df: DataFrame, fp: Path) -> None:
     help="Path to store figure 1",
 )
 def main(inputPath: Path, fig1Path: Path) -> None:
-    ifFileExistsExit(fps=[fig1Path])
+    df = pandas.read_csv(inputPath)
 
-    print(f'Reading "{inputPath}... ')
-    df: DataFrame = pandas.read_csv(inputPath)
+    print("Initial DataFrame:")
+    print(df.head())
 
-    print("Plotting count per tag...")
-    plotResults(df=df, fp=fig1Path)
+    df["domain"] = df["dataAvailabilityLink"].apply(extract_domain)
+    print("DataFrame with Domain Column:")
+    print(df)
 
 
 if __name__ == "__main__":

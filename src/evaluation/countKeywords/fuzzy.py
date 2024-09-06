@@ -1,9 +1,9 @@
-import re
 from pathlib import Path
 from typing import List
 
 import click
 import pandas
+from fuzzywuzzy import fuzz, process
 from pandas import DataFrame, Series
 from progress.bar import Bar
 
@@ -11,20 +11,25 @@ from src.classes import SEARCH_QUERIES
 from src.utils import ifFileExistsExit
 
 
-def createFuzzyRegex(keyword: str) -> str:
-    escapedKeyword: str = re.escape(keyword)
-    # looks for escaped space character in keyword, allowing then any characters between words to provide a match, the ? makes it non greedy # noqa: E501
-    fuzzyPattern: str = re.sub(r"\\ ", r".*?", escapedKeyword)
-    return fuzzyPattern
+# did not work as well as original regex method, almost no matches are found
+def findFuzzyMatches(keyword: str, text: str) -> int:
+
+    # similarity threshold that corresponds to an edit distance of up to 3
+    similarityThreshold = 85
+
+    words = text.split()
+
+    matches = process.extract(keyword, words, scorer=fuzz.ratio)
+
+    # count the number of matches that are above threshold
+    count = sum(1 for match in matches if match[1] >= similarityThreshold)
+
+    return count
 
 
 def countKeywords(df: DataFrame, keywords: List[str]) -> DataFrame:
     data: dict[str, List[int]] = {kw: [] for kw in keywords}
     data["doi"] = []
-
-    fuzzyPatterns = {
-        kw: re.compile(createFuzzyRegex(kw), re.IGNORECASE) for kw in keywords
-    }
 
     with Bar("Counting keywords...", max=df.shape[0]) as bar:
         row: Series[str]
@@ -35,13 +40,12 @@ def countKeywords(df: DataFrame, keywords: List[str]) -> DataFrame:
             abstract: str = row["abstracts"].lower()
             content: str = row["content"].lower()
 
-            for kw, pattern in fuzzyPatterns.items():
-
+            for kw in keywords:
                 count: int = 0
 
-                count += len(list(pattern.finditer(title)))
-                count += len(list(pattern.finditer(abstract)))
-                count += len(list(pattern.finditer(content)))
+                count += findFuzzyMatches(kw, title)
+                count += findFuzzyMatches(kw, abstract)
+                count += findFuzzyMatches(kw, content)
 
                 data[kw].append(count)
 

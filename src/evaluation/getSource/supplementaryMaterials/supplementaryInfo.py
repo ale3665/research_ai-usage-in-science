@@ -1,4 +1,6 @@
 from pathlib import Path
+from typing import List
+from urllib.parse import urlparse
 
 import click
 import pandas
@@ -8,11 +10,12 @@ from pandas import DataFrame
 from progress.bar import Bar
 
 
-def supportingInfo(inputPath: Path, outputPath: Path) -> DataFrame:
+def getUrls(inputPath: Path) -> DataFrame:
 
     df: DataFrame = pandas.read_parquet(inputPath)
 
-    results = []
+    urlList = []
+    dataTypeList = []
     bar = Bar("Processing Rows", max=len(df))
     rowID = 1
 
@@ -47,22 +50,6 @@ def supportingInfo(inputPath: Path, outputPath: Path) -> DataFrame:
                     )
                     if dataKeyTitle:
 
-                        dataKey = (
-                            dataKeyTitle.find("a").text.strip()
-                            if dataKeyTitle.find("a")
-                            else "N/A"
-                        )
-                        dataTitle = (
-                            dataKeyTitle.get_text(separator=" ")
-                            .replace(dataKey, "")
-                            .strip()
-                        )
-
-                        dataDesc = material.find("p", class_="preSiDOI")
-                        dataDescText = (
-                            dataDesc.text.strip() if dataDesc else "N/A"
-                        )
-
                         dataURL = (
                             material.find("p", class_="siDoi").find("a")[
                                 "href"
@@ -70,23 +57,12 @@ def supportingInfo(inputPath: Path, outputPath: Path) -> DataFrame:
                             if material.find("p", class_="siDoi")
                             else "N/A"
                         )
-
                         dataType = material.find("p", class_="postSiDOI")
                         dataTypeText = (
                             dataType.text.strip() if dataType else "N/A"
                         )
-
-                        results.append(
-                            {
-                                "ID": rowID,
-                                "DOI": doi,
-                                "Data Key": dataKey,
-                                "Data Title": dataTitle,
-                                "Data Desc": dataDescText,
-                                "Data URL": dataURL,
-                                "Data Type": dataTypeText,
-                            }
-                        )
+                        urlList.append(dataURL)
+                        dataTypeList.append(dataTypeText)
 
                         rowID += 1
         except Exception as e:
@@ -96,11 +72,26 @@ def supportingInfo(inputPath: Path, outputPath: Path) -> DataFrame:
 
     bar.finish()
 
-    resultsDf = DataFrame(results)
+    return urlList, dataTypeList
 
-    resultsDf.to_csv(outputPath, index=False)
 
-    return resultsDf
+def extractDomains(urlList: List[str], outputPath: Path) -> List[str]:
+    domains = []
+
+    for url in urlList:
+        try:
+            parsed_url = urlparse(url)
+            domain = parsed_url.netloc
+            domains.append(domain)
+        except Exception as e:
+            print(f"Error processing URL {url}: {e}")
+            domains.append("N/A")  # In case of an error, append "N/A"
+
+    # Save the domains to a CSV file
+    domains_df = pandas.DataFrame({"URL": urlList, "Domain": domains})
+    domains_df.to_csv(outputPath, index=False)
+
+    return domains
 
 
 @click.command()
@@ -137,7 +128,8 @@ def supportingInfo(inputPath: Path, outputPath: Path) -> DataFrame:
     help="Path to a csv file",
 )
 def main(inputPath: Path, outputPath: Path) -> None:
-    supportingInfo(inputPath, outputPath)
+    urlList: List = getUrls(inputPath)
+    extractDomains(urlList, outputPath)
 
 
 if __name__ == "__main__":
