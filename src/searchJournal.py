@@ -65,7 +65,7 @@ def main(outputPath: Path, journal: str) -> None:
 
     While the data outputted from this script can be leveraged independently, it is better to use this data in the following pipeline:
 
-    **aius-search** -> aius-extract-documents -> aius-filter-documents -> aius-sample-documents -> aius-download-documents
+    **aius-search-journal** -> aius-extract-documents -> aius-filter-documents -> aius-sample-documents -> aius-download-documents
     """  # noqa: E501
     ifFileExistsExit(fps=[outputPath])
 
