@@ -24,7 +24,6 @@ FIELD_FILTER: set[str] = {
     "Earth and Planetary Sciences",
     "Physics and Astronomy",
     "Chemistry",
-    "Materials Science",
 }
 
 
