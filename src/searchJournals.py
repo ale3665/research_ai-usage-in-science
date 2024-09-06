@@ -7,9 +7,9 @@ import click
 import pandas
 from pandas import DataFrame
 
-from src.classes import RELEVANT_YEARS, SEARCH_QUERIES
-from src.classes.journalGeneric import Journal_ABC
-from src.classes.plos import PLOS
+from src.journals import RELEVANT_YEARS, SEARCH_QUERIES
+from src.journals._generic import Journal_ABC
+from src.journals.plos import PLOS
 from src.utils import ifFileExistsExit
 
 MEGA_JOURNAL_HELP_TEMPLATE: Template = Template(
