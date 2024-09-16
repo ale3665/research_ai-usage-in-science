@@ -93,7 +93,7 @@ def runner(df: DataFrame, email: str) -> DataFrame:
                 topics=topics,
             )
             if isNaturalScienceDocument:
-                data.append(row.to_frame())
+                data.append(row.to_frame().T)
 
             bar.next()
 
@@ -158,7 +158,7 @@ def main(inputPath: Path, outputPath: Path, email: str) -> None:
         ignore_index=False,
     )
 
-    nsDocuments: DataFrame = runner(df=uniqueDF, email=email)
+    nsDocuments: Series = runner(df=uniqueDF, email=email)
 
     nsDocuments.to_parquet(path=outputPath, engine="pyarrow")
 
