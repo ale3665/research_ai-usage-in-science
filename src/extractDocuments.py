@@ -65,7 +65,7 @@ def extractDocuments(df: DataFrame) -> DataFrame:
     required=True,
     help="Apache Parquet file to write to containing search result documents",
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=True,
         readable=True,
         resolve_path=True,
