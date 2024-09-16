@@ -15,16 +15,6 @@ from src.classes.plos import PLOS
 from src.utils import extractDOIsFromHTML, ifFileExistsExit
 
 # TODO: Add filter lists for subfields and topics
-FIELD_FILTER: set[str] = {
-    "Agricultural and Biological Sciences",
-    "Environmental Science",
-    "Biochemistry Genetics and Molecular Biology",
-    "Immunology and Microbiology",
-    "Neuroscience",
-    "Earth and Planetary Sciences",
-    "Physics and Astronomy",
-    "Chemistry",
-}
 
 
 def getOpenAlexResults(df: DataFrame, email: str | None) -> DataFrame:
