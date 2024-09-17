@@ -81,9 +81,8 @@ def main(inputPath: Path, outputPath: Path) -> None:
     dfgb: DataFrameGroupBy = groupByYear(df=df)
 
     sampledDF: DataFrame = sampleDFs(dfgb=dfgb)
-    sampledDF.to_csv(path_or_buf=outputPath)
 
-    # sampledDF.to_parquet(path=outputPath, engine="pyarrow")
+    sampledDF.to_parquet(path=outputPath, engine="pyarrow")
 
 
 if __name__ == "__main__":
