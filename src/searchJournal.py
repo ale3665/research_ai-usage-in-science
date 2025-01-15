@@ -8,6 +8,7 @@ from pandas import DataFrame
 
 from src.journals._generic import Journal_ABC
 from src.journals.plos import PLOS
+from src.journals.science import Science
 from src.utils import ifFileExistsExit
 
 RELEVANT_YEARS: List[int] = list(range(2014, 2024))
@@ -82,10 +83,28 @@ def main(outputPath: Path, journal: str) -> None:
     """  # noqa: E501
     ifFileExistsExit(fps=[outputPath])
 
-    journalClass: Journal_ABC
+    journalClass: Journal_ABC | Science
     match journal:
         case "plos":
             journalClass = PLOS()
+        case "science":
+            journalClass = Science()
+            print(
+                """Due to section 6 subsection b of the AAAS Science terms of service (availible here: https://www.science.org/content/page/terms-service), we are unable to provide an automatic tool to extract or analyze the contents of the AAAS Science website (https://www.science.org).
+
+Therefore, we will not be providing a tool, the information to produce such as tool, or the raw, untransformed content of the AAAS Science website in any form.
+
+However, for manual analysis, the following URLs we do provide all of the necessary URLs to reproduce our work are now stored in `./science_urls.json`.
+            """  # noqa: E501
+            )
+
+            journalClass.generateURLs(
+                years=RELEVANT_YEARS,
+                queries=SEARCH_QUERIES,
+            ).to_json(path_or_buf="science_urls.json", indent=4)
+
+            exit(0)
+
         case _:
             exit(1)
 
