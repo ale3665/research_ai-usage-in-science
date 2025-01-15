@@ -20,9 +20,9 @@ package:
 		--onefile \
 		--add-data ./src/_version:. \
 		--workpath ./pyinstaller \
-		--name src \
+		--name aius-search-journal\
 		--hidden-import src \
-		src/main.py
+		src/searchJournal.py
 
 create-output-dir:
 	mkdir -p data/nature
@@ -32,6 +32,3 @@ create-output-dir:
 	mkdir -p data/nature/zettels
 	mkdir -p data/plos/zettels
 	mkdir -p data/science/zettels
-
-
-

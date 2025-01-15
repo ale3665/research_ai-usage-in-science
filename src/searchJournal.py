@@ -1,3 +1,4 @@
+import sys
 from itertools import product
 from pathlib import Path
 from typing import List
@@ -109,10 +110,10 @@ However, for manual analysis, the following URLs we do provide all of the necess
                 indent=4,
             )
 
-            exit(0)
+            sys.exit(0)
 
         case _:
-            exit(1)
+            sys.exit(1)
 
     df: DataFrame = runCollector(journal=journalClass)
 
