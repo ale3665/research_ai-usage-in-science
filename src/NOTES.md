@@ -11,6 +11,7 @@
     explaining why no tool is provided will be made when the user selects the
     Science option. Links to the appropriate pages will be made availible at the
     bottom of the notice.
+  - Done
 - Search queries and relevant years stored in ./search/__init__.
   - See how many files depend upon this path and migrate these to file specific
     global variables
