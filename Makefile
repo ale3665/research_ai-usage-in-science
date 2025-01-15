@@ -1,11 +1,11 @@
 build:
+	git --no-pager tag | tail -n 1 | xargs -I % poetry version %
+	poetry version --short > src/_version
 	poetry build
 	pip install dist/*.tar.gz
 
-build-docs:
-	sphinx-build --builder html src-docs build-docs
-
 create-dev:
+	pre-commit install
 	rm -rf env
 	python3.10 -m venv env
 	( \
@@ -15,8 +15,14 @@ create-dev:
 		deactivate; \
 	)
 
-create-docs:
-	sphinx-apidoc src --output-dir src-docs --maxdepth 100 --separate
+package:
+	pyinstaller --clean \
+		--onefile \
+		--add-data ./src/_version:. \
+		--workpath ./pyinstaller \
+		--name src \
+		--hidden-import src \
+		src/main.py
 
 create-output-dir:
 	mkdir -p data/nature
@@ -26,3 +32,6 @@ create-output-dir:
 	mkdir -p data/nature/zettels
 	mkdir -p data/plos/zettels
 	mkdir -p data/science/zettels
+
+
+
