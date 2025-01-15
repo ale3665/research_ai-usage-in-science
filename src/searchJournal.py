@@ -48,7 +48,9 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     "--journal",
     "journal",
     required=False,
-    type=click.Choice(choices=["plos"], case_sensitive=False),
+    type=click.Choice(
+        choices=["plos", "science", "nature"], case_sensitive=False
+    ),
     help="Journal to search for documents in",
     default="plos",
     show_default=True,
