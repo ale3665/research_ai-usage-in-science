@@ -1,5 +1,6 @@
 from string import Template
 from typing import List
+from urllib.parse import quote_plus
 
 from pandas import DataFrame
 
@@ -20,15 +21,17 @@ class Science:
 
         query: str
         for query in queries:
-            json[query] = []
+            key = query.replace('"', "")
+            json[key] = []
 
-        for query in queries:
             year: int
             for year in years:
-                json[query].append(
+                json[key].append(
                     self.searchURLTemplate.substitute(
                         year=year,
-                        query=query,
+                        query=quote_plus(
+                            string=query,
+                        ),
                     )
                 )
 

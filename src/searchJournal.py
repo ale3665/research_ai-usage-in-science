@@ -11,7 +11,7 @@ from src.journals.plos import PLOS
 from src.journals.science import Science
 from src.utils import ifFileExistsExit
 
-RELEVANT_YEARS: List[int] = list(range(2014, 2024))
+RELEVANT_YEARS: List[int] = list(range(2014, 2025))  # [2014, ..., 2025)
 
 SEARCH_QUERIES: List[str] = [
     r'"Deep Learning"',
@@ -101,7 +101,10 @@ However, for manual analysis, the following URLs we do provide all of the necess
             journalClass.generateURLs(
                 years=RELEVANT_YEARS,
                 queries=SEARCH_QUERIES,
-            ).to_json(path_or_buf="science_urls.json", indent=4)
+            ).to_json(
+                path_or_buf="science_urls.json",
+                indent=4,
+            )
 
             exit(0)
 
