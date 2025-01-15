@@ -8,8 +8,19 @@ from pandas import DataFrame
 
 from src.journals._generic import Journal_ABC
 from src.journals.plos import PLOS
-from src.search import RELEVANT_YEARS, SEARCH_QUERIES
 from src.utils import ifFileExistsExit
+
+RELEVANT_YEARS: List[int] = list(range(2014, 2024))
+
+SEARCH_QUERIES: List[str] = [
+    r'"Deep Learning"',
+    r'"Deep Neural Network"',
+    r'"Hugging Face"',
+    r'"HuggingFace"',
+    r'"Model Checkpoint"',
+    r'"Model Weights"',
+    r'"Pre-Trained Model"',
+]
 
 
 def runCollector(journal: Journal_ABC) -> DataFrame:

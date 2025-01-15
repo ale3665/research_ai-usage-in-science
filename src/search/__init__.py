@@ -1,21 +1,8 @@
-from datetime import datetime
 from typing import List, Type
 
 from requests import Response, get
 from requests.exceptions import ReadTimeout
 from typedframe import TypedDataFrame
-
-RELEVANT_YEARS: List[int] = list(range(2014, datetime.now().year + 1))
-
-SEARCH_QUERIES: List[str] = [
-    r'"Deep Learning"',
-    r'"Deep Neural Network"',
-    r'"Hugging Face"',
-    r'"HuggingFace"',
-    r'"Model Checkpoint"',
-    r'"Model Weights"',
-    r'"Pre-Trained Model"',
-]
 
 SEARCH_RESULTS_STOR: dict[str, List[str | int | bytes]] = {
     "year": [],
