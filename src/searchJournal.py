@@ -7,6 +7,7 @@ import pandas
 from pandas import DataFrame
 
 from src.journals._generic import Journal_ABC
+from src.journals.nature import Nature
 from src.journals.plos import PLOS
 from src.journals.science import Science
 from src.utils import ifFileExistsExit
@@ -85,6 +86,8 @@ def main(outputPath: Path, journal: str) -> None:
 
     journalClass: Journal_ABC | Science
     match journal:
+        case "nature":
+            journalClass = Nature()
         case "plos":
             journalClass = PLOS()
         case "science":

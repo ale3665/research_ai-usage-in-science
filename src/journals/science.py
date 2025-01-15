@@ -9,8 +9,8 @@ class Science:
     def __init__(self) -> None:
         self.journalName: str = "Science"
         self.searchURLTemplate: Template = Template(
-            "https://www.science.org/action/doSearch?AllField=${query}&ConceptID=505154&ConceptID=505172&AfterYear=${year}&BeforeYear=${year}&queryID=8%2F7249304983&sortBy=Earliest"  # noqa: E501
-        )
+            template="https://www.science.org/action/doSearch?AllField=${query}&ConceptID=505154&ConceptID=505172&AfterYear=${year}&BeforeYear=${year}&queryID=8%2F7249304983&sortBy=Earliest"  # noqa: E501
+        )  # noqa: E501
 
     def generateURLs(
         self,
