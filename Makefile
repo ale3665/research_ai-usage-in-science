@@ -22,7 +22,7 @@ package:
 		--workpath ./pyinstaller \
 		--name aius-search-journal\
 		--hidden-import src \
-		src/searchJournal.py
+		src/0_searchJournal.py
 
 create-output-dir:
 	mkdir -p data/nature
