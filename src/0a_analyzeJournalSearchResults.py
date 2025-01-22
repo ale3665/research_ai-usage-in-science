@@ -2,9 +2,11 @@ from collections import defaultdict
 from json import loads
 from pathlib import Path
 from pprint import pprint
+from typing import List
 
 import click
 import pandas
+from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
 
@@ -24,10 +26,29 @@ def countSearchResultsPerYear(df: DataFrame, journal: str) -> Series:
         )
 
         for _, row in uniqueSearchQueriesDF.iterrows():
+            count: int = 0
             if journal == "plos":
-                data[year] += int(
-                    loads(s=row["html"])["searchResults"]["numFound"]
+                count = int(loads(s=row["html"])["searchResults"]["numFound"])
+
+            if journal == "nature":
+                soup: BeautifulSoup = BeautifulSoup(
+                    markup=row["html"],
+                    features="lxml",
                 )
+                tags: ResultSet[Tag] = soup.find_all(
+                    name="span",
+                    attrs={"data-test": "results-data"},
+                )
+                try:
+                    content: str = tags[-1].text
+                except IndexError:
+                    count = 0
+                else:
+                    resultsContent: List[str] = content.split(sep="of")[-1]
+                    results = resultsContent.strip().split(sep=" ")[0]
+                    count = int(results)
+
+            data[year] += count
 
     return Series(data=data)
 
@@ -47,10 +68,30 @@ def countSearchResultsPerQuery(df: DataFrame, journal: str) -> Series:
         )
 
         for _, row in uniqueYearsDF.iterrows():
+            count: int = 0
+
             if journal == "plos":
-                data[query] += int(
-                    loads(s=row["html"])["searchResults"]["numFound"]
+                count = int(loads(s=row["html"])["searchResults"]["numFound"])
+
+            if journal == "nature":
+                soup: BeautifulSoup = BeautifulSoup(
+                    markup=row["html"],
+                    features="lxml",
                 )
+                tags: ResultSet[Tag] = soup.find_all(
+                    name="span",
+                    attrs={"data-test": "results-data"},
+                )
+                try:
+                    content: str = tags[-1].text
+                except IndexError:
+                    count = 0
+                else:
+                    resultsContent: List[str] = content.split(sep="of")[-1]
+                    results = resultsContent.strip().split(sep=" ")[0]
+                    count = int(results)
+
+            data[query] += count
 
     return Series(data=data)
 
@@ -71,10 +112,29 @@ def countSearchResultsPerYearPerQuery(df: DataFrame, journal: str) -> Series:
         )
 
         for _, row in uniqueSearchQueriesDF.iterrows():
+            count: int = 0
+
             if journal == "plos":
-                data[year][row["query"]] = int(
-                    loads(s=row["html"])["searchResults"]["numFound"]
+                count = int(loads(s=row["html"])["searchResults"]["numFound"])
+            if journal == "nature":
+                soup: BeautifulSoup = BeautifulSoup(
+                    markup=row["html"],
+                    features="lxml",
                 )
+                tags: ResultSet[Tag] = soup.find_all(
+                    name="span",
+                    attrs={"data-test": "results-data"},
+                )
+                try:
+                    content: str = tags[-1].text
+                except IndexError:
+                    count = 0
+                else:
+                    resultsContent: List[str] = content.split(sep="of")[-1]
+                    results = resultsContent.strip().split(sep=" ")[0]
+                    count = int(results)
+
+            data[year][row["query"]] = count
 
     return Series(data=data)
 
