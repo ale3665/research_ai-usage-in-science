@@ -27,6 +27,9 @@ def countSearchResultsPerYear(df: DataFrame, journal: str) -> Series:
 
         for _, row in uniqueSearchQueriesDF.iterrows():
             count: int = 0
+            if journal == "science":
+                count += row["count"]
+
             if journal == "plos":
                 count = int(loads(s=row["html"])["searchResults"]["numFound"])
 
@@ -69,6 +72,9 @@ def countSearchResultsPerQuery(df: DataFrame, journal: str) -> Series:
 
         for _, row in uniqueYearsDF.iterrows():
             count: int = 0
+
+            if journal == "science":
+                count += row["count"]
 
             if journal == "plos":
                 count = int(loads(s=row["html"])["searchResults"]["numFound"])
@@ -113,9 +119,12 @@ def countSearchResultsPerYearPerQuery(df: DataFrame, journal: str) -> Series:
 
         for _, row in uniqueSearchQueriesDF.iterrows():
             count: int = 0
+            if journal == "science":
+                count += row["count"]
 
             if journal == "plos":
                 count = int(loads(s=row["html"])["searchResults"]["numFound"])
+
             if journal == "nature":
                 soup: BeautifulSoup = BeautifulSoup(
                     markup=row["html"],
@@ -146,7 +155,7 @@ def countSearchResultsPerYearPerQuery(df: DataFrame, journal: str) -> Series:
     "journal",
     required=True,
     type=click.Choice(
-        choices=["plos", "nature"],
+        choices=["plos", "nature", "science"],
         case_sensitive=False,
     ),
     help="Search results journal name",
@@ -168,10 +177,15 @@ def countSearchResultsPerYearPerQuery(df: DataFrame, journal: str) -> Series:
     help="Document containing search results",
 )
 def main(journal: str, inputFP: Path) -> None:
-    df: DataFrame = pandas.read_parquet(
-        path=inputFP,
-        engine="pyarrow",
-    )
+    df: DataFrame
+
+    if journal == "science":
+        df = pandas.read_csv(filepath_or_buffer=inputFP)
+    else:
+        df = pandas.read_parquet(
+            path=inputFP,
+            engine="pyarrow",
+        )
 
     print(f"{journal} Data\n===")
     results: Series = countSearchResultsPerYear(df=df, journal=journal)
