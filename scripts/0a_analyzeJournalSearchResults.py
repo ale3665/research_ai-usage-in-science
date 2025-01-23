@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
 
+from src.types import SearchResultsDF
+
 
 def countSearchResultsPerYear(df: DataFrame, journal: str) -> Series:
     data: dict[int, int] = defaultdict(int)
@@ -181,11 +183,15 @@ def main(journal: str, inputFP: Path) -> None:
 
     if journal == "science":
         df = pandas.read_csv(filepath_or_buffer=inputFP)
+        df["query"] = df["query"].str.replace("“", '"')
+        df["query"] = df["query"].str.replace("”", '"')
     else:
         df = pandas.read_parquet(
             path=inputFP,
             engine="pyarrow",
         )
+
+    SearchResultsDF(df_dict=df.to_dict(orient="records"))
 
     print(f"{journal} Data\n===")
     results: Series = countSearchResultsPerYear(df=df, journal=journal)

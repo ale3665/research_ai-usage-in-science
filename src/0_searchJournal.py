@@ -11,6 +11,7 @@ from src.journals._generic import Journal_ABC
 from src.journals.nature import Nature
 from src.journals.plos import PLOS
 from src.journals.science import Science
+from src.types import SearchResultsDF
 from src.utils import ifFileExistsExit
 
 RELEVANT_YEARS: List[int] = list(range(2014, 2025))  # [2014, ..., 2025)
@@ -41,6 +42,8 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
         inplace=True,
         ignore_index=True,
     )
+
+    SearchResultsDF(df_dict=df.to_dict(orient="records"))
 
     return df
 
