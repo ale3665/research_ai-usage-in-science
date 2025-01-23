@@ -102,11 +102,30 @@ def runner(df: DataFrame, email: str) -> DataFrame:
 
 @click.command()
 @click.option(
+    "-e",
+    "--email",
+    "email",
+    required=True,
+    help="Email to access OpenAlex polite pool",
+    type=str,
+)
+@click.option(
+    "-j",
+    "--journal",
+    "journal",
+    required=True,
+    help="Journal of search results",
+    type=click.Choice(
+        choices=["plos", "nature"],
+        case_sensitive=False,
+    ),
+)
+@click.option(
     "-i",
     "--input",
     "inputPath",
     required=True,
-    help="Document metadata results in Apache Parquet format",
+    help="Search results file",
     type=click.Path(
         exists=True,
         file_okay=True,
@@ -129,15 +148,7 @@ def runner(df: DataFrame, email: str) -> DataFrame:
         path_type=Path,
     ),
 )
-@click.option(
-    "-e",
-    "--email",
-    "email",
-    required=True,
-    help="Email to access OpenAlex polite pool",
-    type=str,
-)
-def main(inputPath: Path, outputPath: Path, email: str) -> None:
+def main(email: str, journal: str, inputPath: Path, outputPath: Path) -> None:
     """
     Given the metadata of documents from a journal, output a Pandas DataFrame that of documents that are categorized as Natural Sciences by OpenAlex as a as an Apache Parquet file.
 
