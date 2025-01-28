@@ -31,6 +31,7 @@ langchain-ollama = "^0.1.1"
 fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.25.1"
 pydantic = "^2.10.5"
+ratelimiter = "^1.2.0.post0"
 
 [tool.black]
 line-length = 79

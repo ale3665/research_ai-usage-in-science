@@ -5,6 +5,7 @@ from typing import List
 
 import click
 import pandas
+import ratelimiter
 from pandas import DataFrame, Series
 from progress.bar import Bar
 from requests import Response, get
@@ -38,26 +39,46 @@ def extractDOIs(df: DataFrame, journal: str) -> DataFrame:
     return DataFrame(data=data)
 
 
-def queryOA(email: str, df: DataFrame) -> DataFrame:
-    data: dict[str, List] = {"status_code": [], "json": []}
+def createDOIChunks(df: DataFrame, chunkSize: int = 50) -> List[str]:
+    data: List[str] = []
+    dois: Series[str] = df["doi"]
+
+    chunks: List[Series[str]] = [
+        dois[i : i + chunkSize]  # noqa: E203
+        for i in range(
+            0,
+            len(dois),
+            chunkSize,
+        )
+    ]
+
+    chunk: Series[str]
+    for chunk in chunks:
+        data.append("|".join(chunk))
+
+    return data
+
+
+@ratelimiter.RateLimiter(max_calls=10, period=1)
+def queryOA(email: str, doiChunks: List[str]) -> DataFrame:
+    data: dict[str, List] = {"url": [], "status_code": [], "json": []}
 
     urlTemplate: Template = Template(
-        template="https://api.openalex.org/works/${doi}?mailto=" + email
+        template="https://api.openalex.org/works?per_page=100&filter=doi:${doi}&mailto="  # noqa: E501
+        + email
     )
 
-    with Bar("Querying OpenAlex...", max=df.shape[0]) as bar:
-        row: Series
-        for _, row in df.iterrows():
-            url: str = urlTemplate.substitute(doi=row["doi"])
+    with Bar("Querying OpenAlex...", max=len(doiChunks)) as bar:
+        dois: str
+        for dois in doiChunks:
+            url: str = urlTemplate.substitute(doi=dois)
             resp: Response = get(url=url, timeout=60)
+            data["url"].append(url)
             data["status_code"].append(resp.status_code)
             data["json"].append(resp.content)
             bar.next()
 
-    df["status_code"] = data["status_code"]
-    df["json"] = data["json"]
-
-    return df
+    return DataFrame(data=data)
 
 
 @click.command()
@@ -114,8 +135,11 @@ def main(email: str, journal: str, inputFP: Path, outputFP: Path) -> None:
 
     df: DataFrame = pandas.read_parquet(path=inputFP, engine="pyarrow")
 
-    df: DataFrame = extractDOIs(df=df, journal=journal)
-    df = queryOA(email=email, df=df)
+    doiDF: DataFrame = extractDOIs(df=df, journal=journal)
+
+    doiChunks: List[str] = createDOIChunks(df=doiDF)
+
+    df: DataFrame = queryOA(email=email, doiChunks=doiChunks)
 
     df.to_parquet(path=outputFP, engine="pyarrow")
 

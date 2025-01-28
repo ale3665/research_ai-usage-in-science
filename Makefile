@@ -23,6 +23,14 @@ package:
 		--name aius-search-journal\
 		--hidden-import src \
 		src/0_searchJournal.py
+	pyinstaller --clean \
+		--onefile \
+		--add-data ./src/_version:. \
+		--workpath ./pyinstaller \
+		--name aius-query-oa\
+		--hidden-import src \
+		src/1_queryOA.py
+
 
 create-output-dir:
 	mkdir -p data/nature
