@@ -30,6 +30,14 @@ package:
 		--name aius-query-oa\
 		--hidden-import src \
 		src/1_queryOA.py
+	pyinstaller --clean \
+		--onefile \
+		--add-data ./src/_version:. \
+		--workpath ./pyinstaller \
+		--name aius-filter-documents\
+		--hidden-import src \
+		src/2_filterDocs.py
+
 
 
 create-output-dir:
