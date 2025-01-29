@@ -62,6 +62,7 @@ def initialize(fp: Path) -> DB:
     ifFileExistsExit(fps=[fp])
     db: DB = DB(fp=fp)
     db.createTables()
+    db.writeConstants()
     return db
 
 

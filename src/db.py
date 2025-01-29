@@ -12,6 +12,8 @@ from sqlalchemy import (
     create_engine,
 )
 
+from src import JOURNALS, SEARCH_KEYWORDS, YEARS
+
 
 class DB:
     def __init__(self, fp: Path) -> None:
@@ -62,3 +64,26 @@ class DB:
         )
 
         self.metadata.create_all(bind=self.engine, checkfirst=True)
+
+    def writeConstants(self) -> None:
+        YEARS.to_sql(
+            name="years",
+            con=self.engine,
+            if_exists="append",
+            index=True,
+            index_label="id",
+        )
+        SEARCH_KEYWORDS.to_sql(
+            name="keywords",
+            con=self.engine,
+            if_exists="append",
+            index=True,
+            index_label="id",
+        )
+        JOURNALS.to_sql(
+            name="journals",
+            con=self.engine,
+            index=True,
+            if_exists="append",
+            index_label="id",
+        )
