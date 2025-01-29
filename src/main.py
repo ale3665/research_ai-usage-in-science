@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 from pathlib import Path
 from typing import Any
 
+from src import searchFunc
 from src.db import DB
 from src.utils import ifFileExistsExit
 
@@ -57,14 +58,21 @@ def cliParser() -> Namespace:
     return parser.parse_args()
 
 
-def initialize(fp: Path) -> None:
+def initialize(fp: Path) -> DB:
     ifFileExistsExit(fps=[fp])
-    DB(fp=fp).createTables()
+    db: DB = DB(fp=fp)
+    db.createTables()
+    return db
 
 
 def search(fp: Path, journal: str) -> None:
-    initialize(fp=fp)
-    print(fp, journal)
+    match journal:
+        case "nature":
+            pass
+        case "plos":
+            pass
+        case "science":
+            searchFunc.science()
 
 
 def main() -> None:
@@ -81,7 +89,8 @@ def main() -> None:
         case "init":
             initialize(fp=args["init.db"])
         case "search":
-            search(fp=args["search.db"], journal=args["search.journal"])
+            print(args)
+            search(fp=args["search.db"], journal=args["search.journal"][0])
 
     sys.exit(0)
 
