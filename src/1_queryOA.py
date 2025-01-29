@@ -36,7 +36,14 @@ def extractDOIs(df: DataFrame, journal: str) -> DataFrame:
                 data["journal"].append(row["journal"])
                 data["doi"].append(f"https://doi.org/{doc['id']}")
 
-    return DataFrame(data=data)
+    dataDF: DataFrame = DataFrame(data=data)
+
+    return dataDF.drop_duplicates(
+        subset="doi",
+        keep="first",
+        inplace=True,
+        ignore_index=True,
+    )
 
 
 def createDOIChunks(df: DataFrame, chunkSize: int = 50) -> List[str]:
