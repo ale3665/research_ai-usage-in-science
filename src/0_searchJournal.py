@@ -77,15 +77,6 @@ def runCollector(journal: Journal_ABC) -> DataFrame:
     ),
 )
 def main(outputPath: Path, journal: str) -> None:
-    """
-    Searches through a given journal and outputs a Pandas DataFrame stored as an Apache Parquet file with the search results.
-
-    These search results are the raw outputs of the search meant to be post-processed for usage in other scripts.
-
-    While the data outputted from this script can be leveraged independently, it is better to use this data in the following pipeline:
-
-    **aius-search-journal** -> aius-query-oa -> aius-filter-documents
-    """  # noqa: E501
     ifFileExistsExit(fps=[outputPath])
 
     journalClass: Journal_ABC | Science
@@ -97,12 +88,19 @@ def main(outputPath: Path, journal: str) -> None:
         case "science":
             journalClass = Science()
             print(
-                """Due to section 6 subsection b of the AAAS Science terms of service (availible here: https://www.science.org/content/page/terms-service), we are unable to provide an automatic tool to extract or analyze the contents of the AAAS Science website (https://www.science.org).
+                """
+Due to section 6 subsection b of the AAAS Science terms of service
+(availible here: https://www.science.org/content/page/terms-service), we are
+unable to provide an automatic tool to extract or analyze the contents of the
+AAAS Science website (https://www.science.org).
 
-Therefore, we will not be providing a tool, the information to produce such as tool, or the raw, untransformed content of the AAAS Science website in any form.
+Therefore, we will not be providing a tool, the information to produce such a
+tool, or the raw, untransformed content of the AAAS Science website in any
+form.
 
-However, for manual analysis, the following URLs we do provide all of the necessary URLs to reproduce our work are now stored in `./science_urls.json`.
-            """  # noqa: E501
+However, for manual analysis, the following URLs we do provide all of the
+necessary URLs to reproduce our work are now stored in `./science_urls.json`.
+"""
             )
 
             journalClass.generateURLs(
