@@ -3,6 +3,8 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 from pathlib import Path
 from typing import Any
 
+from pandas import DataFrame
+
 from src import searchFunc
 from src.db import DB
 from src.utils import ifFileExistsExit
@@ -67,13 +69,27 @@ def initialize(fp: Path) -> DB:
 
 
 def search(fp: Path, journal: str) -> None:
+    df: DataFrame | None = None
+
+    db: DB = DB(fp=fp)
+
     match journal:
         case "nature":
-            pass
+            df = searchFunc.nature()
         case "plos":
-            pass
+            df = searchFunc.plos()
         case "science":
             searchFunc.science()
+            return None
+        case _:
+            return None
+
+    df.to_sql(
+        name="search_responses",
+        con=db.engine,
+        if_exists="append",
+        index=False,
+    )
 
 
 def main() -> None:
@@ -88,10 +104,9 @@ def main() -> None:
 
     match arg:
         case "init":
-            initialize(fp=args["init.db"])
+            initialize(fp=args["init.db"][0])
         case "search":
-            print(args)
-            search(fp=args["search.db"], journal=args["search.journal"][0])
+            search(fp=args["search.db"][0], journal=args["search.journal"][0])
 
     sys.exit(0)
 

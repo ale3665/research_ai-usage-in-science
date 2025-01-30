@@ -5,7 +5,6 @@ import pandas
 from pandas import DataFrame
 
 from src import SEARCH_KEYWORDS, YEARS
-from src.db import DB
 from src.journals.nature import Nature
 from src.journals.plos import PLOS
 from src.journals.science import Science
@@ -42,13 +41,9 @@ def science() -> None:
     print(journal.message)
 
 
-def nature(db: DB) -> None:
-    journal: Nature = Nature()
-    df: DataFrame = _run(journal=journal)
-    print(df)
+def nature() -> DataFrame:
+    return _run(journal=Nature())
 
 
-def plos(db: DB) -> None:
-    journal: PLOS = PLOS()
-    df: DataFrame = _run(journal=journal)
-    print(df)
+def plos() -> DataFrame:
+    return _run(journal=PLOS())

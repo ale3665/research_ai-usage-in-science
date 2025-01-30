@@ -22,38 +22,38 @@ class DB:
         self.metadata: MetaData = MetaData()
 
     def createTables(self) -> None:
-        years: Table = Table(
+        _: Table = Table(
             "years",
             self.metadata,
-            Column("id", Integer, primary_key=True),
+            Column("id", Integer, primary_key=True, autoincrement=True),
             Column("year", Integer, nullable=False),
         )
 
-        keywords: Table = Table(
+        _: Table = Table(
             "keywords",
             self.metadata,
-            Column("id", Integer, primary_key=True),
+            Column("id", Integer, primary_key=True, autoincrement=True),
             Column("keyword", String, nullable=False),
         )
 
-        journals: Table = Table(
+        _: Table = Table(
             "journals",
             self.metadata,
-            Column("id", Integer, primary_key=True),
+            Column("id", Integer, primary_key=True, autoincrement=True),
             Column("journal", String, nullable=False),
         )
 
-        documents: Table = Table(
+        _: Table = Table(
             "documents",
             self.metadata,
-            Column("id", Integer, primary_key=True),
+            Column("id", Integer, primary_key=True, autoincrement=True),
             Column("doi", String, nullable=False),
         )
 
-        searchResults: Table = Table(
+        _: Table = Table(
             "search_results",
             self.metadata,
-            Column("id", Integer, primary_key=True),
+            Column("id", Integer, primary_key=True, autoincrement=True),
             Column(
                 "document_id",
                 Integer,
@@ -61,6 +61,39 @@ class DB:
                 nullable=False,
             ),
             Column("response_id", Integer, nullable=False),
+        )
+
+        _: Table = Table(
+            "search_responses",
+            self.metadata,
+            Column("id", Integer, primary_key=True, autoincrement=True),
+            Column(
+                "year",
+                Integer,
+                ForeignKey("years.id"),
+                nullable=False,
+            ),
+            Column(
+                "query",
+                Integer,
+                ForeignKey("query.id"),
+                nullable=False,
+            ),
+            Column(
+                "journal",
+                Integer,
+                ForeignKey("journal.id"),
+                nullable=False,
+            ),
+            Column(
+                "journal",
+                Integer,
+                ForeignKey("journal.id"),
+                nullable=False,
+            ),
+            Column("page", Integer, nullable=False),
+            Column("status_code", Integer, nullable=False),
+            Column("html", String, nullable=False),
         )
 
         self.metadata.create_all(bind=self.engine, checkfirst=True)
