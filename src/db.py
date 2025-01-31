@@ -1,6 +1,8 @@
 from os.path import abspath
 from pathlib import Path
 
+import pandas
+from pandas import DataFrame
 from sqlalchemy import (
     Column,
     Engine,
@@ -74,23 +76,18 @@ class DB:
                 nullable=False,
             ),
             Column(
-                "query",
+                "keyword",
                 Integer,
-                ForeignKey("query.id"),
+                ForeignKey("keywords.id"),
                 nullable=False,
             ),
             Column(
                 "journal",
                 Integer,
-                ForeignKey("journal.id"),
+                ForeignKey("journals.id"),
                 nullable=False,
             ),
-            Column(
-                "journal",
-                Integer,
-                ForeignKey("journal.id"),
-                nullable=False,
-            ),
+            Column("url", String, nullable=False),
             Column("page", Integer, nullable=False),
             Column("status_code", Integer, nullable=False),
             Column("html", String, nullable=False),
@@ -119,4 +116,11 @@ class DB:
             index=True,
             if_exists="append",
             index_label="id",
+        )
+
+    def readTableToDF(self, table: str) -> DataFrame:
+        return pandas.read_sql_table(
+            table_name=table,
+            con=self.engine,
+            index_col="id",
         )

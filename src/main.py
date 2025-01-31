@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 from pathlib import Path
 from typing import Any
 
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 from src import searchFunc
 from src.db import DB
@@ -68,6 +68,24 @@ def initialize(fp: Path) -> DB:
     return db
 
 
+def _mapDFIndexToDFValue(
+    df1: DataFrame,
+    df2: DataFrame,
+    c1: str,
+    c2: str,
+) -> DataFrame:
+    """
+    Modifies df2 in place
+    """
+    replacementValues: Series = df1[c1]
+
+    val: Any
+    for val in replacementValues:
+        df2.loc[df2[c2] == val, c2] = int(
+            replacementValues[replacementValues == val].index[0]
+        )
+
+
 def search(fp: Path, journal: str) -> None:
     df: DataFrame | None = None
 
@@ -83,6 +101,26 @@ def search(fp: Path, journal: str) -> None:
             return None
         case _:
             return None
+
+    df.rename(columns={"query": "keyword"}, inplace=True)
+
+    yearsDF: DataFrame = db.readTableToDF(table="years")
+    keywordsDF: DataFrame = db.readTableToDF(table="keywords")
+    journalsDF: DataFrame = db.readTableToDF(table="journals")
+
+    _mapDFIndexToDFValue(yearsDF, df, "year", "year")
+    _mapDFIndexToDFValue(
+        keywordsDF,
+        df,
+        "keyword",
+        "keyword",
+    )
+    _mapDFIndexToDFValue(
+        journalsDF,
+        df,
+        "journal",
+        "journal",
+    )
 
     df.to_sql(
         name="search_responses",
