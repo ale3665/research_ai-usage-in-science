@@ -89,6 +89,7 @@ class DB:
             ),
             Column("url", String, nullable=False),
             Column("page", Integer, nullable=False),
+            Column("count", Integer, default=-1, nullable=False),
             Column("status_code", Integer, nullable=False),
             Column("html", String, nullable=False),
         )
