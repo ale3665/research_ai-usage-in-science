@@ -102,6 +102,8 @@ def search(fp: Path, journal: str) -> None:
         case _:
             return None
 
+    print(df.shape)
+
     df.rename(columns={"query": "keyword"}, inplace=True)
 
     yearsDF: DataFrame = db.readTableToDF(table="years")

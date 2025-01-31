@@ -1,3 +1,4 @@
+from collections import defaultdict
 from json import loads
 from string import Template
 from typing import List
@@ -8,7 +9,7 @@ from progress.bar import Bar
 from requests import Response
 
 from src.journals._generic import Journal_ABC
-from src.search import SEARCH_RESULTS_STOR, Search, SearchResultDataFrameSchema
+from src.search import Search, SearchResultDataFrameSchema
 from src.utils import formatText
 
 
@@ -18,12 +19,13 @@ class Nature(Journal_ABC):
         self.paperURLTemplate: Template = Template(
             template="https://journals.plos.org/plosone/article?id=${paperID}"
         )  # noqa: E501
+        # TODO: Fix template URL
         self.searchURLTemplate: Template = Template(
             template="https://www.nature.com/search?q=${query}&order=date_desc&article_type=research&date_range=${year}-${year}&page=${page}"  # noqa: E501
         )
 
     def searchJournal(self, query: str, year: int) -> DataFrame:
-        data: dict[str, List[str | int | bytes]] = SEARCH_RESULTS_STOR.copy()
+        data: defaultdict[str, list] = defaultdict(list)
         page: int = 1
         maxPage: int = 1
 
@@ -66,7 +68,11 @@ class Nature(Journal_ABC):
                 bar.next()
                 page += 1
 
-        return SearchResultDataFrameSchema(df=DataFrame(data=data)).df
+        df: DataFrame = DataFrame(data=data)
+
+        SearchResultDataFrameSchema(df=df)
+
+        return df
 
     def extractPaperURLsFromSearchResult(self, respContent: str) -> List[str]:
         data: List[str] = []

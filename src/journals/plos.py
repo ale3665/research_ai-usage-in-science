@@ -1,3 +1,4 @@
+from collections import defaultdict
 from json import loads
 from math import ceil
 from string import Template
@@ -9,7 +10,7 @@ from progress.bar import Bar
 from requests import Response
 
 from src.journals._generic import Journal_ABC
-from src.search import SEARCH_RESULTS_STOR, Search, SearchResultDataFrameSchema
+from src.search import Search, SearchResultDataFrameSchema
 from src.utils import formatText
 
 
@@ -24,7 +25,7 @@ class PLOS(Journal_ABC):
         )
 
     def searchJournal(self, query: str, year: int) -> DataFrame:
-        data: dict[str, List[str | int | bytes]] = SEARCH_RESULTS_STOR.copy()
+        data: defaultdict[str, list] = defaultdict(list)
         page: int = 1
         maxPage: int = 1
 
@@ -62,7 +63,11 @@ class PLOS(Journal_ABC):
                 bar.next()
                 page += 1
 
-        return SearchResultDataFrameSchema(df=DataFrame(data=data)).df
+        df: DataFrame = DataFrame(data=data)
+
+        SearchResultDataFrameSchema(df=df)
+
+        return df
 
     def extractPaperURLsFromSearchResult(self, respContent: str) -> List[str]:
         data: List[str] = []
