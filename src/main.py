@@ -3,13 +3,14 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 from pathlib import Path
 from typing import Any
 
+import pandas
 from pandas import DataFrame, Series
 
 from src import searchFunc
 from src.db import DB
 from src.utils import ifFileExistsExit
 
-COMMANDS: set[str] = {"init", "search"}
+COMMANDS: set[str] = {"init", "search", "load"}
 
 
 def cliParser() -> Namespace:
@@ -57,6 +58,28 @@ def cliParser() -> Namespace:
         dest="search.journal",
     )
 
+    loadParser: ArgumentParser = subparser.add_parser(
+        name="load",
+        help="Load Science Journal Data (Step 2)",
+    )
+    loadParser.add_argument(
+        "-d",
+        "--db",
+        nargs=1,
+        default=Path("aius.sqlite3"),
+        type=Path,
+        help="Path to AIUS SQLite3 database",
+        dest="load.db",
+    )
+    loadParser.add_argument(
+        "-i",
+        "--input",
+        nargs=1,
+        default=Path("./science.csv"),
+        type=Path,
+        help="Path to CSV file with Science data stored",
+        dest="load.input",
+    )
     return parser.parse_args()
 
 
@@ -102,8 +125,6 @@ def search(fp: Path, journal: str) -> None:
         case _:
             return None
 
-    print(df.shape)
-
     df.rename(columns={"query": "keyword"}, inplace=True)
 
     yearsDF: DataFrame = db.readTableToDF(table="years")
@@ -132,6 +153,33 @@ def search(fp: Path, journal: str) -> None:
     )
 
 
+def load(dbFP: Path, inputFP: Path) -> None:
+    db: DB = DB(fp=dbFP)
+
+    df: DataFrame = pandas.read_csv(filepath_or_buffer=inputFP)
+    df.rename(columns={"query": "keyword"}, inplace=True)
+
+    yearsDF: DataFrame = db.readTableToDF(table="years")
+    keywordsDF: DataFrame = db.readTableToDF(table="keywords")
+    journalsDF: DataFrame = db.readTableToDF(table="journals")
+
+    _mapDFIndexToDFValue(yearsDF, df, "year", "year")
+    _mapDFIndexToDFValue(
+        keywordsDF,
+        df,
+        "keyword",
+        "keyword",
+    )
+    _mapDFIndexToDFValue(
+        journalsDF,
+        df,
+        "journal",
+        "journal",
+    )
+
+    print(df)
+
+
 def main() -> None:
     args: dict[str, Any] = cliParser().__dict__
 
@@ -147,6 +195,8 @@ def main() -> None:
             initialize(fp=args["init.db"][0])
         case "search":
             search(fp=args["search.db"][0], journal=args["search.journal"][0])
+        case "load":
+            load(dbFP=args["load.db"][0], inputFP=args["load.input"][0])
 
     sys.exit(0)
 
