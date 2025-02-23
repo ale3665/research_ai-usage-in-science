@@ -9,8 +9,11 @@ from pandas import DataFrame, Series
 from src import searchFunc
 from src.db import DB
 from src.utils import ifFileExistsExit
+from typing import List
+from progress.bar import Bar
+from bs4 import BeautifulSoup
 
-COMMANDS: set[str] = {"init", "search", "load"}
+COMMANDS: set[str] = {"init", "search", "ed"}
 
 
 def cliParser() -> Namespace:
@@ -58,28 +61,20 @@ def cliParser() -> Namespace:
         dest="search.journal",
     )
 
-    loadParser: ArgumentParser = subparser.add_parser(
-        name="load",
-        help="Load Science Journal Data (Step 2)",
+    edParser: ArgumentParser = subparser.add_parser(
+        name="extract-documents",
+        help="Extract Documents From Search Responses (Step 2)",
     )
-    loadParser.add_argument(
+    edParser.add_argument(
         "-d",
         "--db",
         nargs=1,
         default=Path("aius.sqlite3"),
         type=Path,
         help="Path to AIUS SQLite3 database",
-        dest="load.db",
+        dest="ed.db",
     )
-    loadParser.add_argument(
-        "-i",
-        "--input",
-        nargs=1,
-        default=Path("./science.csv"),
-        type=Path,
-        help="Path to CSV file with Science data stored",
-        dest="load.input",
-    )
+
     return parser.parse_args()
 
 
@@ -153,31 +148,26 @@ def search(fp: Path, journal: str) -> None:
     )
 
 
-def load(dbFP: Path, inputFP: Path) -> None:
-    db: DB = DB(fp=dbFP)
+def extractDocuments(fp: Path) -> None:
+    data: List[DataFrame] = []
+    db: DB = DB(fp=fp)
+    respDF: DataFrame = pandas.read_sql_table(table_name="search_responses", con=db.engine, index_col="id",)
 
-    df: DataFrame = pandas.read_csv(filepath_or_buffer=inputFP)
-    df.rename(columns={"query": "keyword"}, inplace=True)
+    row: Series
+    with Bar("Extracting documents from search responses...", max=respDF.shape[0]) as bar:
+        for _, row in respDF.iterrows():
+            match row["journal"]:
+                case 0:
+                    soup:
 
-    yearsDF: DataFrame = db.readTableToDF(table="years")
-    keywordsDF: DataFrame = db.readTableToDF(table="keywords")
-    journalsDF: DataFrame = db.readTableToDF(table="journals")
+                case 1:
+                    pass
+                case _:
+                    return None
 
-    _mapDFIndexToDFValue(yearsDF, df, "year", "year")
-    _mapDFIndexToDFValue(
-        keywordsDF,
-        df,
-        "keyword",
-        "keyword",
-    )
-    _mapDFIndexToDFValue(
-        journalsDF,
-        df,
-        "journal",
-        "journal",
-    )
 
-    print(df)
+
+
 
 
 def main() -> None:
@@ -195,8 +185,8 @@ def main() -> None:
             initialize(fp=args["init.db"][0])
         case "search":
             search(fp=args["search.db"][0], journal=args["search.journal"][0])
-        case "load":
-            load(dbFP=args["load.db"][0], inputFP=args["load.input"][0])
+        case "ed":
+            extractDocuments(fp=args["ed.db"][0])
 
     sys.exit(0)
 

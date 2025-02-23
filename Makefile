@@ -16,27 +16,35 @@ create-dev:
 	)
 
 package:
+	# pyinstaller --clean \
+	# 	--onefile \
+	# 	--add-data ./src/_version:. \
+	# 	--workpath ./pyinstaller \
+	# 	--name aius-search-journal\
+	# 	--hidden-import src \
+	# 	src/0_searchJournal.py
+	# pyinstaller --clean \
+	# 	--onefile \
+	# 	--add-data ./src/_version:. \
+	# 	--workpath ./pyinstaller \
+	# 	--name aius-query-oa\
+	# 	--hidden-import src \
+	# 	src/1_queryOA.py
+	# pyinstaller --clean \
+	# 	--onefile \
+	# 	--add-data ./src/_version:. \
+	# 	--workpath ./pyinstaller \
+	# 	--name aius-filter-documents\
+	# 	--hidden-import src \
+	# 	src/2_filterDocs.py
 	pyinstaller --clean \
 		--onefile \
 		--add-data ./src/_version:. \
 		--workpath ./pyinstaller \
-		--name aius-search-journal\
+		--name aius\
 		--hidden-import src \
-		src/0_searchJournal.py
-	pyinstaller --clean \
-		--onefile \
-		--add-data ./src/_version:. \
-		--workpath ./pyinstaller \
-		--name aius-query-oa\
-		--hidden-import src \
-		src/1_queryOA.py
-	pyinstaller --clean \
-		--onefile \
-		--add-data ./src/_version:. \
-		--workpath ./pyinstaller \
-		--name aius-filter-documents\
-		--hidden-import src \
-		src/2_filterDocs.py
+		src/main.py
+
 
 
 
