@@ -1,17 +1,18 @@
 import sys
 from argparse import ArgumentParser, Namespace, _SubParsersAction
+from collections import defaultdict
+from json import loads
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import pandas
+from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame, Series
+from progress.bar import Bar
 
 from src import searchFunc
 from src.db import DB
 from src.utils import ifFileExistsExit
-from typing import List
-from progress.bar import Bar
-from bs4 import BeautifulSoup
 
 COMMANDS: set[str] = {"init", "search", "ed"}
 
@@ -149,25 +150,79 @@ def search(fp: Path, journal: str) -> None:
 
 
 def extractDocuments(fp: Path) -> None:
-    data: List[DataFrame] = []
+    NATURE_DOI: str = "10.1038/"
+    dfs: List[DataFrame] = []
+
     db: DB = DB(fp=fp)
-    respDF: DataFrame = pandas.read_sql_table(table_name="search_responses", con=db.engine, index_col="id",)
+
+    respDF: DataFrame = pandas.read_sql_table(
+        table_name="search_responses",
+        con=db.engine,
+        index_col="id",
+    )
 
     row: Series
-    with Bar("Extracting documents from search responses...", max=respDF.shape[0]) as bar:
-        for _, row in respDF.iterrows():
+    with Bar(
+        "Extracting documents from search responses...", max=respDF.shape[0]
+    ) as bar:
+        for idx, row in respDF.iterrows():
+            data: defaultdict[str, List[str | int]] = defaultdict(list)
             match row["journal"]:
                 case 0:
-                    soup:
+                    soup: BeautifulSoup = BeautifulSoup(
+                        markup=row["html"],
+                        features="lxml",
+                    )
+                    tags: ResultSet[Tag] = soup.find_all(
+                        name="a",
+                        attrs={"class": "c-card__link"},
+                    )
 
+                    tag: Tag
+                    for tag in tags:
+                        url: str = tag.get(key="href")
+                        doi: str = NATURE_DOI + url.split("/")[-1]
+                        data["document_id"].append(doi)
+                        data["response_id"].append(idx)
                 case 1:
-                    pass
+                    json: dict[str, Any] = loads(row["html"])
+                    docs: List[dict[str, Any]] = json["searchResults"]["docs"]
+
+                    doc: dict[str, Any]
+                    for doc in docs:
+                        doi: str = doc["id"]
+                        data["document_id"].append(doi)
+                        data["response_id"].append(idx)
                 case _:
                     return None
+            dfs.append(DataFrame(data=data))
+            bar.next()
 
+    searchResultsDF: DataFrame = pandas.concat(objs=dfs, ignore_index=True)
+    documentsDF: DataFrame = DataFrame(
+        data=searchResultsDF["document_id"].unique(),
+        columns=["doi"],
+    )
 
+    print("Mapping unique document IDs to search results DF...")
+    _mapDFIndexToDFValue(
+        df1=documentsDF, df2=searchResultsDF, c1="doi", c2="document_id"
+    )
 
-
+    documentsDF.to_sql(
+        name="documents",
+        con=db.engine,
+        if_exists="append",
+        index=True,
+        index_label="id",
+    )
+    searchResultsDF.to_sql(
+        name="search_results",
+        con=db.engine,
+        if_exists="append",
+        index=True,
+        index_label="id",
+    )
 
 
 def main() -> None:
