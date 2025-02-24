@@ -49,7 +49,7 @@ class DB:
             "documents",
             self.metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
-            Column("doi", String, nullable=False),
+            Column("doi", String, nullable=False, unique=True),
         )
 
         _: Table = Table(
@@ -89,6 +89,21 @@ class DB:
             ),
             Column("url", String, nullable=False),
             Column("page", Integer, nullable=False),
+            Column("status_code", Integer, nullable=False),
+            Column("html", String, nullable=False),
+        )
+
+        _: Table = Table(
+            "openalex_responses",
+            self.metadata,
+            Column("id", Integer, primary_key=True, autoincrement=True),
+            Column(
+                "document_id",
+                Integer,
+                ForeignKey("documents.id"),
+                nullable=False,
+            ),
+            Column("url", String, nullable=False),
             Column("status_code", Integer, nullable=False),
             Column("html", String, nullable=False),
         )
