@@ -114,23 +114,17 @@ class DB:
         YEARS.to_sql(
             name="years",
             con=self.engine,
-            if_exists="append",
-            index=True,
-            index_label="id",
+            index=False,
         )
         SEARCH_KEYWORDS.to_sql(
             name="keywords",
             con=self.engine,
-            if_exists="append",
-            index=True,
-            index_label="id",
+            index=False,
         )
         JOURNALS.to_sql(
             name="journals",
             con=self.engine,
-            index=True,
-            if_exists="append",
-            index_label="id",
+            index=False,
         )
 
     def readTableToDF(self, table: str) -> DataFrame:
