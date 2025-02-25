@@ -1,7 +1,8 @@
 import sys
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 from collections import defaultdict
-from json import loads
+from json import dumps, loads
+from math import ceil
 from pathlib import Path
 from typing import Any, List
 
@@ -9,12 +10,13 @@ import pandas
 from bs4 import BeautifulSoup, ResultSet, Tag
 from pandas import DataFrame, Series
 from progress.bar import Bar
+from requests import Response, get
 
 from src import searchFunc
 from src.db import DB
 from src.utils import ifFileExistsExit
 
-COMMANDS: set[str] = {"init", "search", "ed"}
+COMMANDS: set[str] = {"init", "search", "ed", "oa"}
 
 
 def cliParser() -> Namespace:
@@ -76,6 +78,28 @@ def cliParser() -> Namespace:
         dest="ed.db",
     )
 
+    oaParser: ArgumentParser = subparser.add_parser(
+        name="openalex",
+        help="Get Document Metadata From OpenAlex (Step 3)",
+    )
+    oaParser.add_argument(
+        "-d",
+        "--db",
+        nargs=1,
+        default=Path("aius.sqlite3"),
+        type=Path,
+        help="Path to AIUS SQLite3 database",
+        dest="oa.db",
+    )
+    oaParser.add_argument(
+        "-e",
+        "--email",
+        nargs=1,
+        type=str,
+        help="Email address to access OpenAlex polite pool",
+        dest="oa.email",
+    )
+
     return parser.parse_args()
 
 
@@ -92,7 +116,7 @@ def _mapDFIndexToDFValue(
     df2: DataFrame,
     c1: str,
     c2: str,
-) -> DataFrame:
+) -> None:
     """
     Modifies df2 in place
     """
@@ -163,7 +187,8 @@ def extractDocuments(fp: Path) -> None:
 
     row: Series
     with Bar(
-        "Extracting documents from search responses...", max=respDF.shape[0]
+        "Extracting documents from search responses...",
+        max=respDF.shape[0],
     ) as bar:
         for idx, row in respDF.iterrows():
             data: defaultdict[str, List[str | int]] = defaultdict(list)
@@ -199,29 +224,102 @@ def extractDocuments(fp: Path) -> None:
             bar.next()
 
     searchResultsDF: DataFrame = pandas.concat(objs=dfs, ignore_index=True)
+
     documentsDF: DataFrame = DataFrame(
         data=searchResultsDF["document_id"].unique(),
         columns=["doi"],
     )
 
-    print("Mapping unique document IDs to search results DF...")
     _mapDFIndexToDFValue(
-        df1=documentsDF, df2=searchResultsDF, c1="doi", c2="document_id"
+        df1=documentsDF,
+        df2=searchResultsDF,
+        c1="doi",
+        c2="document_id",
     )
 
     documentsDF.to_sql(
         name="documents",
         con=db.engine,
         if_exists="append",
-        index=True,
-        index_label="id",
+        index=False,
     )
     searchResultsDF.to_sql(
         name="search_results",
         con=db.engine,
         if_exists="append",
-        index=True,
-        index_label="id",
+        index=False,
+    )
+
+
+def getOpenAlexMetadata(fp: Path, email: str, doiCount: int = 25) -> None:
+    DOI_URL: str = "https://doi.org/"
+    dfs: List[DataFrame] = []
+
+    db: DB = DB(fp=fp)
+
+    documentDF: DataFrame = pandas.read_sql_table(
+        table_name="documents",
+        con=db.engine,
+        index_col="id",
+    )
+
+    documentDF["doi_url"] = documentDF["doi"].apply(lambda x: DOI_URL + x)
+
+    idx: int
+    with Bar(
+        "Getting document metadata from PLOS...",
+        max=ceil(documentDF.shape[0] / 25),
+    ) as bar:
+        for idx in range(0, documentDF.shape[0], doiCount):
+            data: defaultdict[str, List[str | int]] = defaultdict(list)
+
+            _df: DataFrame = documentDF.iloc[
+                idx : idx + doiCount  # noqa: E203
+            ]
+            dois: str = "|".join(_df["doi_url"].to_list())
+            url: str = (
+                "https://api.openalex.org/works?mailto="
+                + email
+                + "&filter=doi:"
+                + dois
+            )
+            resp: Response = get(url=url, timeout=60)
+
+            if resp.status_code != 200:
+                print(resp.status_code)
+                data["document_id"].append("")
+                data["url"].append(url)
+                data["status_code"].append(resp.status_code)
+                data["html"].append("")
+                bar.next()
+                continue
+
+            document: dict
+            for document in resp.json()["results"]:
+                data["document_id"].append(
+                    document["doi"].replace(DOI_URL, "")
+                )
+                data["url"].append(url)
+                data["status_code"].append(resp.status_code)
+                data["html"].append(dumps(obj=document))
+
+            dfs.append(DataFrame(data=data))
+            bar.next()
+
+    oaResponsesDF: DataFrame = pandas.concat(objs=dfs, ignore_index=True)
+
+    _mapDFIndexToDFValue(
+        df1=documentDF,
+        df2=oaResponsesDF,
+        c1="doi",
+        c2="document_id",
+    )
+
+    oaResponsesDF.to_sql(
+        name="openalex_responses",
+        con=db.engine,
+        if_exists="append",
+        index=False,
     )
 
 
@@ -242,6 +340,8 @@ def main() -> None:
             search(fp=args["search.db"][0], journal=args["search.journal"][0])
         case "ed":
             extractDocuments(fp=args["ed.db"][0])
+        case "oa":
+            getOpenAlexMetadata(fp=args["oa.db"][0], email=args["oa.email"][0])
 
     sys.exit(0)
 
