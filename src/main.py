@@ -179,11 +179,7 @@ def extractDocuments(fp: Path) -> None:
 
     db: DB = DB(fp=fp)
 
-    respDF: DataFrame = pandas.read_sql_table(
-        table_name="search_responses",
-        con=db.engine,
-        index_col="id",
-    )
+    respDF: DataFrame = db.readTableToDF(table="search_responses")
 
     row: Series
     with Bar(
@@ -257,11 +253,7 @@ def getOpenAlexMetadata(fp: Path, email: str, doiCount: int = 25) -> None:
 
     db: DB = DB(fp=fp)
 
-    documentDF: DataFrame = pandas.read_sql_table(
-        table_name="documents",
-        con=db.engine,
-        index_col="id",
-    )
+    documentDF: DataFrame = db.readTableToDF(table="documents")
 
     documentDF["doi_url"] = documentDF["doi"].apply(lambda x: DOI_URL + x)
 
